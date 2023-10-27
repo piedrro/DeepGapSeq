@@ -32,4 +32,4 @@ dependencies = [
 
 
 [project.scripts]
-ebfret = "DeepGapSeq.ebFRET.ebfret_utils:print_directory"
+ebfret = "DeepGapSeq.ebFRET.ebfret_utils:launch_ebfret_instance"

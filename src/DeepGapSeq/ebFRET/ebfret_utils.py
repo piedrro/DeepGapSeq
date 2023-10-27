@@ -8,12 +8,13 @@ import numpy as np
 import traceback
 from DeepGapSeq._utils_worker import Worker
 from functools import partial
+import threading
+import time
 
-
-class ebFRET_controller():
+class ebFRET_controller:
 
     def __init__(self,
-                 ebfret_dir: str = "",
+                 ebfret_dir: str = os.path.dirname(os.path.realpath(__file__)),
                  num_workers: int = 2,):
 
         self.engine = None
@@ -21,9 +22,16 @@ class ebFRET_controller():
 
         self.ebfret_dir = ebfret_dir
         self.matlab_installed = False
-        self.ebfret_instance = None
+
+        self.ebfret_handle = None
         self.ebfret_running = False
+
         self.num_workers = num_workers
+
+        self.ebfret_dir_status = self.check_ebfret_dir()
+        self.matlab_engine_status = self.check_matlab_engine_installed()
+
+        self.lock = threading.Lock()
 
     def check_ebfret_dir(self):
 
@@ -110,7 +118,7 @@ class ebFRET_controller():
         except:
             self.close_engine()
 
-    def start_ebfret(self):
+    def start_ebfret(self, threaded = True):
 
         if self.engine == None:
             self.start_engine()
@@ -121,13 +129,37 @@ class ebFRET_controller():
             self.engine.eval("addpath(genpath('" + self.ebfret_dir + "'))", nargout=0)
             self.engine.addpath(self.engine.genpath("\python"), nargout=0)
 
-            self.ebfret_instance = self.engine.ebFRET()
+            self.ebfret_handle = self.engine.ebFRET()
+
+            if threaded == True:
+
+                while True:
+                    with self.lock:
+                        try:
+                            self.ebfret_running = self.check_ebfret_running()
+                            if not self.ebfret_running:
+                                self.close_ebfret()
+                                self.close_engine()
+                                print("ebFRET GUI has been closed!")
+                                break
+                            time.sleep(1)
+                        except:
+                            self.close_ebfret()
+                            self.close_engine()
+                            print("Error checking ebFRET GUI state. Assuming it's closed.")
+                            print(traceback.format_exc())
+                            break
 
     def check_ebfret_running(self):
-        self.ebfret_running = False
-        if self.engine and self.ebfret_instance:
-            self.ebfret_running = self.engine.ebfret.python.python_check_running(self.ebfret_instance)
-        return self.ebfret_running
+
+        ebfret_running = False
+        if self.engine and self.ebfret_handle:
+            try:
+                ebfret_running = self.engine.isvalid(self.ebfret_handle)
+            except:
+                print("ebFRET closed")
+
+        return ebfret_running
 
     def load_fret_data(self, data=[], file_name="temp.tif"):
         try:
@@ -148,9 +180,9 @@ class ebFRET_controller():
 
             # print(f"min: {data_min}, max: {data_max}, shape: {data_shape}")
 
-            if self.engine and self.ebfret_instance:
+            if self.engine and self.ebfret_handle:
                 if check_data_format(data):
-                    self.engine.ebfret.python.python_load_data(self.ebfret_instance, file_name, data, nargout=0)
+                    self.engine.ebfret.python.python_load_data(self.ebfret_handle, file_name, data, nargout=0)
         except:
             self.stop_parrallel_pool()
             self.close_ebfret()
@@ -161,9 +193,9 @@ class ebFRET_controller():
         try:
             self.ebfret_states = []
 
-            if self.engine and self.ebfret_instance:
-                self.engine.ebfret.python.python_run_ebayes(self.ebfret_instance, min_states, max_states, nargout=0)
-                self.ebfret_states = self.engine.ebfret.python.python_export_traces(self.ebfret_instance, min_states, max_states)
+            if self.engine and self.ebfret_handle:
+                self.engine.ebfret.python.python_run_ebayes(self.ebfret_handle, min_states, max_states, nargout=0)
+                self.ebfret_states = self.engine.ebfret.python.python_export_traces(self.ebfret_handle, min_states, max_states)
 
                 self.ebfret_states = np.array(self.ebfret_states)
 
@@ -172,17 +204,15 @@ class ebFRET_controller():
 
         return self.ebfret_states
 
-
-
     def close_ebfret(self):
-        if self.engine and self.ebfret_instance:
-            self.engine.ebfret.python.python_close_ebfret(self.ebfret_instance, nargout=0)
-            self.ebfret_instance = None
+        if self.engine and self.ebfret_handle:
+            self.engine.ebfret.python.python_close_ebfret(self.ebfret_handle, nargout=0)
+            self.ebfret_handle = None
 
     def close_engine(self):
         if self.engine:
             try:
-                if self.ebfret_instance:
+                if self.ebfret_handle:
                     self.close_ebfret()
                 self.engine.quit()
                 self.engine = None
@@ -191,288 +221,14 @@ class ebFRET_controller():
                 print(f"Error closing MATLAB engine: {e}")
 
     def cleanup(self):
-        print("Cleanup method called due to an error or normal termination.")
-        if self.ebfret_instance:
-            self.close_ebfret()
-        self.close_engine()  # Close MATLAB engine if it is active
+        self.close_ebfret()
+        self.close_engine()
 
+def launch_ebfret_instance():
 
-def gapseq_visualise_ebfret(self):
+    controller = ebFRET_controller()
+    controller.start_ebfret()
 
-    try:
+    return controller
 
-        if hasattr(self, "ebfret_states"):
 
-            state = self.ebfret_visualisation_state.currentText()
-
-            if state.isdigit():
-                state = int(state)
-
-                state_data = self.ebfret_states.copy()
-                state_data_loc_num = self.ebfret_data_loc_number
-
-                indices = np.where(state_data[:,0] == state)
-                state_data = np.take(state_data, indices, axis=0)[0]
-
-                meta = self.meta.copy()
-                precomputed_trace_graph_data = self.precomputed_trace_graph_data.copy()
-
-                localisation_data = meta["localisation_data"]
-
-                plot_localisation_number = int(self.plot_localisation_number.value())
-
-                layer_names = localisation_data.keys()
-
-                for localisation_number in state_data_loc_num:
-
-                    localisation_indices = np.where(state_data[:, 1] == localisation_number+1)
-                    localisation_data = np.take(state_data, localisation_indices, axis=0)[0]
-                    hmm_fit = localisation_data[:,2]
-
-                    breakpoints = []
-                    for index in range(len(hmm_fit) - 1):
-                        if hmm_fit[index] != hmm_fit[index + 1]:
-                            breakpoints.append(index)
-
-                    breakpoints = [0] + breakpoints + [len(hmm_fit)-1]
-
-                    for layer in layer_names:
-
-                        self.meta["bounding_box_breakpoints"][layer][localisation_number] = breakpoints
-                        self.meta["bounding_box_hmm_states"][layer][localisation_number] = hmm_fit
-
-                    self.precompute_trace_graph_data(localisation_number=localisation_number)
-
-                self.initialise_draw_trace_graph()
-
-    except:
-        print(traceback.format_exc())
-
-
-
-
-
-
-def _run_ebfet_analysis(self, progress_callback = None):
-
-    try:
-
-        layer = self.ebfret_fit_dataset.currentText()
-
-        channel_name = self.ebfret_fit_channel.currentText()
-        channel_index = self.ebfret_fit_channel.currentIndex()
-
-        metric_index = self.plot_metric.currentIndex()
-        background_mode = self.plot_background_subtraction_mode.currentIndex()
-        alex_pulse_duration = self.alex_pulse_duration.value()
-        alex_firstframe_excitation = self.alex_firstframe_excitation.currentIndex()
-
-        ebfret_min_states = self.ebfret_min_states.currentText()
-        ebfret_max_states = self.ebfret_max_states.currentText()
-
-        if ebfret_min_states.isdigit():
-            ebfret_min_states = int(ebfret_min_states)
-        else:
-            ebfret_min_states = 2
-        if ebfret_max_states.isdigit():
-            ebfret_max_states = int(ebfret_max_states)
-        else:
-            ebfret_max_states = 6
-
-        if ebfret_min_states > ebfret_max_states:
-            ebfret_min_states == ebfret_max_states
-
-        ebfret_data = []
-        ebfret_data_loc_number = []
-
-        box_num = len(self.box_layer.data.copy())
-        meta = self.meta.copy()
-
-        localisation_data = meta["localisation_data"]
-
-        if layer in localisation_data.keys():
-
-            for localisation_number in range(box_num):
-
-                if "ALEX" not in channel_name:
-                    trace_data = self.get_gapseq_trace_data(
-                        layer,
-                        channel_name,
-                        localisation_number,
-                        metric_index,
-                        background_mode)
-
-                else:
-                    trace_data = self.get_alex_trace_data(
-                        layer,
-                        channel_name,
-                        localisation_number,
-                        metric_index,
-                        background_mode,
-                        alex_pulse_duration,
-                        alex_firstframe_excitation)
-
-                if "plot_data" in trace_data.keys():
-                    if len(trace_data["plot_data"]) == 1:
-                        ebfret_data.extend([trace_data["plot_data"][0]])
-                    else:
-                        ebfret_data.extend([trace_data["plot_data"][-1]])
-
-                    ebfret_data_loc_number.append(localisation_number)
-
-        if len(ebfret_data) > 0:
-            self.ebFRET_controller.load_fret_data(ebfret_data)
-            self.ebfret_states = self.ebFRET_controller.run_ebfret_analysis(ebfret_min_states, ebfret_max_states)
-            self.ebfret_data_loc_number = ebfret_data_loc_number
-
-            if len(self.ebfret_states) > 0:
-                unique_states = np.unique(self.ebfret_states[:,0])
-                self.ebfret_visualisation_state.clear()
-                self.ebfret_visualisation_state.addItems([str(int(x)) for x in unique_states])
-
-    except:
-        print(traceback.format_exc())
-        pass
-
-
-def _disconnect_matlab(self, progress_callback=None):
-
-    try:
-        self.ebFRET_controller.close_ebfret()
-        progress_callback.emit(33)
-        self.ebFRET_controller.stop_parrallel_pool()
-        progress_callback.emit(66)
-        self.ebFRET_controller.close_engine()
-        progress_callback.emit(100)
-        progress_callback.emit(0)
-
-    except:
-        pass
-
-def _connect_matlab(self, progress_callback=None):
-
-    ebFRET_controller = None
-
-    try:
-        import importlib.resources
-
-        gapseq_directory = os.path.dirname(os.path.realpath(__file__))
-
-        # print(f"GapSeq install directory: {gapseq_directory}")
-
-        if hasattr(self, "ebfret_path") == False:
-            self.ebfret_path = os.path.join(gapseq_directory)
-
-        if os.path.exists(self.ebfret_path) == True:
-
-            progress_callback.emit(5)
-
-            ebFRET_controller = ebFRET_controller(ebfret_dir=self.ebfret_path)
-            progress_callback.emit(10)
-
-            ebfret_dir_status = ebFRET_controller.check_ebfret_dir()
-            progress_callback.emit(15)
-
-            matlab_engine_status = ebFRET_controller.check_matlab_engine_installed()
-            progress_callback.emit(20)
-
-            if ebfret_dir_status and matlab_engine_status:
-                ebFRET_controller.start_engine()
-                progress_callback.emit(40)
-                # ebFRET_controller.start_parrallel_pool()
-                # progress_callback.emit(70)
-                ebFRET_controller.start_ebfret()
-                progress_callback.emit(100)
-                progress_callback.emit(0)
-
-        else:
-            print("ebFRET directory does not exist: ", self.ebfret_path)
-            progress_callback.emit(0)
-
-    except:
-        print(traceback.format_exc())
-        progress_callback.emit(0)
-
-    return ebFRET_controller
-
-
-
-
-def _connect_matlab_cleanup(self, ebFRET_controller = None):
-
-    try:
-
-        if ebFRET_controller != None:
-
-            self.ebFRET_controller = ebFRET_controller
-            if ebFRET_controller.check_ebfret_running():
-                self.ebfret_connect_matlab.setText(r"Close MATLAB/ebFRET")
-            else:
-                self.ebfret_connect_matlab.setText(r"Open MATLAB/ebFRET")
-        else:
-            self.ebFRET_controller = None
-            self.ebfret_connect_matlab.setText(r"Open MATLAB/ebFRET")
-    except:
-        print(traceback.format_exc())
-        pass
-
-def print_directory():
-
-    directory = os.path.dirname(os.path.realpath(__file__))
-
-    print(directory)
-
-
-
-def check_ebfret_directory(path):
-
-    directory_status = False
-
-    if os.path.exists(path):
-        for root, dir, files in os.walk(path):
-            if "ebFRET.m" in files:
-                directory_status = True
-        if directory_status == True:
-            print("ebFRET directory found: " + path)
-        else:
-            print("ebFRET directory does not contain ebFRET.m: " + path)
-    else:
-        print("ebFRET directory not exist: " + path)
-
-    return directory_status
-
-
-
-def gapseq_run_ebfret_analysis(self):
-    if hasattr(self, "ebFRET_controller"):
-        if self.ebFRET_controller is not None:
-            worker = Worker(self._run_ebfet_analysis)
-            worker.signals.result.connect(self._connect_matlab_cleanup)
-            self.threadpool.start(worker)
-
-def connect_matlab(self):
-
-    try:
-
-        launch_ebfret = True
-        if hasattr(self, "ebFRET_controller"):
-
-            if hasattr(self.ebFRET_controller, "check_ebfret_running"):
-                if self.ebFRET_controller.check_ebfret_running():
-                    launch_ebfret = False
-
-        if launch_ebfret:
-            print("launching MATLAB/ebFRET")
-            worker = Worker(self._connect_matlab)
-            worker.signals.result.connect(self._connect_matlab_cleanup)
-            worker.signals.progress.connect(partial(self.gapseq_progressbar, progressbar="ebfret_connect_matlab"))
-            self.threadpool.start(worker)
-        else:
-            print("closing MATLAB/ebFRET")
-            worker = Worker(self._disconnect_matlab)
-            worker.signals.result.connect(self._connect_matlab_cleanup)
-            worker.signals.progress.connect(partial(self.gapseq_progressbar, progressbar="ebfret_connect_matlab"))
-            self.threadpool.start(worker)
-
-    except:
-        print(traceback.format_exc())
