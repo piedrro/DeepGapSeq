@@ -2,7 +2,7 @@
 
 A **developmental** smFRET analysis package, including deeplearning for gap state identification. 
 Includes an embedded modified version ebFRET (MATLAB). 
-Deep Learning and trace generation modules Inspired by DeepLASI and DeepFRET.
+Deep Learning classification and trace generation modules Inspired by DeepLASI and DeepFRET.
 
 ## Installing DeepGapSeq From GitHub
 
