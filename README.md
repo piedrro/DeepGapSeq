@@ -1,5 +1,5 @@
 # DeepGapSeq
-An smFRET analysis package, including deeplearning for gap state identification. Includes embedded ebFRET. Inspired by DeepLASI and DeepFRET.
+An smFRET analysis package, including deeplearning for gap state identification. Includes embedded a modified version ebFRET (MATLAB). Inspired by DeepLASI and DeepFRET.
 
 ## Installing DeepGapSeq From GitHub
 
