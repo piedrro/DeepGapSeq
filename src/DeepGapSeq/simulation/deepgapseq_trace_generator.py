@@ -168,7 +168,6 @@ class trace_generator():
                 file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_trace{index}.csv")
                 
                 np.savetxt(file_path, dat, delimiter=",")
-<<<<<<< HEAD:simulation/deepgapseq_trace_generator.py
         
         if self.export_mode == "ebFRET_files":
         
@@ -185,9 +184,6 @@ class trace_generator():
             np.savetxt(trace_path, ebFRET_traces32, delimiter=" ")
             np.savetxt(label_path, training_labels, delimiter=" ")
 
-
-                
-=======
 
         if self.export_mode == "pickledict":
 
@@ -216,7 +212,6 @@ class trace_generator():
 
             print(f"exporting pickled dictionary to: {file_path}")
 
->>>>>>> 0e5dd45b2db4d7db00fa6165134a7276cd26a2d0:src/DeepGapSeq/simulation/deepgapseq_trace_generator.py
     def generate_traces(self):
         
         print("Generating traces...")
