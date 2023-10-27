@@ -26,3 +26,9 @@ Read the traceback, and install the recomended verison.
 Then try again:
 
     pip install matlabengine==XXXX
+
+## Terminal Commands
+
+To launch an ebFRET instance (requires matlab engine installation):
+    
+        ebfret
