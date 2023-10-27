@@ -1,8 +1,11 @@
+import pickle
+
 import numpy as np
 from DeepGapSeq.simulation import training_data_1color, training_data_2color
 from time import time
 import os
 import shutil
+import datetime
 
 class trace_generator():
     
@@ -16,7 +19,8 @@ class trace_generator():
                  mode = "state_mode",
                  parallel_asynchronous = False,
                  outdir = "",
-                 export_mode = "text_files"
+                 export_mode = "text_files",
+                 export_name = "trace_dataset",
                  ):
         
         """
@@ -44,11 +48,13 @@ class trace_generator():
         self.parallel_asynchronous = parallel_asynchronous
         self.outdir = outdir
         self.export_mode = export_mode
+        self.export_name = export_name
         
         self.check_mode()
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
+        assert export_mode in ["text_files", "pickledict"], "available export modes: 'text_files', 'pickledict'"
         
     def check_outdir(self, overwrite=True, folder_name = "simulated_traces"):
     
@@ -56,7 +62,7 @@ class trace_generator():
             self.outdir = os.getcwd()
         
         if folder_name != "":
-            self.outdir = os.path.join(self.outdir, "simulated_traces")
+            self.outdir = os.path.join(self.outdir, "deepgapseq_simulated_traces")
             
         if overwrite and os.path.exists(self.outdir):
                 shutil.rmtree(self.outdir)
@@ -141,6 +147,8 @@ class trace_generator():
         return training_data, training_labels
         
     def export_traces(self, training_data, training_labels):
+
+        date = datetime.datetime.now().strftime("%Y_%m_%d")
         
         if self.export_mode == "text_files":
             
@@ -152,10 +160,37 @@ class trace_generator():
             
                 dat = np.hstack([data, label])
                 
-                file_path = os.path.join(self.outdir, f"trace{index}.csv")
+                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_{index}.csv")
                 
                 np.savetxt(file_path, dat, delimiter=",")
-                
+
+        if self.export_mode == "pickledict":
+
+            trace_dictionary = {"data": [], "labels": [], "simulation_parameters": {}}
+
+            trace_dictionary["simulation_parameters"]["n_traces"] = self.n_traces
+            trace_dictionary["simulation_parameters"]["n_frames"] = self.n_frames
+            trace_dictionary["simulation_parameters"]["n_colors"] = self.n_colors
+            trace_dictionary["simulation_parameters"]["n_states"] = self.n_states
+            trace_dictionary["simulation_parameters"]["balance_classes"] = self.balance_classes
+            trace_dictionary["simulation_parameters"]["reduce_memory"] = self.reduce_memory
+            trace_dictionary["simulation_parameters"]["mode"] = self.mode
+            trace_dictionary["simulation_parameters"]["parallel_asynchronous"] = self.parallel_asynchronous
+
+            for index, (data, label) in enumerate(zip(training_data, training_labels)):
+
+                trace_dictionary["data"].append(data)
+                trace_dictionary["labels"].append(label)
+
+
+
+            file_path = os.path.join(self.outdir, f"{self.export_name}_{date}.pkl")
+
+            with open(file_path, 'wb') as handle:
+                pickle.dump(trace_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+            print(f"exporting pickled dictionary to: {file_path}")
+
     def generate_traces(self):
         
         print("Generating traces...")

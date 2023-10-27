@@ -5,3 +5,7 @@ tqdm
 mlxtend==0.20.0
 pomegranate==0.14.8
 PyQt5
+hmmlearn
+pandas
+scipy
+spyder
