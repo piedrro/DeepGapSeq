@@ -1,0 +1,2 @@
+[console_scripts]
+ebfret = DeepGapSeq.ebFRET.ebfret_utils:print_directory

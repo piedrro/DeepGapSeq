@@ -1,0 +1,7 @@
+matplotlib
+numpy
+scikit-learn
+tqdm
+mlxtend==0.20.0
+pomegranate==0.14.8
+PyQt5

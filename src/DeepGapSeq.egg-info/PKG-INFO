@@ -1,0 +1,39 @@
+Metadata-Version: 2.1
+Name: DeepGapSeq
+Version: 0.0.1
+Summary: An smFRET analysis package, including deeplearning for gap state identification
+Author-email: Piers Turner <piers.turner@physics.ox.ac.uk>
+Project-URL: Homepage, https://github.com/piedrro/DeepGapSeq.git
+Project-URL: Bug Tracker, https://github.com/piedrro/DeepGapSeq/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENCE
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: scikit-learn
+Requires-Dist: tqdm
+Requires-Dist: mlxtend==0.20.0
+Requires-Dist: pomegranate==0.14.8
+Requires-Dist: PyQt5
+
+# DeepGapSeq
+
+## Installing DeepGapSeq From GitHub
+
+    conda create –-name DeepGapSeq python==3.9
+    conda activate DeepGapSeq
+    conda install -c anaconda git
+    conda update --all
+
+    pip install https://github.com/piedrro/DeepGapSeq.git
+
+### To install **MATLAB** engine (Windows):
+
+    pip install matlabengine
+
+    This will likely fail due to a MATLAB version issue. 
+    Read the traceback, and install the recomended verison. 
+    Then try again: 'pip install matlabengine==XXXX'
