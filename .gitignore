@@ -1,5 +1,4 @@
-/src/DeepBacSeg/simulation/simulated_traces/
-/src/DeepBacSeg/simulation/legacy code/
-
-
+/src/DeepGapSeq/simulation/simulated_traces/
+/src/DeepGapSeq/simulation/legacy code/
 /simulated_traces/
+/examples/simulated_traces/

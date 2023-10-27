@@ -7,9 +7,12 @@
     conda install -c anaconda git
     conda update --all
 
-    git clone https://github.com/piedrro/DeepGapSeq.git
+    pip install https://github.com/piedrro/DeepGapSeq.git
 
-    cd DeepGapSeq
+### To install **MATLAB** engine (Windows):
 
-    pip install -r requirements.txt
+    pip install matlabengine
 
+    This will likely fail due to a MATLAB version issue. 
+    Read the traceback, and install the recomended verison. 
+    Then try again: 'pip install matlabengine==XXXX'

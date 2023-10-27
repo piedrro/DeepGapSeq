@@ -16,7 +16,20 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "scikit-learn",
+    "tqdm",
+    "mlxtend==0.20.0",
+    "pomegranate==0.14.8",
+    "PyQt5",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/piedrro/DeepGapSeq.git"
 "Bug Tracker" = "https://github.com/piedrro/DeepGapSeq/issues"
+
+
+[project.scripts]
+ebfret = "DeepGapSeq.ebFRET.ebfret_utils:print_directory"
