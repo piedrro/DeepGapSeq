@@ -23,4 +23,6 @@ MATLAB compatibility: https://uk.mathworks.com/support/requirements/python-compa
 
 This will likely fail due to a MATLAB version issue. 
 Read the traceback, and install the recomended verison. 
-Then try again: 'pip install matlabengine==XXXX'
+Then try again:
+
+    pip install matlabengine==XXXX
