@@ -6,7 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "DeepGapSeq"
 version = "0.0.1"
 authors = [
-  { name="Piers Turner", email="piers.turner@physics.ox.ac.uk" },
+  {name="Piers Turner", email="piers.turner@physics.ox.ac.uk",
+   name="Beichen Zhang", email="beichen.zhang@exeter.ox.ac.uk"},
 ]
 description = "An smFRET analysis package, including deeplearning for gap state identification"
 readme = "README.md"

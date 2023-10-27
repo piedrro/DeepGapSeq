@@ -4,6 +4,8 @@ A **developmental** smFRET analysis package, including deeplearning for gap stat
 Includes an embedded modified version ebFRET (MATLAB). 
 Deep Learning classification and trace generation modules Inspired by DeepLASI and DeepFRET.
 
+Developed by Piers Turner and Beichen Zhang
+
 ## Installing DeepGapSeq From GitHub
 
     conda create –-name DeepGapSeq python==3.9
