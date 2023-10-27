@@ -1,10 +1,5 @@
-from pathlib import Path
 import numpy as np
-from simulation import training_data_1color
-from simulation import training_data_2color
-from simulation import training_data_3color
-import sklearn.utils
-import matplotlib.pyplot as plt
+from src.DeepBacSeg.simulation import training_data_1color, training_data_2color
 from time import time
 import os
 import shutil
