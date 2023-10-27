@@ -28,7 +28,7 @@ Requires-Dist: PyQt5
     conda install -c anaconda git
     conda update --all
 
-    pip install https://github.com/piedrro/DeepGapSeq.git
+    pip install git+https://github.com/piedrro/DeepGapSeq.git
 
 ### To install **MATLAB** engine (Windows):
 

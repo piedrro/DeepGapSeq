@@ -7,12 +7,16 @@
     conda install -c anaconda git
     conda update --all
 
-    pip install https://github.com/piedrro/DeepGapSeq.git
+    pip install git+https://github.com/piedrro/DeepGapSeq.git
 
-### To install **MATLAB** engine (Windows):
+## To install **MATLAB** engine (Windows):
+
+python 3.9 requires MATLAB >= 2021b
+
+MATLAB compatibility: https://uk.mathworks.com/support/requirements/python-compatibility.html
 
     pip install matlabengine
 
-    This will likely fail due to a MATLAB version issue. 
-    Read the traceback, and install the recomended verison. 
-    Then try again: 'pip install matlabengine==XXXX'
+This will likely fail due to a MATLAB version issue. 
+Read the traceback, and install the recomended verison. 
+Then try again: 'pip install matlabengine==XXXX'
