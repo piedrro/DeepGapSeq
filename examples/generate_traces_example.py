@@ -8,7 +8,9 @@ generator = trace_generator(n_colors=1,
                             n_frames=500,
                             n_traces=100,
                             outdir=desktop,
+                            clear_outdir=True,
                             export_name = "trace_dataset_example",
-                            export_mode="pickledict")
+                            export_mode="csv",
+)
 
 training_data, training_labels = generator.generate_traces()

@@ -19,6 +19,7 @@ class trace_generator():
                  mode = "state_mode",
                  parallel_asynchronous = False,
                  outdir = "",
+                 clear_outdir = True,
                  export_mode = "text_files",
                  export_name = "trace_dataset",
                  ):
@@ -47,6 +48,7 @@ class trace_generator():
         self.mode = mode
         self.parallel_asynchronous = parallel_asynchronous
         self.outdir = outdir
+        self.clear_outdir = clear_outdir
         self.export_mode = export_mode
         self.export_name = export_name
         
@@ -54,18 +56,21 @@ class trace_generator():
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
-        assert export_mode in ["text_files", "pickledict"], "available export modes: 'text_files', 'pickledict'"
+        assert export_mode in ["csv", "pickledict"], "available export modes: 'csv', 'pickledict'"
         
-    def check_outdir(self, overwrite=True, folder_name = "simulated_traces"):
+    def check_outdir(self, folder_name = ""):
     
         if os.path.exists(self.outdir) == False:
             self.outdir = os.getcwd()
         
-        if folder_name != "":
+        if folder_name == "":
             self.outdir = os.path.join(self.outdir, "deepgapseq_simulated_traces")
             
-        if overwrite and os.path.exists(self.outdir):
+        if self.clear_outdir and os.path.exists(self.outdir):
+            try:
                 shutil.rmtree(self.outdir)
+            except:
+                pass
 
         if os.path.exists(self.outdir) == False:
             os.mkdir(self.outdir)
@@ -150,7 +155,7 @@ class trace_generator():
 
         date = datetime.datetime.now().strftime("%Y_%m_%d")
         
-        if self.export_mode == "text_files":
+        if self.export_mode == "csv":
             
             print(f"exporting txt files to: {self.outdir}")
             
@@ -160,7 +165,7 @@ class trace_generator():
             
                 dat = np.hstack([data, label])
                 
-                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_{index}.csv")
+                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_trace{index}.csv")
                 
                 np.savetxt(file_path, dat, delimiter=",")
 
