@@ -6,6 +6,10 @@ from time import time
 import os
 import shutil
 import datetime
+import random
+import string
+
+
 
 class trace_generator():
     
@@ -56,7 +60,7 @@ class trace_generator():
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
-        assert export_mode in ["csv", "pickledict"], "available export modes: 'csv', 'pickledict'"
+        assert export_mode in ["csv", "pickledict", "ebfret"], "available export modes: 'csv', 'pickledict', 'ebfret'"
         
     def check_outdir(self, folder_name = ""):
     
@@ -203,14 +207,55 @@ class trace_generator():
                 trace_dictionary["data"].append(data)
                 trace_dictionary["labels"].append(label)
 
-
-
             file_path = os.path.join(self.outdir, f"{self.export_name}_{date}.pkl")
 
             with open(file_path, 'wb') as handle:
                 pickle.dump(trace_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             print(f"exporting pickled dictionary to: {file_path}")
+
+        if self.export_mode == "ebfret":
+
+            file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_SMD.mat")
+
+            ebfret_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+
+            smd_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+
+            smd_dict = {"attr": {"data_package": "DeepGapSeq"},
+                        "columns": [],
+                        "data": {"attr": [],
+                                 "id": [],
+                                 "index": [],
+                                 "values": []},
+                        "id": ebfret_id, "type": "DeepGapSeq-simulated", }
+
+            trace_names = ['Donor', 'Acceptor']
+
+            for data_index, (data, label) in enumerate(zip(training_data, training_labels)):
+
+                smd_values = data.tolist()
+                smd_index = np.expand_dims(np.arange(len(smd_values)), -1).tolist()
+
+                lowerbound = np.min(smd_values)
+
+                smd_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+                smd_attr = {"file": os.path.basename(file_path), "lowerbound":lowerbound,"restart": 0, "crop_min": 0, "crop_max": 20}
+
+                if smd_dict["columns"] == []:
+                    columns = trace_names
+                    columns = [column.strip() for column in columns]
+                    smd_dict["columns"] = columns
+
+                smd_dict["data"]["attr"].append(smd_attr)
+                smd_dict["data"]["id"].append(smd_id)
+                smd_dict["data"]["index"].append(smd_index)
+                smd_dict["data"]["values"].append(smd_values)
+
+            import mat4py
+            mat4py.savemat(file_path, smd_dict)
+
+            print(f"exporting ebFRET SMD file to: {file_path}")
 
     def generate_traces(self):
         
