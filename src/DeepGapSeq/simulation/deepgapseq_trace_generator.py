@@ -6,6 +6,8 @@ from time import time
 import os
 import shutil
 import datetime
+import random
+import string
 
 class trace_generator():
     
@@ -19,7 +21,6 @@ class trace_generator():
                  mode = "state_mode",
                  parallel_asynchronous = False,
                  outdir = "",
-                 clear_outdir = True,
                  export_mode = "text_files",
                  export_name = "trace_dataset",
                  ):
@@ -48,7 +49,6 @@ class trace_generator():
         self.mode = mode
         self.parallel_asynchronous = parallel_asynchronous
         self.outdir = outdir
-        self.clear_outdir = clear_outdir
         self.export_mode = export_mode
         self.export_name = export_name
         
@@ -56,21 +56,18 @@ class trace_generator():
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
-        assert export_mode in ["csv", "pickledict"], "available export modes: 'csv', 'pickledict'"
+        assert export_mode in ["text_files", "pickledict","ebfret"], "available export modes: 'text_files', 'pickledict', 'ebfret'"
         
-    def check_outdir(self, folder_name = ""):
+    def check_outdir(self, overwrite=True, folder_name = "simulated_traces"):
     
         if os.path.exists(self.outdir) == False:
             self.outdir = os.getcwd()
         
-        if folder_name == "":
+        if folder_name != "":
             self.outdir = os.path.join(self.outdir, "deepgapseq_simulated_traces")
             
-        if self.clear_outdir and os.path.exists(self.outdir):
-            try:
+        if overwrite and os.path.exists(self.outdir):
                 shutil.rmtree(self.outdir)
-            except:
-                pass
 
         if os.path.exists(self.outdir) == False:
             os.mkdir(self.outdir)
@@ -155,7 +152,7 @@ class trace_generator():
 
         date = datetime.datetime.now().strftime("%Y_%m_%d")
         
-        if self.export_mode == "csv":
+        if self.export_mode == "text_files":
             
             print(f"exporting txt files to: {self.outdir}")
             
@@ -165,25 +162,9 @@ class trace_generator():
             
                 dat = np.hstack([data, label])
                 
-                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_trace{index}.csv")
+                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_{index}.csv")
                 
                 np.savetxt(file_path, dat, delimiter=",")
-        
-        if self.export_mode == "ebFRET_files":
-        
-            print(f"exporting ebFRET files to: {self.outdir}")
-
-            traces = np.array(training_data)
-            ebFRET_traces = []
-            for i in range(traces.shape[0]):
-                ebFRET_traces.append(np.hstack([np.expand_dims([i]*traces.shape[1], 1),traces[i]]))
-            ebFRET_traces = np.vstack(ebFRET_traces)
-            ebFRET_traces32 = ebFRET_traces.astype(np.float32)
-            trace_path = os.path.join(self.outdir, "simulated-K04-N350-raw-stacked.dat")
-            label_path = os.path.join(self.outdir, "simulated_traces_labels.dat")
-            np.savetxt(trace_path, ebFRET_traces32, delimiter=" ")
-            np.savetxt(label_path, training_labels, delimiter=" ")
-
 
         if self.export_mode == "pickledict":
 
@@ -203,14 +184,57 @@ class trace_generator():
                 trace_dictionary["data"].append(data)
                 trace_dictionary["labels"].append(label)
 
-
-
             file_path = os.path.join(self.outdir, f"{self.export_name}_{date}.pkl")
 
             with open(file_path, 'wb') as handle:
                 pickle.dump(trace_dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             print(f"exporting pickled dictionary to: {file_path}")
+
+
+        if self.export_mode == "ebfret":
+
+            file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_SMD.mat")
+
+            ebfret_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+
+            smd_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+
+            smd_dict = {"attr": {"data_package": "DeepGapSeq"},
+                        "columns": [],
+                        "data": {"attr": [],
+                                 "id": [],
+                                 "index": [],
+                                 "values": []},
+                        "id": ebfret_id, "type": "DeepGapSeq-simulated", }
+
+            trace_names = ['Donor', 'Acceptor']
+
+            for data_index, (data, label) in enumerate(zip(training_data, training_labels)):
+
+                smd_values = data.tolist()
+                smd_index = np.expand_dims(np.arange(len(smd_values)), -1).tolist()
+
+                lowerbound = np.min(smd_values)
+
+                smd_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+                smd_attr = {"file": os.path.basename(file_path), "lowerbound":lowerbound,"restart": 0, "crop_min": 0, "crop_max": 20}
+
+                if smd_dict["columns"] == []:
+                    columns = trace_names
+                    columns = [column.strip() for column in columns]
+                    smd_dict["columns"] = columns
+
+                smd_dict["data"]["attr"].append(smd_attr)
+                smd_dict["data"]["id"].append(smd_id)
+                smd_dict["data"]["index"].append(smd_index)
+                smd_dict["data"]["values"].append(smd_values)
+
+            import mat4py
+            mat4py.savemat(file_path, smd_dict)
+
+            print(f"exporting ebFRET SMD file to: {file_path}")
+
 
     def generate_traces(self):
         
