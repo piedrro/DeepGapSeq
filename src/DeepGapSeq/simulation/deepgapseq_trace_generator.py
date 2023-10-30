@@ -173,20 +173,20 @@ class trace_generator():
                 
                 np.savetxt(file_path, dat, delimiter=",")
         
-        if self.export_mode == "ebFRET_files":
+        # if self.export_mode == "ebFRET_files":
         
-            print(f"exporting ebFRET files to: {self.outdir}")
+        #     print(f"exporting ebFRET files to: {self.outdir}")
 
-            traces = np.array(training_data)
-            ebFRET_traces = []
-            for i in range(traces.shape[0]):
-                ebFRET_traces.append(np.hstack([np.expand_dims([i]*traces.shape[1], 1),traces[i]]))
-            ebFRET_traces = np.vstack(ebFRET_traces)
-            ebFRET_traces32 = ebFRET_traces.astype(np.float32)
-            trace_path = os.path.join(self.outdir, "simulated-K04-N350-raw-stacked.dat")
-            label_path = os.path.join(self.outdir, "simulated_traces_labels.dat")
-            np.savetxt(trace_path, ebFRET_traces32, delimiter=" ")
-            np.savetxt(label_path, training_labels, delimiter=" ")
+        #     traces = np.array(training_data)
+        #     ebFRET_traces = []
+        #     for i in range(traces.shape[0]):
+        #         ebFRET_traces.append(np.hstack([np.expand_dims([i]*traces.shape[1], 1),traces[i]]))
+        #     ebFRET_traces = np.vstack(ebFRET_traces)
+        #     ebFRET_traces32 = ebFRET_traces.astype(np.float32)
+        #     trace_path = os.path.join(self.outdir, "simulated-K04-N350-raw-stacked.dat")
+        #     label_path = os.path.join(self.outdir, "simulated_traces_labels.dat")
+        #     np.savetxt(trace_path, ebFRET_traces32, delimiter=" ")
+        #     np.savetxt(label_path, training_labels, delimiter=" ")
 
 
         if self.export_mode == "pickledict":
