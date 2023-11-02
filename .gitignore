@@ -5,5 +5,5 @@
 /dist/
 / .pypirc
 /publish.yml
-
+/src/deepgapseq_simulated_traces/
 /Untitled-1.ipynb
