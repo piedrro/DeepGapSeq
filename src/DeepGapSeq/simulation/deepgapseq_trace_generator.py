@@ -26,21 +26,59 @@ class trace_generator():
                  clear_outdir = True,
                  export_mode = "text_files",
                  export_name = "trace_dataset",
+                 blink_prob= 0,
+                 d_lifetime = None,
+                 a_lifetime = None,
+                 crosstalk = (0,0),
+                 dir_exc = (0,0),
+                 aggregation_prob = 0,
+                 falloff_prob = 0,
+                 falloff_lifetime = 500
                  ):
         
         """
         Simulation scripts are inspired by the DeepLASI implementation of DeepFRET simulation scripts.
     
-        n_traces: Number of traces
-        n_timesteps: Number of frames per trace
-        n_colors: Number of colors (1-color, 2-color or 3-color data possible)
-        balance_classes: Balance classes based on minimum number of labeled frames
-        reduce_memory: Include/exclude trace parameters beside countrates
-        state_mode: Label dynamic traces according to state occupancy, used for training state classifiers
-        n_states_model: Label each trace according to number of observed traces, used for number of states classifier
-        parallel_asynchronous: parallel processing (faster)
-        outdir: Output directory
-        export_mode: export mode, more modes will be added over time
+        n_traces: 
+            Number of traces
+        n_timesteps: 
+            Number of frames per trace
+        n_colors: 
+            Number of colors (1-color, 2-color or 3-color data possible)
+        balance_classes: 
+            Balance classes based on minimum number of labeled frames
+        reduce_memory: 
+            Include/exclude trace parameters beside countrates
+        state_mode: 
+            Label dynamic traces according to state occupancy, used for training state classifiers
+        n_states_model: 
+            Label each trace according to number of observed traces, used for number of states classifier
+        parallel_asynchronous: 
+            parallel processing (faster)
+        outdir: 
+            Output directory
+        export_mode: 
+            export mode, more modes will be added over time
+        blink_prob:
+            Probability of observing photoblinking in a trace.
+        D_lifetime:
+            Lifetime of donor fluorophore, as drawn from exponential distribution.
+            Set to None if fluorophore shouldn't bleach.
+        A_lifetime:
+            Lifetime of acceptor fluorophore, as drawn from exponential
+            distribution. Set to None if fluorophore shouldn't bleach.
+        cross_talk:    
+            signal mixing from two fluorophores, at least two traces
+        dir_exc: 
+            direct excitation of acceptor fluorophore, at least two traces
+        aggregation_prob:
+            Probability of trace being an aggregate. Note that this locks the
+            labelled molecule in a random, fixed FRET state.
+        falloff_prob:
+            Probability that the molecule will spontaneously fall off the surface
+            (All intensities zero)
+        falloff_lifetime:
+            Exponential average lifetime if the molecule falls off the surface
         """
         
         self.n_traces = n_traces
@@ -55,7 +93,15 @@ class trace_generator():
         self.clear_outdir = clear_outdir
         self.export_mode = export_mode
         self.export_name = export_name
-        
+        self.blink_prob = blink_prob
+        self.d_lifetime = d_lifetime    
+        self.a_lifetime = a_lifetime
+        self.crosstalk = crosstalk
+        self.dir_exc = dir_exc
+        self.aggregation_prob = aggregation_prob
+        self.falloff_prob = falloff_prob
+        self.falloff_lifetime = falloff_lifetime
+
         self.check_mode()
         self.check_outdir()
 
@@ -100,7 +146,13 @@ class trace_generator():
             state_mode=self.state_mode,
             n_states_mode=self.n_states_mode,
             reduce_memory=self.reduce_memory,
-            parallel_asynchronous=self.parallel_asynchronous
+            parallel_asynchronous=self.parallel_asynchronous,
+            blink_prob= self.blink_prob,
+            d_lifetime = self.d_lifetime,
+            a_lifetime = self.a_lifetime,
+            aggregation_prob = self.aggregation_prob,
+            falloff_prob = self.falloff_prob,
+            falloff_lifetime = self.falloff_lifetime
         )
         
         training_data = []
@@ -130,6 +182,14 @@ class trace_generator():
             n_states_mode=self.n_states_mode,
             reduce_memory=self.reduce_memory,
             parallel_asynchronous=self.parallel_asynchronous,
+            blink_prob= self.blink_prob,
+            d_lifetime = self.d_lifetime,
+            a_lifetime = self.a_lifetime,
+            crosstalk = self.crosstalk,
+            dir_exc = self.dir_exc,
+            aggregation_prob = self.aggregation_prob,
+            falloff_prob = self.falloff_prob,
+            falloff_lifetime = self.falloff_lifetime
         )
         
         training_data = []
