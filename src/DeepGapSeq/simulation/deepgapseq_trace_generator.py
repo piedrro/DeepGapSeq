@@ -135,7 +135,10 @@ class trace_generator():
             if self.reduce_memory:
                 
                 if self.state_mode or self.n_states_mode:
-                    training_data.append(trace[["DD", "DA"]].values)
+                    if self.n_colors == 2:
+                        training_data.append(trace[["DD", "DA"]].values)
+                    else:
+                        training_data.append(trace["E"].values)
                 else:
                     training_data.append(trace[["DD", "DA", "AA"]].values)
                     

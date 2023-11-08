@@ -526,6 +526,7 @@ def simulate_2color_traces(
                     "DD": DD,
                     "DA": DA,
                     "AA": AA,
+                    "E": E_obs,
                     "label": label,
                 }
             )

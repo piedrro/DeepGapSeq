@@ -10,6 +10,11 @@ from DeepGapSeq._utils_worker import Worker
 from functools import partial
 import threading
 import time
+import pandas as pd
+import os
+import threading
+import time
+
 
 class ebFRET_controller:
 
@@ -118,37 +123,39 @@ class ebFRET_controller:
         except:
             self.close_engine()
 
+
+    def _start_ebfret(self):
+        
+        self.ebfret_handle = self.engine.ebFRET()
+        
+        
     def start_ebfret(self, threaded = True):
 
         if self.engine == None:
             self.start_engine()
 
         if self.engine:
+            
+            print("starting ebFRET...")
+            
             self.engine.cd(self.ebfret_dir, nargout=0)
 
             self.engine.eval("addpath(genpath('" + self.ebfret_dir + "'))", nargout=0)
             self.engine.addpath(self.engine.genpath("\python"), nargout=0)
 
-            self.ebfret_handle = self.engine.ebFRET()
-
             if threaded == True:
+                
+                ebfret_thread = threading.Thread(target=self._start_ebfret)
+                ebfret_thread.start()
+                
+                with self.lock:
+                    while not self.check_ebfret_running():
+                        time.sleep(0.1)
 
-                while True:
-                    with self.lock:
-                        try:
-                            self.ebfret_running = self.check_ebfret_running()
-                            if not self.ebfret_running:
-                                self.close_ebfret()
-                                self.close_engine()
-                                print("ebFRET GUI has been closed!")
-                                break
-                            time.sleep(1)
-                        except:
-                            self.close_ebfret()
-                            self.close_engine()
-                            print("Error checking ebFRET GUI state. Assuming it's closed.")
-                            print(traceback.format_exc())
-                            break
+                    print("ebFRET started")
+            else:
+                self._start_ebfret
+            
 
     def check_ebfret_running(self):
 
@@ -161,33 +168,112 @@ class ebFRET_controller:
 
         return ebfret_running
 
-    def load_fret_data(self, data=[], file_name="temp.tif"):
+
+    def dev(self, data):
+        
+        if self.engine:
+            
+            self.engine.cd(self.ebfret_dir, nargout=0)
+
+            self.engine.eval("addpath(genpath('" + self.ebfret_dir + "'))", nargout=0)
+            self.engine.addpath(self.engine.genpath("\python"), nargout=0)
+            
+            correct_format, mode = self.check_data_format(data)
+            
+            if mode == "FRET":
+            
+                data = [[[float(value) for value in inner] for inner in middle] for middle in data]
+                
+                dataDD = [dat[0] for dat in data]
+                dataDA = [dat[1] for dat in data]
+                
+                self.engine.ebfret.python.python_load_fret_data("test.txt",dataDD, dataDA, nargout=0)
+                
+        else:
+            print("no engine")
+        
+
+
+    def check_data_format(self, data):
+        
+        correct_format = True
+        mode = ""
+        
+        for arr in data:
+            if not isinstance(arr, np.ndarray):  # Check if the element is a NumPy array
+                correct_format = False
+                break
+            if len(arr.shape) == 1:
+                mode = "Efficiency"
+                
+                data = [[float(y) for y in x] for x in data]
+            
+            else:
+                if arr.shape[-1] == 1:
+                    mode = "Efficiency"
+                    
+                elif arr.shape[-1] == 2:
+                    mode = "FRET"
+                        
+                else:
+                    correct_format = False
+                    break
+                
+        if correct_format == False:
+            print("input data must be a list of numpy arryas of shape (N,2), (N,1) or (N,)")
+        else:
+            if mode == "Efficiency":
+                
+                data = [[float(y) for y in x] for x in data]
+                
+            elif mode == "FRET":
+                
+                fret_data = [dat.T.tolist() for dat in data]
+                
+                dataDD = [dat[0] for dat in fret_data]
+                dataDA = [dat[1] for dat in fret_data]
+                
+                dataDD = [[float(y) for y in x] for x in dataDD]
+                dataDA = [[float(y) for y in x] for x in dataDA]
+                
+                data = [dataDD, dataDA]
+                
+            else:
+                correct_format = False
+            
+        return correct_format, mode, data
+
+
+    def python_import_ebfret_data(self, data=[], file_name="temp.tif"):
+        
         try:
-            def check_data_format(input_list, min_length=5):
-                if not isinstance(input_list, list):  # Check if the input is a list
-                    return False
-                for sublist in input_list:
-                    if not (isinstance(sublist, list) and len(sublist) >= min_length):  # Check if each element is a list with a length of at least 5
-                        return False
-                return True
+            
+            correct_format, mode, data = self.check_data_format(data)
+            
+            if correct_format:
+                                
+                if mode == "FRET":
+                    
+                    print("ebFRET importing Donor-Acceptor data")
+                    
+                    if self.engine and self.ebfret_handle:
+                        self.engine.ebfret.python.python_load_fret_data(self.ebfret_handle, file_name, data[0], data[1], nargout=0)
+                else:
+                    
+                    print("ebFRET importing Fret Efficiency data")
 
-            # cast all values to floats
-            data = [[float(y) for y in x] for x in data]
-
-            data_min = np.min(data)
-            data_max = np.max(data)
-            data_shape = np.shape(data)
-
-            # print(f"min: {data_min}, max: {data_max}, shape: {data_shape}")
-
-            if self.engine and self.ebfret_handle:
-                if check_data_format(data):
-                    self.engine.ebfret.python.python_load_data(self.ebfret_handle, file_name, data, nargout=0)
+                    if self.engine and self.ebfret_handle:
+                        self.engine.ebfret.python.python_load_efficiency_data(self.ebfret_handle, file_name, data, nargout=0)
+    
+    
+    
         except:
             self.stop_parrallel_pool()
             self.close_ebfret()
             self.close_engine()
             print(traceback.format_exc())
+            
+        return data
 
     def run_ebfret_analysis(self, min_states=2, max_states=6):
         try:
@@ -198,6 +284,8 @@ class ebFRET_controller:
                 self.ebfret_states = self.engine.ebfret.python.python_export_traces(self.ebfret_handle, min_states, max_states)
 
                 self.ebfret_states = np.array(self.ebfret_states)
+                
+                self.ebfret_states = pd.DataFrame(self.ebfret_states, columns=["N States", "Trace Index", "State", "Signal"])
 
         except:
             self.close_engine()
@@ -208,6 +296,7 @@ class ebFRET_controller:
         if self.engine and self.ebfret_handle:
             self.engine.ebfret.python.python_close_ebfret(self.ebfret_handle, nargout=0)
             self.ebfret_handle = None
+            self.close_engine()
 
     def close_engine(self):
         if self.engine:
