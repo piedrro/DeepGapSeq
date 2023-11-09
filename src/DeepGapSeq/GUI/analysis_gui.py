@@ -17,7 +17,7 @@ class CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
 
 
 
-class PlotSettingsWindow(QtWidgets.QMainWindow, Ui_Form):
+class PlotSettingsWindow(QWidget, Ui_Form):
 
     def __init__(self):
         super(PlotSettingsWindow, self).__init__()
@@ -43,9 +43,10 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.graph_container.layout().addWidget(self.trace_graph_canvas)
         self.trace_graph_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.actionGapSeq.triggered.connect(self.open_plot_settings)
+        self.actionGapSeq.triggered.connect(self.test_event)
 
-        self.actionPlot_Settings.triggered.connect(self.open_plot_settings)
+        self.plotsettings_button = self.findChild(QtWidgets.QPushButton, "plotsettings_button")
+        self.plotsettings_button.clicked.connect(self.open_plot_settings)
 
     # Slot method to handle the menu selection event
     def test_event(self):
