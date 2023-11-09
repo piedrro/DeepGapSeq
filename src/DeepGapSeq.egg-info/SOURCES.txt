@@ -12,8 +12,10 @@ src/DeepGapSeq.egg-info/requires.txt
 src/DeepGapSeq.egg-info/top_level.txt
 src/DeepGapSeq/GUI/__init__.py
 src/DeepGapSeq/GUI/analysis_gui.py
-src/DeepGapSeq/GUI/launch_gui.py
-src/DeepGapSeq/GUI/ui.py
+src/DeepGapSeq/GUI/gui_layout.py
+src/DeepGapSeq/GUI/mainwindow.py
+src/DeepGapSeq/GUI/mainwindow_gui.py
+src/DeepGapSeq/GUI/plotsettings_gui.py
 src/DeepGapSeq/ebFRET/__init__.py
 src/DeepGapSeq/ebFRET/ebfret_utils.py
 src/DeepGapSeq/misc/process_kinsoft_data.py

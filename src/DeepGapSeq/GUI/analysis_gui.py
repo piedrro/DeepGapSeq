@@ -1,6 +1,7 @@
 import sys
 from PyQt5 import QtWidgets, uic
 from DeepGapSeq.GUI.mainwindow_gui import Ui_MainWindow
+from DeepGapSeq.GUI.plotsettings_gui import Ui_Form
 import pyqtgraph as pg
 from qtpy.QtWidgets import (QWidget, QVBoxLayout, QSizePolicy)
 
@@ -13,6 +14,16 @@ class CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
         self.my_plugin_instance = my_plugin_instance
         self.frame_position_memory = {}
         self.frame_position = None
+
+
+
+class PlotSettingsWindow(QtWidgets.QMainWindow, Ui_Form):
+
+    def __init__(self):
+        super(PlotSettingsWindow, self).__init__()
+        self.setupUi(self)  # Set up the user interface from Designer.
+        self.setWindowTitle("Plot Settings")  # Set the window title
+
 
 
 class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -32,13 +43,19 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.graph_container.layout().addWidget(self.trace_graph_canvas)
         self.trace_graph_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.actionGapSeq.triggered.connect(self.test_event)
+        self.actionGapSeq.triggered.connect(self.open_plot_settings)
+
+        self.actionPlot_Settings.triggered.connect(self.open_plot_settings)
 
     # Slot method to handle the menu selection event
     def test_event(self):
         print(True)
         print(False)
         print("test_event")
+
+    def open_plot_settings(self):
+        self.plot_settings_window = PlotSettingsWindow()
+        self.plot_settings_window.show()
 
 
 def start_gui(blocking=True):
@@ -53,7 +70,6 @@ def start_gui(blocking=True):
     """
 
     # to launch the GUI from the console such that it is editable:
-    # % gui qt
     # from DeepGapSeq.GUI.analysis_gui import start_gui
     # gui = start_gui(False)
 
