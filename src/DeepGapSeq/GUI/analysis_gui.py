@@ -1,6 +1,6 @@
 import sys
 from PyQt5 import QtWidgets, uic
-from DeepGapSeq.GUI.gui_layout import Ui_MainWindow
+from DeepGapSeq.GUI.mainwindow_gui import Ui_MainWindow
 import pyqtgraph as pg
 from qtpy.QtWidgets import (QWidget, QVBoxLayout, QSizePolicy)
 
@@ -53,8 +53,7 @@ def start_gui(blocking=True):
     """
 
     # to launch the GUI from the console such that it is editable:
-    # % load_ext autoreload
-    # % autoreload 2
+    # % gui qt
     # from DeepGapSeq.GUI.analysis_gui import start_gui
     # gui = start_gui(False)
 
@@ -66,7 +65,7 @@ def start_gui(blocking=True):
     window.show()
 
     if blocking:
-        app.exec_()  # Start the event loop
+        app.exec()  # Start the event loop
 
     return window
 
