@@ -29,6 +29,8 @@ dependencies = [
     "pandas",
     "scipy",
     "spyder",
+    "pyqt5",
+    "pyqtgraph",
 ]
 
 [project.urls]
@@ -38,3 +40,4 @@ dependencies = [
 
 [project.scripts]
 ebfret = "DeepGapSeq.ebFRET.ebfret_utils:launch_ebfret_instance"
+analysis = "DeepGapSeq.GUI.analysis_gui:start_gui"

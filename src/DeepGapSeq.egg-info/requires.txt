@@ -9,3 +9,5 @@ hmmlearn
 pandas
 scipy
 spyder
+pyqt5
+pyqtgraph

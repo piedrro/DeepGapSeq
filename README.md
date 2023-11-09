@@ -33,4 +33,8 @@ Then try again:
 
 To launch an ebFRET instance (requires matlab engine installation):
     
-        ebfret
+    ebfret
+
+To launch a DeepGapSeq Analysis App:
+
+    analysis
