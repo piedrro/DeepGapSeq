@@ -14,6 +14,7 @@ import traceback
 from functools import partial
 import os
 import pandas as pd
+import uuid
 
 class ImportSettingsWindow(QDialog, importwindow_gui):
 
@@ -108,6 +109,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plot_settings.plot_user_filter.currentIndexChanged.connect(self.initialise_plot)
         self.plot_settings.plot_nucleotide_filter.currentIndexChanged.connect(self.initialise_plot)
 
+        self.plot_settings.show_crop_range.stateChanged.connect(partial(self.plot_traces, update_plot=False))
+        self.plot_settings.crop_plots.stateChanged.connect(partial(self.plot_traces, update_plot=False))
+
         self.plot_settings.plot_normalise.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.show_plot_details.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.show_correction_factor_ranges.stateChanged.connect(partial(self.plot_traces, update_plot=False))
@@ -119,6 +123,35 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")
 
+    def update_crop_range(self, event, mode ="click"):
+
+        slider_value = self.plot_localisation_number.value()
+        localisation_number = self.localisation_numbers[slider_value]
+
+        if mode == "click":
+
+            for dataset_name in self.data_dict.keys():
+                crop_range = self.data_dict[dataset_name][localisation_number]["crop_range"]
+
+                crop_range.append(event)
+
+                if len(crop_range) > 2:
+                    crop_range.pop(0)
+
+                self.data_dict[dataset_name][localisation_number]["crop_range"] = crop_range
+
+                self.plot_traces(update_plot=False)
+
+        elif mode == "drag":
+
+            crop_range = list(event.getRegion())
+
+            for region in self.unique_crop_regions:
+                if region != event:
+                    region.setRegion(crop_range)
+
+            for dataset_name in self.data_dict.keys():
+                self.data_dict[dataset_name][localisation_number]["crop_range"] = crop_range
 
     def calculate_fret_efficiency(self, donor, acceptor, gamma_correction =1):
 
@@ -203,7 +236,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                         "filter": False, "state_means": {},
                                         "user_label": 0, "nucleotide_label": 0,
                                         "break_points": [], "gamma_correction_ranges": [],
-                                        "crop_ranges" : [],}
+                                        "crop_range" : [],}
 
                             # Select the current group of four columns
                             group = data.iloc[:, i:i + len(column_names)]
@@ -460,7 +493,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                      "user_label" : 0,
                                                      "nucleotide_label" : 0,
                                                      "break_points" : [],
-                                                     "crop_ranges" : [],
+                                                     "crop_range" : [],
                                                      "gamma_correction_ranges" : [],})
 
             self.compute_state_means()
@@ -576,6 +609,30 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             print(traceback.format_exc())
             pass
 
+    def check_plot_item_exists(self, plot, item):
+
+        for item in plot.items:
+            if item is item:
+                return True
+
+        return False
+
+    def get_plot_item_instance(self, plot, instance):
+
+        for item in plot.items:
+            if isinstance(item, instance):
+                return item
+
+        return None
+
+    def remove_plot_instance(self, plot, instance):
+
+        for item in plot.items:
+            if isinstance(item, instance):
+                plot.removeItem(item)
+
+
+
     def plot_traces(self, update_plot = False):
 
         try:
@@ -588,6 +645,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 plot_mode = self.plot_mode.currentText()
 
                 slider_value = self.plot_localisation_number.value()
+                crop_plots = self.plot_settings.crop_plots.isChecked()
+                show_crop_range = self.plot_settings.show_crop_range.isChecked()
                 localisation_number = self.localisation_numbers[slider_value]
 
                 for plot_index, grid in enumerate(self.plot_grid.values()):
@@ -601,21 +660,33 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                     user_label = self.data_dict[plot_dataset][localisation_number]["user_label"]
                     nucleotide_label = self.data_dict[plot_dataset][localisation_number]["nucleotide_label"]
+                    crop_range = self.data_dict[plot_dataset][localisation_number]["crop_range"]
 
-                    plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label}]"
+                    if crop_plots == True and len(crop_range) == 2:
+                        crop_range = sorted(crop_range)
+                        crop_range = [int(crop_range[0]), int(crop_range[1])]
+
+                        plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label} Cropped:{True}]"
+
+                    else:
+                        plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label} Cropped:{False}]"
+
                     title_plot.setTitle(plot_details)
 
                     for plot in sub_axes:
                         for item in plot.items:
-                            if isinstance(item, pg.LinearRegionItem):
-                                plot.removeItem(item)
-                            if isinstance(item, pg.PlotDataItem):
-                                if item.name() == "hmm_mean":
-                                    plot.removeItem(item)
-                            if item.name() == "hmm_mean":
-                                plot.removeItem(item)
+                            pass
+                            # if item == self.crop_region:
+                            #     self.crop_region = plot.removeItem(item)
+                            # if isinstance(item, pg.LinearRegionItem):
+                            #     plot.removeItem(item)
+                            # if isinstance(item, pg.PlotDataItem):
+                            #     if item.name() == "hmm_mean":
+                            #         plot.removeItem(item)
+                            # elif item.name() == "hmm_mean":
+                            #     plot.removeItem(item)
 
-                    for axes_index, (plot, line,  plot_label) in enumerate(zip(sub_axes, plot_lines, plot_lines_labels)):
+                    for line_index, (plot, line,  plot_label) in enumerate(zip(sub_axes, plot_lines, plot_lines_labels)):
 
                         legend = plot.legend
                         data = self.data_dict[plot_dataset][localisation_number][plot_label]
@@ -624,10 +695,17 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                         state_means = self.data_dict[plot_dataset][localisation_number]["state_means"][plot_label]
                         gamma_correction_ranges = self.data_dict[plot_dataset][localisation_number]["gamma_correction_ranges"]
 
+                        if crop_plots == True and len(crop_range) == 2:
+                            crop_range = sorted(crop_range)
+                            crop_range = [int(crop_range[0]), int(crop_range[1])]
+
+                            data = data[crop_range[0]:crop_range[1]]
+                            state_means = state_means[crop_range[0]:crop_range[1]]
+
                         if self.plot_settings.plot_normalise.isChecked() and "Efficiency" not in plot_label:
                             data = (data - np.min(data)) / (np.max(data) - np.min(data))
 
-                        plot_line = plot_lines[axes_index]
+                        plot_line = plot_lines[line_index]
                         plot_line.setData(data)
                         plot.enableAutoRange()
                         plot.autoRange()
@@ -638,13 +716,35 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                 state_means = (state_means - np.min(state_means)) / (np.max(state_means) - np.min(state_means))
 
                             if "Efficiency" in plot_mode:
-                                if axes_index == len(sub_axes) - 1:
+                                if line_index == len(sub_axes) - 1:
                                     plot.plot(state_means, pen=pg.mkPen('b', width=3), name="hmm_mean")
                                     legend.removeItem("hmm_mean")
                             else:
-                                if axes_index == 0:
+                                if line_index == 0:
                                     plot.plot(state_means, pen=pg.mkPen('b', width=3), name="hmm_mean")
                                     legend.removeItem("hmm_mean")
+
+                        if crop_plots == False and show_crop_range == True and len(crop_range) == 2:
+
+                            try:
+                                # random name for crop region
+                                crop_region_name = str(uuid.uuid4())
+
+                                if hasattr(self, crop_region_name) == False:
+                                    setattr(self, crop_region_name, pg.LinearRegionItem(brush=pg.mkBrush(255, 0, 0, 50)))
+
+                                crop_region = getattr(self, crop_region_name)
+
+                                if self.get_plot_item_instance(plot, pg.LinearRegionItem) is None:
+                                    plot.addItem(crop_region)
+                                    crop_region.setRegion(crop_range)
+                                    self.unique_crop_regions.append(crop_region)
+                                else:
+                                    crop_region.setRegion(crop_range)
+                            except:
+                                pass
+                        else:
+                            self.remove_plot_instance(plot, pg.LinearRegionItem)
 
                         if len(break_points) > 2 and self.show_cpd_breakpoints.isChecked():
 
@@ -665,10 +765,13 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                         gc = pg.LinearRegionItem(values=gamma_correction_range, brush=pg.mkBrush(0, 0, 255, 50))
                                         plot.addItem(gc)
 
+
+                for crop_region in self.unique_crop_regions:
+                    crop_region.sigRegionChanged.connect(partial(self.update_crop_range, mode="drag"))
+
         except:
             print(traceback.format_exc())
             pass
-
 
 
 
@@ -680,6 +783,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
 
             self.plot_grid = {}
+            self.unique_crop_regions = []
+
             self.graph_canvas.clear()
 
             plot_mode = self.plot_mode.currentText()
@@ -695,7 +800,6 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.graph_canvas.addItem(layout, row=plot_index, col=0)
 
                     sub_plots = []
-                    unique_sub_plots = []
 
                     for line_index in range(2):
                         p = CustomPlot()
@@ -711,7 +815,6 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             p.hideAxis('bottom')
 
                         sub_plots.append(p)
-                        unique_sub_plots.append(p)
 
                     sub_plots = [sub_plots[0] for i in range(self.n_plot_lines - 1)] + [sub_plots[1]]
 
@@ -726,7 +829,6 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.graph_canvas.addItem(layout, row=plot_index, col=0)
 
                     sub_plots = []
-                    unique_sub_plots = []
 
                     for line_index in range(self.n_plot_lines):
                         p = CustomPlot()
@@ -742,7 +844,6 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             p.hideAxis('bottom')
 
                         sub_plots.append(p)
-                        unique_sub_plots.append(p)
 
                     for j in range(1, len(sub_plots)):
                         sub_plots[j].setXLink(sub_plots[0])
@@ -763,12 +864,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     layout.addItem(p, row=plot_index, col=0)
 
                     sub_plots = []
-                    unique_sub_plots = []
 
                     for line_index in range(self.n_plot_lines):
                         sub_plots.append(p)
-
-                    unique_sub_plots.append(p)
 
                 localisation_number = self.plot_localisation_number.value()
 
@@ -800,14 +898,6 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     plot_lines.append(plot_line)
                     plot_lines_labels.append(line_label)
 
-                    for plot in unique_sub_plots:
-                        plot.getViewBox().sigXRangeChanged.connect(lambda: auto_scale_y(unique_sub_plots))
-
-                    max_width = max([p.getAxis('left').width() for p in unique_sub_plots]) + 5
-
-                    for p in unique_sub_plots:
-                        p.getAxis('left').setWidth(max_width)
-
                     self.plot_grid[plot_index] = {
                         "sub_axes": sub_plots,
                         "title_plot": title_plot,
@@ -819,6 +909,18 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                         "plot_lines_labels": plot_lines_labels,
                         "efficiency_plot": efficiency_plot,
                         }
+
+            plot_list = []
+            for plot_index, grid in enumerate(self.plot_grid.values()):
+                sub_axes = grid["sub_axes"]
+                sub_plots = []
+                for plot in sub_axes:
+                    sub_plots.append(plot)
+                    plot_list.append(plot)
+            for i in range(1, len(plot_list)):
+                plot_list[i].setXLink(plot_list[0])
+            plot.getViewBox().sigXRangeChanged.connect(lambda: auto_scale_y(plot_list))
+
 
         except:
             print(traceback.format_exc())
@@ -959,19 +1061,20 @@ class CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
 
         if hasattr(self.parent, "plot_grid"):
 
-            xpos = self.get_event_x_postion(event, mode="click")
+            if event.modifiers() & Qt.ControlModifier:
 
-        super().mousePressEvent(event)  # Process the event further
+                xpos = self.get_event_x_postion(event, mode="click")
+                self.parent.update_crop_range(xpos)
+
+            super().mousePressEvent(event)  # Process the event further
 
     def keyPressEvent(self, event):
 
         if hasattr(self.parent, "plot_grid"):
 
-            if event.key() == Qt.Key_Control:
+            pass
 
-                xpos = self.get_event_x_postion(event, mode="key_press")
-
-        super().keyPressEvent(event)  # Process the event further
+            super().keyPressEvent(event)  # Process the event further
 
     def get_event_x_postion(self, event,  mode="click"):
 
@@ -1003,3 +1106,4 @@ class CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
             self.xpos = plot_coords.x()
 
         return self.xpos
+
