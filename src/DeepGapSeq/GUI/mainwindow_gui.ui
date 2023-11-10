@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>604</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="traces_tab">
+       <attribute name="title">
+        <string>View Traces</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QWidget" name="graph_container" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout_4">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Localisation Number</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSlider" name="plot_localisation_number">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="plot_localisation_number_label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>20</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_61">
+            <property name="text">
+             <string>Plot Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Plot Data</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="plot_data">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>All Images</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QComboBox" name="plot_mode">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Donor</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Acceptor</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FRET Data</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FRET Efficiency</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FRET Data + FRET Efficiency</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="4">
+           <widget class="QPushButton" name="plotsettings_button">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Plot Settings [SPACE]</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Trace Analysis</string>
+       </attribute>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionImport_I"/>
+   </widget>
+   <widget class="QMenu" name="menuAnalysis_2">
+    <property name="title">
+     <string>Analysis</string>
+    </property>
+    <widget class="QMenu" name="menuDetect_Hidden_States">
+     <property name="title">
+      <string>Detect Hidden States</string>
+     </property>
+     <addaction name="actionHMM"/>
+     <addaction name="actionDeep_Learning"/>
+     <addaction name="actionebFRET_2"/>
+    </widget>
+    <addaction name="actionDetect_Break_Points"/>
+    <addaction name="menuDetect_Hidden_States"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menuAnalysis_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionGapSeq">
+   <property name="text">
+    <string>DeepGapSeq</string>
+   </property>
+  </action>
+  <action name="actionebFRET">
+   <property name="text">
+    <string>ebFRET</string>
+   </property>
+  </action>
+  <action name="actionXXX">
+   <property name="text">
+    <string>XXX</string>
+   </property>
+  </action>
+  <action name="actionPlot_Settings">
+   <property name="text">
+    <string>Plot Settings</string>
+   </property>
+  </action>
+  <action name="actionFit_Settings">
+   <property name="text">
+    <string>Fit Settings</string>
+   </property>
+  </action>
+  <action name="action_Plot_Settings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Plot Settings</string>
+   </property>
+  </action>
+  <action name="actionBreak_Point_Analysis">
+   <property name="text">
+    <string>Detect Break Points</string>
+   </property>
+  </action>
+  <action name="actionDetect_Hidden_States">
+   <property name="text">
+    <string>Detect Hidden States</string>
+   </property>
+  </action>
+  <action name="actionDetect_Break_Points">
+   <property name="text">
+    <string>Detect Break Points</string>
+   </property>
+  </action>
+  <action name="actionHMM">
+   <property name="text">
+    <string>HMM</string>
+   </property>
+  </action>
+  <action name="actionebFRET_2">
+   <property name="text">
+    <string>ebFRET (MatLAB)</string>
+   </property>
+  </action>
+  <action name="actionDeep_Learning">
+   <property name="text">
+    <string>Deep Learning</string>
+   </property>
+  </action>
+  <action name="actionImport_I">
+   <property name="text">
+    <string>Import [I]</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
