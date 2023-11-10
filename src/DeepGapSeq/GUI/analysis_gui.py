@@ -174,6 +174,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             sep = self.import_settings.import_data_separator.currentText()
             column_format = self.import_settings.import_data_column_format.currentText()
             skiprows = int(self.import_settings.import_data_skip_rows.currentText())
+            skipcolumns = int(self.import_settings.import_data_skip_columns.currentText())
             dataset_mode = int(self.import_settings.import_data_dataset_mode.currentIndex())
 
             if sep.lower() == "space":
@@ -213,8 +214,11 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                         data = pd.read_table(path, sep=sep,skiprows=skiprows)
                     elif file_format == ".csv":
                         data = pd.read_csv(path, skiprows=skiprows)
-                    elif file_format == "xlsx":
+                    elif file_format == ".xlsx":
                         data = pd.read_excel(path, skiprows=skiprows)
+
+                    if skipcolumns > 0:
+                        data = data.iloc[:,skipcolumns:]
 
                     n_rows, n_columns = data.shape
 
