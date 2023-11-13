@@ -178,6 +178,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionImport_I"/>
+    <addaction name="actionExport_E"/>
    </widget>
    <widget class="QMenu" name="menuAnalysis_2">
     <property name="title">
@@ -264,6 +265,11 @@
   <action name="actionImport_I">
    <property name="text">
     <string>Import [I]</string>
+   </property>
+  </action>
+  <action name="actionExport_E">
+   <property name="text">
+    <string>Export [E]</string>
    </property>
   </action>
  </widget>

@@ -7,6 +7,8 @@ from PyQt5.QtCore import Qt
 from DeepGapSeq.GUI.mainwindow_gui import Ui_MainWindow
 from DeepGapSeq.GUI.plotsettings_gui import Ui_Form as plotsettings_gui
 from DeepGapSeq.GUI.importwindow_gui import Ui_Form as importwindow_gui
+from DeepGapSeq.GUI.exportsettings_gui import Ui_Form as exportwindow_gui
+
 import pyqtgraph as pg
 from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QSizePolicy,QSlider, QLabel, QFileDialog)
 import numpy as np
@@ -19,6 +21,10 @@ import uuid
 
 from DeepGapSeq.GUI.gui_plot_utils import CustomPlot, auto_scale_y, CustomGraphicsLayoutWidget, _plotting_methods
 from DeepGapSeq.GUI.gui_import_utils import _import_methods
+from DeepGapSeq.GUI.gui_export_utils import _export_methods
+
+
+
 
 class ImportSettingsWindow(QDialog, importwindow_gui):
 
@@ -37,6 +43,25 @@ class ImportSettingsWindow(QDialog, importwindow_gui):
                 super().keyPressEvent(event)
         except:
             pass
+
+class ExportSettingsWindow(QDialog, exportwindow_gui):
+
+    def __init__(self, parent):
+        super(ExportSettingsWindow, self).__init__()
+        self.setupUi(self)  # Set up the user interface from Designer.
+        self.setWindowTitle("Export Settings")  # Set the window title
+
+        self.AnalysisGUI = parent
+
+    def keyPressEvent(self, event):
+        try:
+            if event.key() == Qt.Key_E:
+                self.close()
+            else:
+                super().keyPressEvent(event)
+        except:
+            pass
+
 
 class PlotSettingsWindow(QDialog, plotsettings_gui):
 
@@ -72,7 +97,7 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
 
 
-class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods):
+class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods, _export_methods):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -82,6 +107,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
         self.plot_settings = PlotSettingsWindow(self)
         self.import_settings = ImportSettingsWindow(self)
+        self.export_settings = ExportSettingsWindow(self)
 
         self.graph_container = self.findChild(QWidget, "graph_container")
         self.setWindowTitle("DeepGapSeq-Analysis")  # Set the window title
@@ -99,6 +125,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
         self.import_settings.import_simulated.clicked.connect(self.import_simulated_data)
         self.actionImport_I.triggered.connect(self.toggle_import_settings)
+        self.actionExport_E.triggered.connect(self.toggle_export_settings)
+
+        self.export_settings.export_gapseq.clicked.connect(self.export_gapseq_json)
 
         self.plot_settings.crop_reset_active.clicked.connect(partial(self.reset_crop_ranges, mode = "active"))
         self.plot_settings.crop_reset_all.clicked.connect(partial(self.reset_crop_ranges, mode = "all"))
@@ -141,6 +170,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
     def closeEvent(self, event):
         self.plot_settings.close()
         self.import_settings.close()
+        self.export_settings.close()
 
     def keyPressEvent(self, event):
         try:
@@ -155,6 +185,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
                 self.toggle_plot_settings()
             elif event.key() == Qt.Key_I:
                 self.toggle_import_settings()
+            elif event.key() == Qt.Key_E:
+                self.toggle_export_settings()
             elif event.key() == Qt.Key_X:
                 self.toggle_checkbox(self.plot_settings.plot_showx)
             elif event.key() == Qt.Key_Y:
@@ -195,6 +227,18 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         else:
             self.import_settings.hide()
             self.activateWindow()
+
+    def toggle_export_settings(self):
+
+            if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
+                self.export_settings.show()
+                self.export_settings.raise_()
+                self.export_settings.activateWindow()
+                self.export_settings.setFocus()
+            else:
+                self.export_settings.hide()
+                self.activateWindow()
+
 
     def print_notification(self, message):
         self.statusBar().showMessage(message, 2000)

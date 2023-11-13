@@ -60,7 +60,9 @@ class _import_methods:
                                                      "nucleotide_label" : 0,
                                                      "break_points" : [],
                                                      "crop_range" : [],
-                                                     "gamma_ranges" : [],})
+                                                     "gamma_ranges" : [],
+                                                     "import_path" : path,
+                                                     })
 
             self.compute_state_means()
 
@@ -151,7 +153,9 @@ class _import_methods:
                                         "filter": False, "state_means": {},
                                         "user_label": 0, "nucleotide_label": 0,
                                         "break_points": [], "gamma_ranges": [],
-                                        "crop_range" : [],}
+                                        "crop_range" : [],
+                                        "import_path" : path,
+                                        }
 
                             # Select the current group of four columns
                             group = data.iloc[:, i:i + len(column_names)]
