@@ -106,8 +106,13 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plot_settings.plot_split_lines.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showx.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showy.stateChanged.connect(partial(self.plot_traces, update_plot=True))
+
         self.plot_settings.plot_user_filter.currentIndexChanged.connect(self.initialise_plot)
         self.plot_settings.plot_nucleotide_filter.currentIndexChanged.connect(self.initialise_plot)
+        self.plot_settings.alex_show_DD.stateChanged.connect(self.initialise_plot)
+        self.plot_settings.alex_show_DA.stateChanged.connect(self.initialise_plot)
+        self.plot_settings.alex_show_AA.stateChanged.connect(self.initialise_plot)
+        self.plot_settings.alex_show_AD.stateChanged.connect(self.initialise_plot)
 
         self.plot_settings.show_crop_range.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.crop_plots.stateChanged.connect(partial(self.plot_traces, update_plot=False))
@@ -153,7 +158,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             for dataset_name in self.data_dict.keys():
                 self.data_dict[dataset_name][localisation_number]["crop_range"] = crop_range
 
-    def calculate_fret_efficiency(self, donor, acceptor, gamma_correction =1):
+    def calculate_fret_efficiency(self, donor, acceptor, gamma_correction=1):
 
         donor = np.array(donor)
         acceptor = np.array(acceptor)
@@ -161,6 +166,51 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         efficiency = acceptor / ((gamma_correction * donor) + acceptor)
 
         return efficiency
+
+    def calculate_alex_efficiency(self, DD, DA, gamma_correction=1):
+
+            DD = np.array(DD)
+            DA = np.array(DA)
+
+            efficiency = DA / ((gamma_correction * DD) + DA)
+
+            return efficiency
+
+    def get_alex_data(self, donor, acceptor):
+
+        alex_first_frame = self.import_settings.alex_firstframe_excitation.currentIndex()
+
+        donor = np.array(donor)
+        acceptor = np.array(acceptor)
+
+        if alex_first_frame == 0:
+            "donor excitaton first"
+
+            DD = donor[::2] #every second element, starting from 0
+            AD = donor[1::2]  # every second element, starting from 1
+
+            DA = acceptor[::2] #every second element, starting from 0
+            AA = acceptor[1::2] #every second element, starting from 1
+
+        else:
+            "acceptor excitation first"
+
+            AA = acceptor[::2] #every second element, starting from 0
+            DA = acceptor[1::2]  # every second element, starting from 1
+
+            AD = donor[::2] #every second element, starting from 0
+            DD = donor[1::2] #every second element, starting from 1
+
+        efficiency = self.calculate_alex_efficiency(DD, DA)
+
+        alex_dict = {"DD": DD, "DA": DA,
+                     "AA": AA, "AD": AD,
+                     "efficiency": efficiency}
+
+        return alex_dict
+
+
+
 
     def import_data_files(self):
 
@@ -235,8 +285,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                         for i in range(0, len(data.columns), len(column_names)):
 
-                            loc_data = {"donor": [], "acceptor": [],
-                                        "efficiency": [], "states": [],
+                            loc_data = {"efficiency" : [], "states": [],
                                         "filter": False, "state_means": {},
                                         "user_label": 0, "nucleotide_label": 0,
                                         "break_points": [], "gamma_correction_ranges": [],
@@ -248,11 +297,19 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             group.columns = column_names
                             group_dict = group.to_dict(orient="list")
 
-                            for key, value in group_dict.items():
-                                loc_data[key] = value
+                            if self.import_settings.import_data_alex.isChecked():
+                                alex_dict = self.get_alex_data(group_dict["donor"], group_dict["acceptor"])
 
-                            if loc_data["efficiency"] == []:
-                                loc_data["efficiency"] = self.calculate_fret_efficiency(loc_data["donor"], loc_data["acceptor"])
+                                for key, value in alex_dict.items():
+                                    loc_data[key] = value
+
+                            else:
+
+                                for key, value in group_dict.items():
+                                    loc_data[key] = value
+
+                                if loc_data["efficiency"] == []:
+                                    loc_data["efficiency"] = self.calculate_fret_efficiency(loc_data["donor"], loc_data["acceptor"])
 
                             self.data_dict[dataset_name].append(loc_data)
                             n_traces += 1
@@ -522,16 +579,24 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if plot_name not in plot_names:
                     plot_names.append(plot_name)
 
-        if "donor" in plot_names:
-            self.plot_mode.addItem("Donor")
-        if "acceptor" in plot_names:
-            self.plot_mode.addItem("Acceptor")
-        if set(["donor", "acceptor"]).issubset(plot_names):
-            self.plot_mode.addItem("FRET Data")
-        if "efficiency" in plot_names:
-            self.plot_mode.addItem("FRET Efficiency")
-        if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
-            self.plot_mode.addItem("FRET Data + FRET Efficiency")
+        if self.import_settings.import_data_alex.isChecked() == False:
+            if "donor" in plot_names:
+                self.plot_mode.addItem("Donor")
+            if "acceptor" in plot_names:
+                self.plot_mode.addItem("Acceptor")
+            if set(["donor", "acceptor"]).issubset(plot_names):
+                self.plot_mode.addItem("FRET Data")
+            if "efficiency" in plot_names:
+                self.plot_mode.addItem("FRET Efficiency")
+            if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
+                self.plot_mode.addItem("FRET Data + FRET Efficiency")
+        else:
+            if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
+                self.plot_mode.addItem("ALEX Data")
+            if "efficiency" in plot_names:
+                self.plot_mode.addItem("ALEX Efficiency")
+            if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+                self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
 
     def compute_state_means(self):
 
@@ -544,10 +609,11 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         for dataset_name, dataset_data in self.data_dict.items():
             for i, trace_data in enumerate(dataset_data):
                 labels = trace_data["states"]
-                for plot in ["donor", "acceptor", "efficiency"]:
-                    plot_data = trace_data[plot]
-                    if len(plot_data) > 0:
-                        self.data_dict[dataset_name][i]["state_means"][plot] = _compute_state_means(plot_data, labels)
+                for plot in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                    if plot in trace_data.keys():
+                        plot_data = trace_data[plot]
+                        if len(plot_data) > 0:
+                            self.data_dict[dataset_name][i]["state_means"][plot] = _compute_state_means(plot_data, labels)
 
     def initialise_plot(self):
 
@@ -562,6 +628,19 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.plot_datasets = [plot_data]
             else:
                 self.plot_datasets = []
+                
+            alex_channels = []
+
+            if self.plot_settings.alex_show_DD.isChecked():
+                alex_channels.append("DD")
+            if self.plot_settings.alex_show_DA.isChecked():
+                alex_channels.append("DA")
+            if self.plot_settings.alex_show_AD.isChecked():
+                alex_channels.append("AD")
+            if self.plot_settings.alex_show_AA.isChecked():
+                alex_channels.append("AA")
+
+            self.n_plot_lines = 0
 
             if len(self.plot_datasets) > 0:
 
@@ -571,26 +650,40 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 if plot_mode == "Donor" and set(["donor"]).issubset(plot_labels):
                     plot = True
-                    self.n_plot_lines = 1
                     self.plot_line_labels = ["donor"]
+                    self.n_plot_lines = len(self.plot_line_labels)
                 elif plot_mode == "Acceptor" and set(["acceptor"]).issubset(plot_labels):
                     plot = True
-                    self.n_plot_lines = 1
                     self.plot_line_labels = ["acceptor"]
+                    self.n_plot_lines = len(self.plot_line_labels)
                 elif plot_mode == "FRET Data" and set(["donor","acceptor"]).issubset(plot_labels):
                     plot = True
-                    self.n_plot_lines = 2
                     self.plot_line_labels = ["donor","acceptor"]
+                    self.n_plot_lines = len(self.plot_line_labels)
                 elif plot_mode == "FRET Efficiency" and set(["efficiency"]).issubset(plot_labels):
                     plot = True
-                    self.n_plot_lines = 1
                     self.plot_line_labels = ["efficiency"]
+                    self.n_plot_lines = len(self.plot_line_labels)
                 elif plot_mode == "FRET Data + FRET Efficiency" and set(["donor","acceptor","efficiency"]).issubset(plot_labels):
                     plot = True
-                    self.n_plot_lines = 3
                     self.plot_line_labels = ["donor","acceptor","efficiency"]
+                    self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = alex_channels
+                    self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "ALEX Efficiency" and set(["efficiency"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = ["efficiency"]
+                    self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = alex_channels + ["efficiency"]
+                    self.n_plot_lines = len(self.plot_line_labels)
+                else:
+                    plot = False
 
-                if plot == True:
+                if plot == True and len(self.plot_line_labels) > 0:
 
                     self.localisation_numbers, self.n_traces = self.filter_data_dict()
 
@@ -657,6 +750,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                     plot_dataset = grid["plot_dataset"]
                     sub_axes = grid["sub_axes"]
+                    crop_regions = grid["sub_plot_crop_regions"]
                     plot_lines = grid["plot_lines"]
                     plot_lines_labels = grid["plot_lines_labels"]
                     title_plot = grid["title_plot"]
@@ -690,7 +784,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             # elif item.name() == "hmm_mean":
                             #     plot.removeItem(item)
 
-                    for line_index, (plot, line,  plot_label) in enumerate(zip(sub_axes, plot_lines, plot_lines_labels)):
+                    for line_index, (plot, crop_region, line,  plot_label) in enumerate(zip(sub_axes, crop_regions, plot_lines, plot_lines_labels)):
 
                         legend = plot.legend
                         data = self.data_dict[plot_dataset][localisation_number][plot_label]
@@ -730,25 +824,14 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                         if crop_plots == False and show_crop_range == True and len(crop_range) == 2:
 
-                            try:
-                                # random name for crop region
-                                crop_region_name = str(uuid.uuid4())
+                            if self.get_plot_item_instance(plot, pg.LinearRegionItem) is None:
+                                plot.addItem(crop_region)
+                                crop_region.setRegion(crop_range)
+                                self.unique_crop_regions.append(crop_region)
 
-                                if hasattr(self, crop_region_name) == False:
-                                    setattr(self, crop_region_name, pg.LinearRegionItem(brush=pg.mkBrush(255, 0, 0, 50)))
-
-                                crop_region = getattr(self, crop_region_name)
-
-                                if self.get_plot_item_instance(plot, pg.LinearRegionItem) is None:
-                                    plot.addItem(crop_region)
-                                    crop_region.setRegion(crop_range)
-                                    self.unique_crop_regions.append(crop_region)
-                                else:
-                                    crop_region.setRegion(crop_range)
-                            except:
-                                pass
                         else:
-                            self.remove_plot_instance(plot, pg.LinearRegionItem)
+                            if self.get_plot_item_instance(plot, pg.LinearRegionItem) is not None:
+                                plot.removeItem(crop_region)
 
                         if len(break_points) > 2 and self.show_cpd_breakpoints.isChecked():
 
@@ -759,15 +842,15 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                 plot.addItem(bp)
                                 bp.setPos(break_point)
 
-                        if efficiency_plot == True:
-
-                            if "Efficiency" not in plot_label:
-
-                                if len(gamma_correction_ranges) > 0:
-
-                                    for gamma_correction_range in gamma_correction_ranges:
-                                        gc = pg.LinearRegionItem(values=gamma_correction_range, brush=pg.mkBrush(0, 0, 255, 50))
-                                        plot.addItem(gc)
+                        # if efficiency_plot == True:
+                        #
+                        #     if "Efficiency" not in plot_label:
+                        #
+                        #         if len(gamma_correction_ranges) > 0:
+                        #
+                        #             for gamma_correction_range in gamma_correction_ranges:
+                        #                 gc = pg.LinearRegionItem(values=gamma_correction_range, brush=pg.mkBrush(0, 0, 255, 50))
+                        #                 plot.addItem(gc)
 
 
                 for crop_region in self.unique_crop_regions:
@@ -779,8 +862,16 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 
+    def initialise_crop_region(self):
 
+        crop_region_name = str(uuid.uuid4())
+        setattr(self, crop_region_name, pg.LinearRegionItem(brush=pg.mkBrush(255, 0, 0, 50)))
+        crop_region = getattr(self, crop_region_name)
+        crop_region.sigRegionChanged.connect(partial(self.update_crop_range, mode="drag"))
 
+        self.unique_crop_regions.append(crop_region)
+
+        return crop_region
 
     def update_plot_layout(self):
 
@@ -798,12 +889,13 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
             for plot_index, plot_dataset in enumerate(self.plot_datasets):
 
+                sub_plots = []
+                sub_plot_crop_regions = []
+
                 if plot_mode == "FRET Data + FRET Efficiency" and split==False:
 
                     layout = pg.GraphicsLayout()
                     self.graph_canvas.addItem(layout, row=plot_index, col=0)
-
-                    sub_plots = []
 
                     for line_index in range(2):
                         p = CustomPlot()
@@ -819,11 +911,14 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             p.hideAxis('bottom')
 
                         sub_plots.append(p)
-
-                    sub_plots = [sub_plots[0] for i in range(self.n_plot_lines - 1)] + [sub_plots[1]]
+                        crop_region = self.initialise_crop_region()
+                        sub_plot_crop_regions.append(crop_region)
 
                     for j in range(1, len(sub_plots)):
                         sub_plots[j].setXLink(sub_plots[0])
+
+                    sub_plots = [sub_plots[0] for i in range(self.n_plot_lines - 1)] + [sub_plots[1]]
+                    sub_plot_crop_regions = [sub_plot_crop_regions[0] for i in range(self.n_plot_lines - 1)] + [sub_plot_crop_regions[1]]
 
                     efficiency_plot = True
 
@@ -831,8 +926,6 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                     layout = pg.GraphicsLayout()
                     self.graph_canvas.addItem(layout, row=plot_index, col=0)
-
-                    sub_plots = []
 
                     for line_index in range(self.n_plot_lines):
                         p = CustomPlot()
@@ -848,6 +941,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             p.hideAxis('bottom')
 
                         sub_plots.append(p)
+                        crop_region = self.initialise_crop_region()
+                        sub_plot_crop_regions.append(crop_region)
 
                     for j in range(1, len(sub_plots)):
                         sub_plots[j].setXLink(sub_plots[0])
@@ -867,10 +962,10 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                     layout.addItem(p, row=plot_index, col=0)
 
-                    sub_plots = []
-
                     for line_index in range(self.n_plot_lines):
                         sub_plots.append(p)
+                        crop_region = self.initialise_crop_region()
+                        sub_plot_crop_regions.append(crop_region)
 
                 localisation_number = self.plot_localisation_number.value()
 
@@ -880,7 +975,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 plot_lines = []
                 plot_lines_labels = []
 
+
                 for axes_index, plot in enumerate(sub_plots):
+
                     line_label = self.plot_line_labels[axes_index]
                     line_format = pg.mkPen(color=100 + axes_index * 100, width=2)
                     plot_line = plot.plot(np.zeros(10), pen=line_format, name=line_label)
@@ -904,6 +1001,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
                     self.plot_grid[plot_index] = {
                         "sub_axes": sub_plots,
+                        "sub_plot_crop_regions": sub_plot_crop_regions,
                         "title_plot": title_plot,
                         "plot_lines": plot_lines,
                         "plot_dataset": plot_dataset,
@@ -925,6 +1023,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 plot_list[i].setXLink(plot_list[0])
             plot.getViewBox().sigXRangeChanged.connect(lambda: auto_scale_y(plot_list))
 
+
+            # print(f"len unique crop regions: {len(self.unique_crop_regions)}")
 
         except:
             print(traceback.format_exc())
