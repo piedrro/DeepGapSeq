@@ -127,7 +127,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.actionImport_I.triggered.connect(self.toggle_import_settings)
         self.actionExport_E.triggered.connect(self.toggle_export_settings)
 
-        self.export_settings.export_gapseq.clicked.connect(self.export_gapseq_json)
+        self.export_settings.export_gapseq.clicked.connect(self.initialise_export)
 
         self.plot_settings.crop_reset_active.clicked.connect(partial(self.reset_crop_ranges, mode = "active"))
         self.plot_settings.crop_reset_all.clicked.connect(partial(self.reset_crop_ranges, mode = "all"))
@@ -162,6 +162,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.plot_settings.plot_downsample.currentIndexChanged.connect(partial(self.plot_traces, update_plot=False))
 
         self.import_settings.import_data.clicked.connect(self.import_data_files)
+        self.import_settings.import_json.clicked.connect(self.import_gapseq_json)
 
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")

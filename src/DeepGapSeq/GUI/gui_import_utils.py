@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5.QtWidgets import QFileDialog
 import traceback
 import pandas as pd
-
+import json
 
 class _import_methods:
 
@@ -63,6 +63,7 @@ class _import_methods:
                                                      "gamma_ranges" : [],
                                                      "import_path" : path,
                                                      })
+
 
             self.compute_state_means()
 
@@ -213,10 +214,10 @@ class _import_methods:
 
         for dataset_name, dataset_data in self.data_dict.items():
             for i, trace_data in enumerate(dataset_data):
-                labels = trace_data["states"]
+                labels = np.array(trace_data["states"])
                 for plot in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
                     if plot in trace_data.keys():
-                        plot_data = trace_data[plot]
+                        plot_data = np.array(trace_data[plot])
                         if len(plot_data) > 0:
                             self.data_dict[dataset_name][i]["state_means"][plot] = _compute_state_means(plot_data, labels)
 
@@ -302,3 +303,75 @@ class _import_methods:
                 self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
 
 
+    def import_gapseq_json(self):
+
+        try:
+            expected_data = {"donor": np.array([]), "acceptor": np.array([]),
+                             "efficiency": np.array([]), "states": np.array([]),
+                             "DD": np.array([]), "DA": np.array([]),
+                             "AA": np.array([]), "AD": np.array([]),
+                             "filter": False, "state_means": {},
+                             "user_label": 0, "nucleotide_label": 0,
+                             "break_points": [], "crop_range": [],
+                             "gamma_ranges": [], "import_path": "", }
+
+            desktop = os.path.expanduser("~/Desktop")
+
+            paths, _ = QFileDialog.getOpenFileNames(self,"Open File(s)", desktop,f"Data Files (*.json)")
+
+            self.data_dict = {}
+            #
+            # paths = [r"C:/Users/turnerp/Desktop/deepgapseq_simulated_traces/trace_dataset_example_2023_11_09.json"]
+
+            n_traces = 0
+
+            for path in paths:
+
+                import_data = json.load(open(path, "r"))
+
+                for dataset_name, dataset_data in import_data.items():
+
+                    if dataset_name not in self.data_dict.keys():
+                        self.data_dict[dataset_name] = []
+
+                    for localisation_index, localisation_data in enumerate(dataset_data):
+
+                        localisation_dict = {}
+
+                        for key, value in localisation_data.items():
+
+                            if key in expected_data.keys():
+                                expected_type = type(expected_data[key])
+
+                                if expected_type == type(np.array([])):
+                                    value = np.array(value)
+
+                                localisation_dict[key] = value
+
+                        for key, value in expected_data.items():
+                            if key not in localisation_dict.keys():
+                                localisation_dict[key] = value
+
+                        self.data_dict[dataset_name].append(localisation_dict)
+                        n_traces += 1
+
+            if n_traces > 0:
+
+                self.compute_state_means()
+
+                self.plot_data.clear()
+                if len(self.data_dict.keys()) == 1:
+                    self.plot_data.addItems(list(self.data_dict.keys()))
+                else:
+                    self.plot_data.addItem("All Datasets")
+                    self.plot_data.addItems(list(self.data_dict.keys()))
+
+                self.populate_plot_mode()
+
+                self.plot_localisation_number.setValue(0)
+
+                self.initialise_plot()
+
+        except:
+            print(traceback.format_exc())
+            pass
