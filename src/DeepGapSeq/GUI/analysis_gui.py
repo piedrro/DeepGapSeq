@@ -232,6 +232,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
     def toggle_export_settings(self):
 
             if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
+
+                self.populate_export_selection()
+
                 self.export_settings.show()
                 self.export_settings.raise_()
                 self.export_settings.activateWindow()
@@ -243,6 +246,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
     def print_notification(self, message):
         self.statusBar().showMessage(message, 2000)
+        print(message)
 
     def toggle_checkbox(self, checkbox):
         checkbox.setChecked(not checkbox.isChecked())

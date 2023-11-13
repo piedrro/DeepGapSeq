@@ -288,6 +288,10 @@ class _plotting_methods:
                     plot = False
 
                 if plot == True and len(self.plot_line_labels) > 0:
+
+                    self.export_settings.export_data_selection.clear()
+                    self.export_settings.export_data_selection.addItems(self.plot_line_labels)
+
                     self.localisation_numbers, self.n_traces = self.filter_data_dict()
 
                     if self.n_traces > 0:

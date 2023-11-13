@@ -3,16 +3,65 @@ import json
 import os.path
 import traceback
 from PyQt5.QtWidgets import QFileDialog
+import numpy as np
+import pandas as pd
+
 
 class _export_methods:
+
+
+    def populate_export_selection(self):
+
+        self.export_settings.export_data_selection.clear()
+
+        all_export_names = []
+        self.export_selection_dict = {}
+
+        for dataset_name in self.data_dict.keys():
+            for plot_name in self.data_dict[dataset_name][0].keys():
+                if plot_name not in all_export_names:
+                    all_export_names.append(plot_name)
+
+        if self.import_settings.import_data_alex.isChecked() == False:
+            if "donor" in all_export_names:
+                self.export_settings.export_data_selection.addItem("Donor")
+                self.export_selection_dict["Donor"] = ["donor"]
+            if "acceptor" in all_export_names:
+                self.export_settings.export_data_selection.addItem("Acceptor")
+                self.export_selection_dict["Acceptor"] = ["acceptor"]
+            if set(["donor", "acceptor"]).issubset(all_export_names):
+                self.export_settings.export_data_selection.addItem("FRET Data")
+                self.export_selection_dict["FRET Data"] = ["donor", "acceptor"]
+            if "efficiency" in all_export_names:
+                self.export_settings.export_data_selection.addItem("FRET Efficiency")
+                self.export_selection_dict["FRET Efficiency"] = ["efficiency"]
+            if set(["donor", "acceptor", "efficiency"]).issubset(all_export_names):
+                self.export_settings.export_data_selection.addItem("FRET Data + FRET Efficiency")
+                self.export_selection_dict["FRET Data + FRET Efficiency"] = ["donor", "acceptor", "efficiency"]
+        else:
+            if set(["DD", "AA", "DA", "AD"]).issubset(all_export_names):
+                self.export_settings.export_data_selection.addItem("ALEX Data")
+                self.export_selection_dict["ALEX Data"] = ["DD", "AA", "DA", "AD"]
+            if "efficiency" in all_export_names:
+                self.plot_mode.addItem("ALEX Efficiency")
+            if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(all_export_names):
+                self.export_settings.export_data_selection.addItem("ALEX Data + ALEX Efficiency")
+                self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "efficiency"]
 
 
     def initialise_export(self):
 
         export_mode = self.export_settings.export_mode.currentText()
+        export_data_selection = self.export_settings.export_data_selection.currentText()
         export_location = self.export_settings.export_location.currentText()
         split_datasets = self.export_settings.export_split_datasets.isChecked()
-        export_paths = self.get_export_paths()
+
+        if export_mode == "GapSeq (.json)":
+            export_paths = self.get_export_paths(extension="json")
+        elif export_mode == "Excel (.xlsx)":
+            export_paths = self.get_export_paths(extension="xlsx")
+        elif export_mode == "Dat (.dat)":
+            export_paths = self.get_export_paths(extension="dat")
 
         n_datasets = len(self.data_dict.keys())
 
@@ -28,6 +77,14 @@ class _export_methods:
         if export_mode == "GapSeq (.json)":
 
                 self.export_gapseq_json(export_paths, split_datasets)
+
+        elif export_mode == "Excel (.xlsx)":
+
+            self.export_excel(export_paths, split_datasets)
+
+        elif export_mode == "Dat (.dat)":
+
+            self.export_dat(export_paths, split_datasets)
 
 
     def get_export_paths(self, extension="json"):
@@ -48,6 +105,143 @@ class _export_methods:
             export_paths.append(export_path)
 
         return export_paths
+
+
+    def export_excel(self,export_paths = [], split_datasets = False):
+
+        try:
+            if self.data_dict != {}:
+
+                if split_datasets == False:
+
+                    export_path = export_paths[0]
+
+                    export_data_dict = self.get_export_data()
+
+                    export_dataset = np.stack(export_data_dict["data"], axis=0).T
+
+                    export_dataset = pd.DataFrame(export_dataset)
+
+                    export_dataset.columns = [export_data_dict["index"],
+                                              export_data_dict["dataset"],
+                                              export_data_dict["data_name"],
+                                              export_data_dict["user_label"],
+                                              export_data_dict["nucleotide_label"]]
+
+                    export_dataset.columns.names = ['Index', 'Dataset', 'Data', 'Class', 'Nucleotide']
+
+                    with pd.ExcelWriter(export_path) as writer:
+                        export_dataset.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
+
+                    self.print_notification(f"Exported data to {export_path}")
+
+                else:
+
+                    for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+
+                        export_data_dict = self.get_export_data([dataset_name])
+
+                        export_dataset = np.stack(export_data_dict["data"], axis=0).T
+
+                        export_dataset = pd.DataFrame(export_dataset)
+
+                        export_dataset.columns = [export_data_dict["index"],
+                                                  export_data_dict["dataset"],
+                                                  export_data_dict["data_name"],
+                                                  export_data_dict["user_label"],
+                                                  export_data_dict["nucleotide_label"]]
+
+                        export_dataset.columns.names = ['Index', 'Dataset', 'Data', 'Class', 'Nucleotide']
+
+                        with pd.ExcelWriter(export_path) as writer:
+                            export_dataset.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
+
+                        self.print_notification(f"Exported data to {export_path}")
+
+        except:
+            print(traceback.format_exc())
+
+
+    def export_dat(self,export_paths = [], split_datasets = False):
+
+        try:
+
+            if self.data_dict != {}:
+                if split_datasets == False:
+
+                    export_path = export_paths[0]
+
+                    export_data_dict = self.get_export_data()
+
+                    export_dataset = np.stack(export_data_dict["data"], axis=0).T
+
+                    export_dataset = pd.DataFrame(export_dataset)
+
+                    export_dataset.to_csv(export_path, sep=" ", index=False, header=False)
+
+                    self.print_notification(f"Exported data to {export_path}")
+
+                else:
+
+                    for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+
+                        export_data_dict = self.get_export_data([dataset_name])
+
+                        export_dataset = np.stack(export_data_dict["data"], axis=0).T
+
+                        export_dataset = pd.DataFrame(export_dataset)
+
+                        export_dataset.to_csv(export_path, sep=" ", index=False, header=False)
+
+                        self.print_notification(f"Exported data to {export_path}")
+
+        except:
+            print(traceback.format_exc())
+
+
+
+    def get_export_data(self, dataset_names = []):
+
+        export_selection = self.export_settings.export_data_selection.currentText()
+
+        loc_index = []
+        loc_dataset = []
+        loc_user_label = []
+        loc_nucleotide_label = []
+        loc_data = []
+        loc_data_name = []
+
+        if dataset_names == []:
+            dataset_names = self.data_dict.keys()
+
+        for dataset_name in dataset_names:
+
+            dataset_data = self.data_dict[dataset_name]
+
+            for localisation_number, localisation_data in enumerate(dataset_data):
+
+                user_label = localisation_data["user_label"]
+                nucleotide_label = localisation_data["nucleotide_label"]
+
+                if self.get_filter_status(user_label, nucleotide_label) == False:
+
+                    for data_name in self.export_selection_dict[export_selection]:
+
+                        loc_index.append(localisation_number)
+                        loc_dataset.append(dataset_name)
+                        loc_user_label.append(user_label)
+                        loc_nucleotide_label.append(nucleotide_label)
+                        loc_data.append(localisation_data[data_name])
+                        loc_data_name.append(data_name)
+
+        export_data_dict = {"index": loc_index,
+                            "dataset": loc_dataset,
+                            "user_label": loc_user_label,
+                            "nucleotide_label": loc_nucleotide_label,
+                            "data": loc_data,
+                            "data_name": loc_data_name}
+
+        return export_data_dict
 
 
 
@@ -84,6 +278,26 @@ class _export_methods:
         except:
             print(traceback.format_exc())
 
+    def get_filter_status(self, user_label, nucleotide_label):
+
+        user_filter = self.export_settings.export_user_filter.currentText()
+        nucleotide_filter = self.export_settings.export_nucleotide_filter.currentText()
+
+        filter = False
+
+        if user_filter != "None" and nucleotide_filter == "None":
+            if user_label != user_filter:
+                filter = True
+        elif user_filter == "None" and nucleotide_filter != "None":
+            if nucleotide_label != nucleotide_filter:
+                filter = True
+        elif user_filter != "None" and nucleotide_filter != "None":
+            if user_label != user_filter or nucleotide_label != nucleotide_filter:
+                filter = True
+
+        return filter
+
+
     def build_json_dict(self, dataset_names = []):
 
         json_dataset_dict = {}
@@ -112,19 +326,7 @@ class _export_methods:
                 user_label = localisation_data["user_label"]
                 nucleotide_label = localisation_data["nucleotide_label"]
 
-                filter = False
-
-                if user_filter != "None" and nucleotide_filter == "None":
-                    if user_label != user_filter:
-                        filter = True
-                elif user_filter == "None" and nucleotide_filter != "None":
-                    if nucleotide_label != nucleotide_filter:
-                        filter = True
-                elif user_filter != "None" and nucleotide_filter != "None":
-                    if user_label != user_filter or nucleotide_label != nucleotide_filter:
-                        filter = True
-
-                if filter == False:
+                if self.get_filter_status(user_label, nucleotide_label) == False:
 
                     for key, value in localisation_data.items():
                         if key in json_list_keys:
@@ -142,6 +344,5 @@ class _export_methods:
                         json_localisation_dict[key] = None
 
                 json_dataset_dict[dataset_name].append(json_localisation_dict)
-
 
         return json_dataset_dict
