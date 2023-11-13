@@ -22,6 +22,8 @@ Requires-Dist: hmmlearn
 Requires-Dist: pandas
 Requires-Dist: scipy
 Requires-Dist: spyder
+Requires-Dist: pyqt5
+Requires-Dist: pyqtgraph
 
 # DeepGapSeq
 
@@ -58,4 +60,8 @@ Then try again:
 
 To launch an ebFRET instance (requires matlab engine installation):
     
-        ebfret
+    ebfret
+
+To launch a DeepGapSeq Analysis App:
+
+    analysis

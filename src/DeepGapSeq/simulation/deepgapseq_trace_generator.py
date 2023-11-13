@@ -9,8 +9,6 @@ import datetime
 import random
 import string
 
-
-
 class trace_generator():
     
     def __init__(self,
@@ -23,7 +21,6 @@ class trace_generator():
                  mode = "state_mode",
                  parallel_asynchronous = False,
                  outdir = "",
-                 clear_outdir = True,
                  export_mode = "text_files",
                  export_name = "trace_dataset",
                  blink_prob= 0,
@@ -90,7 +87,6 @@ class trace_generator():
         self.mode = mode
         self.parallel_asynchronous = parallel_asynchronous
         self.outdir = outdir
-        self.clear_outdir = clear_outdir
         self.export_mode = export_mode
         self.export_name = export_name
         self.blink_prob = blink_prob
@@ -106,21 +102,18 @@ class trace_generator():
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
-        assert export_mode in ["csv", "pickledict", "ebfret"], "available export modes: 'csv', 'pickledict', 'ebfret'"
+        assert export_mode in ["text_files", "pickledict","ebfret", "ebFRET_files"], "available export modes: 'text_files', 'pickledict', 'ebfret', 'ebFRET_files'"
         
-    def check_outdir(self, folder_name = ""):
+    def check_outdir(self, overwrite=True, folder_name = "simulated_traces"):
     
         if os.path.exists(self.outdir) == False:
             self.outdir = os.getcwd()
         
-        if folder_name == "":
+        if folder_name != "":
             self.outdir = os.path.join(self.outdir, "deepgapseq_simulated_traces")
             
-        if self.clear_outdir and os.path.exists(self.outdir):
-            try:
+        if overwrite and os.path.exists(self.outdir):
                 shutil.rmtree(self.outdir)
-            except:
-                pass
 
         if os.path.exists(self.outdir) == False:
             os.mkdir(self.outdir)
@@ -202,7 +195,10 @@ class trace_generator():
             if self.reduce_memory:
                 
                 if self.state_mode or self.n_states_mode:
-                    training_data.append(trace[["DD", "DA"]].values)
+                    if self.n_colors == 2:
+                        training_data.append(trace[["DD", "DA"]].values)
+                    else:
+                        training_data.append(trace["E"].values)
                 else:
                     training_data.append(trace[["DD", "DA", "AA"]].values)
                     
@@ -219,7 +215,7 @@ class trace_generator():
 
         date = datetime.datetime.now().strftime("%Y_%m_%d")
         
-        if self.export_mode == "csv":
+        if self.export_mode == "text_files":
             
             print(f"exporting txt files to: {self.outdir}")
             
@@ -229,25 +225,24 @@ class trace_generator():
             
                 dat = np.hstack([data, label])
                 
-                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_trace{index}.csv")
+                file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_{index}.csv")
                 
                 np.savetxt(file_path, dat, delimiter=",")
-        
-        # if self.export_mode == "ebFRET_files":
-        
-        #     print(f"exporting ebFRET files to: {self.outdir}")
 
-        #     traces = np.array(training_data)
-        #     ebFRET_traces = []
-        #     for i in range(traces.shape[0]):
-        #         ebFRET_traces.append(np.hstack([np.expand_dims([i]*traces.shape[1], 1),traces[i]]))
-        #     ebFRET_traces = np.vstack(ebFRET_traces)
-        #     ebFRET_traces32 = ebFRET_traces.astype(np.float32)
-        #     trace_path = os.path.join(self.outdir, "simulated-K04-N350-raw-stacked.dat")
-        #     label_path = os.path.join(self.outdir, "simulated_traces_labels.dat")
-        #     np.savetxt(trace_path, ebFRET_traces32, delimiter=" ")
-        #     np.savetxt(label_path, training_labels, delimiter=" ")
+        if self.export_mode == "ebFRET_files":
 
+            print(f"exporting ebFRET files to: {self.outdir}")
+
+            traces = np.array(training_data)
+            ebFRET_traces = []
+            for i in range(traces.shape[0]):
+                ebFRET_traces.append(np.hstack([np.expand_dims([i] * traces.shape[1], 1), traces[i]]))
+            ebFRET_traces = np.vstack(ebFRET_traces)
+            ebFRET_traces32 = ebFRET_traces.astype(np.float32)
+            trace_path = os.path.join(self.outdir, "simulated-K04-N350-raw-stacked.dat")
+            label_path = os.path.join(self.outdir, "simulated_traces_labels.dat")
+            np.savetxt(trace_path, ebFRET_traces32, delimiter=" ")
+            np.savetxt(label_path, training_labels, delimiter=" ")
 
         if self.export_mode == "pickledict":
 
