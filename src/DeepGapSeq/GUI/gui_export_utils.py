@@ -300,7 +300,7 @@ class _export_methods:
 
     def build_json_dict(self, dataset_names = []):
 
-        json_dataset_dict = {}
+        json_dataset_dict = {"metadata":{}, "data":{}}
 
         json_list_keys = ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
 
@@ -317,7 +317,7 @@ class _export_methods:
             dataset_data = self.data_dict[dataset_name]
 
             if dataset_name not in json_dataset_dict.keys():
-                json_dataset_dict[dataset_name] = []
+                json_dataset_dict["data"][dataset_name] = []
 
             for localisation_number, localisation_data in enumerate(dataset_data):
 
@@ -343,6 +343,6 @@ class _export_methods:
                     for key in json_var_keys:
                         json_localisation_dict[key] = None
 
-                json_dataset_dict[dataset_name].append(json_localisation_dict)
+                json_dataset_dict["data"][dataset_name].append(json_localisation_dict)
 
         return json_dataset_dict

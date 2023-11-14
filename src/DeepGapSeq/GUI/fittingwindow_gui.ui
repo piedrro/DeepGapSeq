@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>354</width>
+    <height>294</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>ebFRET</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Connect MATLAB/ebFRET</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="ebfret_connect_matlab">
+         <property name="text">
+          <string>Open MATLAB/ebFRET</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QProgressBar" name="ebfret_connect_matlab_progress">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>10</height>
+          </size>
+         </property>
+         <property name="value">
+          <number>0</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>ebFRET Analysis</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Fit Dataset</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="ebfret_fit_dataset_2"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Fit Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="ebfret_fit_channel_2">
+           <item>
+            <property name="text">
+             <string>Donor</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Acceptor</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>FRET Efficiency</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ALEX Efficiency</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_17">
+         <item row="0" column="2">
+          <widget class="QLabel" name="label_39">
+           <property name="text">
+            <string>Max States:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_38">
+           <property name="text">
+            <string>Min States:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="ebfret_min_states">
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QComboBox" name="ebfret_max_states">
+           <property name="currentIndex">
+            <number>4</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::MinimumExpanding</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>5</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>ebFRET Visualisation</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QFormLayout" name="formLayout_26">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_66">
+           <property name="text">
+            <string>ebFRET fitted States:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="ebfret_visualisation_state">
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

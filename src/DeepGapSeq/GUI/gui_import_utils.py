@@ -329,7 +329,7 @@ class _import_methods:
 
                 import_data = json.load(open(path, "r"))
 
-                for dataset_name, dataset_data in import_data.items():
+                for dataset_name, dataset_data in import_data["data"].items():
 
                     if dataset_name not in self.data_dict.keys():
                         self.data_dict[dataset_name] = []

@@ -3,11 +3,13 @@ import pickle
 from glob2 import glob
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
+from qtpy.QtCore import QThreadPool
 
 from DeepGapSeq.GUI.mainwindow_gui import Ui_MainWindow
 from DeepGapSeq.GUI.plotsettings_gui import Ui_Form as plotsettings_gui
 from DeepGapSeq.GUI.importwindow_gui import Ui_Form as importwindow_gui
 from DeepGapSeq.GUI.exportsettings_gui import Ui_Form as exportwindow_gui
+from DeepGapSeq.GUI.fittingwindow_gui import Ui_Form as fittingwindow_gui
 
 import pyqtgraph as pg
 from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QSizePolicy,QSlider, QLabel, QFileDialog)
@@ -22,9 +24,28 @@ import uuid
 from DeepGapSeq.GUI.gui_plot_utils import CustomPlot, auto_scale_y, CustomGraphicsLayoutWidget, _plotting_methods
 from DeepGapSeq.GUI.gui_import_utils import _import_methods
 from DeepGapSeq.GUI.gui_export_utils import _export_methods
+from DeepGapSeq.GUI.gui_ebfret_utils import _ebFRET_methods
 
 
 
+class FittingWindow(QDialog, fittingwindow_gui):
+
+    def __init__(self, parent):
+        super(FittingWindow, self).__init__()
+
+        self.setupUi(self)  # Set up the user interface from Designer.
+        self.setWindowTitle("Analysis Settings")  # Set the window title
+
+        self.AnalysisGUI = parent
+
+    def keyPressEvent(self, event):
+        try:
+            if event.key() == Qt.Key_F:
+                self.close()
+            else:
+                super().keyPressEvent(event)
+        except:
+            pass
 
 class ImportSettingsWindow(QDialog, importwindow_gui):
 
@@ -97,7 +118,7 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
 
 
-class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods, _export_methods):
+class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods, _export_methods, _ebFRET_methods):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -108,6 +129,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.plot_settings = PlotSettingsWindow(self)
         self.import_settings = ImportSettingsWindow(self)
         self.export_settings = ExportSettingsWindow(self)
+        self.fitting_window = FittingWindow(self)
 
         self.graph_container = self.findChild(QWidget, "graph_container")
         self.setWindowTitle("DeepGapSeq-Analysis")  # Set the window title
@@ -126,8 +148,11 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.import_settings.import_simulated.clicked.connect(self.import_simulated_data)
         self.actionImport_I.triggered.connect(self.toggle_import_settings)
         self.actionExport_E.triggered.connect(self.toggle_export_settings)
+        self.actionFit_Hidden_States_F.triggered.connect(self.toggle_fitting_window)
 
         self.export_settings.export_gapseq.clicked.connect(self.initialise_export)
+
+        self.fitting_window.ebfret_connect_matlab.clicked.connect(self.launch_ebFRET)
 
         self.plot_settings.crop_reset_active.clicked.connect(partial(self.reset_crop_ranges, mode = "active"))
         self.plot_settings.crop_reset_all.clicked.connect(partial(self.reset_crop_ranges, mode = "all"))
@@ -167,11 +192,14 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")
 
+        self.threadpool = QThreadPool()
 
     def closeEvent(self, event):
+        self._close_ebFRET()
         self.plot_settings.close()
         self.import_settings.close()
         self.export_settings.close()
+        self.fitting_window.close()
 
     def keyPressEvent(self, event):
         try:
@@ -188,6 +216,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
                 self.toggle_import_settings()
             elif event.key() == Qt.Key_E:
                 self.toggle_export_settings()
+            elif event.key() == Qt.Key_F:
+                self.toggle_fitting_window()
             elif event.key() == Qt.Key_X:
                 self.toggle_checkbox(self.plot_settings.plot_showx)
             elif event.key() == Qt.Key_Y:
@@ -205,6 +235,17 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
             print(traceback.format_exc())
             pass
 
+
+    def toggle_fitting_window(self):
+
+        if self.fitting_window.isHidden() or self.fitting_window.isActiveWindow() == False:
+            self.fitting_window.show()
+            self.fitting_window.raise_()
+            self.fitting_window.activateWindow()
+            self.fitting_window.setFocus()
+        else:
+            self.fitting_window.hide()
+            self.activateWindow()
 
     def toggle_plot_settings(self):
 
