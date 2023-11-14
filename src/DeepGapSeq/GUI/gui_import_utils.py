@@ -204,7 +204,7 @@ class _import_methods:
             print(traceback.format_exc())
             pass
 
-    def compute_state_means(self):
+    def compute_state_means(self, dataset_name=None):
 
         def _compute_state_means(data, labels):
             state_means = labels.copy()
@@ -212,14 +212,20 @@ class _import_methods:
                 state_means[state_means == state] = np.mean(data[state_means == state])
             return state_means
 
-        for dataset_name, dataset_data in self.data_dict.items():
-            for i, trace_data in enumerate(dataset_data):
+        if dataset_name is None:
+            dataset_names = self.data_dict.keys()
+        else:
+            dataset_names = [dataset_name]
+
+        for dataset_name in dataset_names:
+            for i, trace_data in enumerate(self.data_dict[dataset_name]):
                 labels = np.array(trace_data["states"])
                 for plot in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
                     if plot in trace_data.keys():
                         plot_data = np.array(trace_data[plot])
                         if len(plot_data) > 0:
                             self.data_dict[dataset_name][i]["state_means"][plot] = _compute_state_means(plot_data, labels)
+
 
     def calculate_fret_efficiency(self, donor, acceptor, gamma_correction=1):
 

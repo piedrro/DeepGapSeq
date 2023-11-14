@@ -153,6 +153,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.export_settings.export_gapseq.clicked.connect(self.initialise_export)
 
         self.fitting_window.ebfret_connect_matlab.clicked.connect(self.launch_ebFRET)
+        self.fitting_window.ebfret_run_analysis.clicked.connect(self.run_ebFRET_analysis)
+        self.fitting_window.ebfret_visualisation_state.currentIndexChanged.connect(self.gapseq_visualise_ebfret)
 
         self.plot_settings.crop_reset_active.clicked.connect(partial(self.reset_crop_ranges, mode = "active"))
         self.plot_settings.crop_reset_all.clicked.connect(partial(self.reset_crop_ranges, mode = "all"))
@@ -239,6 +241,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
     def toggle_fitting_window(self):
 
         if self.fitting_window.isHidden() or self.fitting_window.isActiveWindow() == False:
+
+            self.populate_ebFRET_options()
+
             self.fitting_window.show()
             self.fitting_window.raise_()
             self.fitting_window.activateWindow()
@@ -286,7 +291,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
 
     def print_notification(self, message):
-        self.statusBar().showMessage(message, 2000)
+        self.statusBar().showMessage(message, 5000)
         print(message)
 
     def toggle_checkbox(self, checkbox):
