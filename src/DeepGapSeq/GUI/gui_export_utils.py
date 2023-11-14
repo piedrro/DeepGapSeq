@@ -329,6 +329,10 @@ class _export_methods:
                 if self.get_filter_status(user_label, nucleotide_label) == False:
 
                     for key, value in localisation_data.items():
+
+                        # if key == "states":
+                        #     print(value[:10])
+
                         if key in json_list_keys:
                             json_localisation_dict[key] = list(value)
 

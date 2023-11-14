@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QFileDialog
 import traceback
 import pandas as pd
 import json
+import copy
 
 class _import_methods:
 
@@ -218,14 +219,21 @@ class _import_methods:
             dataset_names = [dataset_name]
 
         for dataset_name in dataset_names:
-            for i, trace_data in enumerate(self.data_dict[dataset_name]):
+            for i in range(len(self.data_dict[dataset_name])):
+                trace_data = self.data_dict[dataset_name][i]
                 labels = np.array(trace_data["states"])
+
+                if "state_means" not in trace_data:
+                    trace_data["state_means"] = {}
+
                 for plot in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
                     if plot in trace_data.keys():
                         plot_data = np.array(trace_data[plot])
                         if len(plot_data) > 0:
-                            self.data_dict[dataset_name][i]["state_means"][plot] = _compute_state_means(plot_data, labels)
+                            state_means = _compute_state_means(plot_data, labels)
+                            trace_data["state_means"][plot] = state_means
 
+                self.data_dict[dataset_name][i] = copy.deepcopy(trace_data)
 
     def calculate_fret_efficiency(self, donor, acceptor, gamma_correction=1):
 
@@ -345,6 +353,7 @@ class _import_methods:
                         localisation_dict = {}
 
                         for key, value in localisation_data.items():
+
 
                             if key in expected_data.keys():
                                 expected_type = type(expected_data[key])

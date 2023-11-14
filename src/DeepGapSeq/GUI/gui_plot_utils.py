@@ -541,6 +541,7 @@ class _plotting_methods:
 
                         break_points = self.data_dict[plot_dataset][localisation_number]["break_points"]
                         state_means = self.data_dict[plot_dataset][localisation_number]["state_means"][plot_label]
+
                         gamma_correction_ranges = self.data_dict[plot_dataset][localisation_number]["gamma_ranges"]
 
                         if crop_plots == True and len(crop_range) == 2:

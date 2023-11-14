@@ -3,7 +3,7 @@ import traceback
 from DeepGapSeq.GUI.gui_worker import Worker
 import os
 import numpy as np
-
+import copy
 
 
 
@@ -65,13 +65,18 @@ class _ebFRET_methods:
                     indices = np.where(state_data[:, 0] == state)
                     state_data = np.take(state_data, indices, axis=0)[0]
 
-                    for localisation_number, localisation_data in enumerate(self.data_dict[dataset_name]):
+                    for localisation_number in range(len(self.data_dict[dataset_name])):
+
+                        localisation_data = self.data_dict[dataset_name][localisation_number]
 
                         loc_indices = np.where(state_data[:, 1] == localisation_number + 1)
                         loc_state_data = np.take(state_data, loc_indices, axis=0)[0]
-                        loc_states = loc_state_data[:, 2] - 1
 
-                        self.data_dict[dataset_name][localisation_number]["states"] = loc_states
+                        loc_states = loc_state_data[:, 2]
+
+                        localisation_data["states"] = loc_states
+
+                        self.data_dict[dataset_name][localisation_number] = copy.deepcopy(localisation_data)
 
                 self.compute_state_means(dataset_name=dataset_name)
 
