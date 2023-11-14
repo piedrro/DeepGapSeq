@@ -677,18 +677,20 @@ class CustomPlot(pg.PlotItem):
         self.metadata = {}
 
         self.setMenuEnabled(False)
+        self.symbolSize = 100
 
         legend = self.addLegend(offset=(10, 10))
         legend.setBrush('w')
-        legend.setLabelTextSize("10pt")
+        legend.setLabelTextSize("8pt")
         self.hideAxis('top')
         self.hideAxis('right')
+        self.getAxis('left').setWidth(30)
 
         self.title = title
         self.colour = colour
 
         if self.title != "":
-            self.setLabel('top', text=title)
+            self.setLabel('top', text=title, size="3pt", color=colour)
 
     def setMetadata(self, metadata_dict):
         self.metadata = metadata_dict

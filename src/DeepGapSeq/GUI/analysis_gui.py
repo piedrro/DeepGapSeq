@@ -196,6 +196,35 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
         self.threadpool = QThreadPool()
 
+        self.export_settings.export_mode.currentIndexChanged.connect(self.format_export_settings)
+
+        self.format_export_settings()
+
+    def format_export_settings(self):
+
+        export_mode = self.export_settings.export_mode.currentText()
+
+        if "json" in export_mode.lower():
+            # hide controls
+            self.export_settings.export_data_selection.hide()
+            self.export_settings.export_user_filter.hide()
+            self.export_settings.export_nucleotide_filter.hide()
+            self.export_settings.export_data_selection_label.hide()
+            self.export_settings.export_user_filter_label.hide()
+            self.export_settings.export_nucleotide_filter_label.hide()
+            self.export_settings.export_split_datasets.hide()
+
+        else:
+            # show controls
+            self.export_settings.export_data_selection.show()
+            self.export_settings.export_user_filter.show()
+            self.export_settings.export_nucleotide_filter.show()
+            self.export_settings.export_data_selection_label.show()
+            self.export_settings.export_user_filter_label.show()
+            self.export_settings.export_nucleotide_filter_label.show()
+            self.export_settings.export_split_datasets.show()
+
+
     def closeEvent(self, event):
         self._close_ebFRET()
         self.plot_settings.close()

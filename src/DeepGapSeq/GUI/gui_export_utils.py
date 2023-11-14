@@ -253,27 +253,15 @@ class _export_methods:
 
             if self.data_dict != {}:
 
-                if split_datasets == False:
+                json_dataset_dict = self.build_json_dict()
 
-                    json_dataset_dict = self.build_json_dict()
+                export_path = export_paths[0]
 
-                    export_path = export_paths[0]
+                with open(export_path, "w") as f:
+                    json.dump(json_dataset_dict, f)
 
-                    with open(export_path, "w") as f:
-                        json.dump(json_dataset_dict, f)
+                self.print_notification(f"Exported data to {export_path}")
 
-                    self.print_notification(f"Exported data to {export_path}")
-
-                else:
-
-                    for dataset_name, export_path in zip(self.data_dict.keys(),export_paths):
-
-                        json_dataset_dict = self.build_json_dict(dataset_names=[dataset_name])
-
-                        with open(export_path, "w") as f:
-                            json.dump(json_dataset_dict, f)
-
-                        self.print_notification(f"Exported data to {export_path}")
 
         except:
             print(traceback.format_exc())
@@ -326,18 +314,13 @@ class _export_methods:
                 user_label = localisation_data["user_label"]
                 nucleotide_label = localisation_data["nucleotide_label"]
 
-                if self.get_filter_status(user_label, nucleotide_label) == False:
+                for key, value in localisation_data.items():
 
-                    for key, value in localisation_data.items():
+                    if key in json_list_keys:
+                        json_localisation_dict[key] = list(value)
 
-                        # if key == "states":
-                        #     print(value[:10])
-
-                        if key in json_list_keys:
-                            json_localisation_dict[key] = list(value)
-
-                        elif key in json_var_keys:
-                            json_localisation_dict[key] = value
+                    elif key in json_var_keys:
+                        json_localisation_dict[key] = value
 
                 else:
 
