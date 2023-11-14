@@ -253,9 +253,11 @@ class _export_methods:
 
             if self.data_dict != {}:
 
-                json_dataset_dict = self.build_json_dict()
+                dataset_names = self.data_dict.keys()
 
-                export_path = export_paths[0]
+                json_dataset_dict = self.build_json_dict(dataset_names=dataset_names)
+
+                export_path = export_paths[-1]
 
                 with open(export_path, "w") as f:
                     json.dump(json_dataset_dict, f)
@@ -288,48 +290,53 @@ class _export_methods:
 
     def build_json_dict(self, dataset_names = []):
 
-        json_dataset_dict = {"metadata":{}, "data":{}}
+        try:
 
-        json_list_keys = ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
+            json_dataset_dict = {"metadata":{}, "data":{}}
 
-        json_var_keys = ["user_label", "nucleotide_label", "import_path"]
+            json_list_keys = ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
 
-        if len(dataset_names) == 0:
-            dataset_names = self.data_dict.keys()
+            json_var_keys = ["user_label", "nucleotide_label", "import_path"]
 
-        user_filter = self.export_settings.export_user_filter.currentText()
-        nucleotide_filter = self.export_settings.export_nucleotide_filter.currentText()
+            if len(dataset_names) == 0:
+                dataset_names = self.data_dict.keys()
 
-        for dataset_name in dataset_names:
+            user_filter = self.export_settings.export_user_filter.currentText()
+            nucleotide_filter = self.export_settings.export_nucleotide_filter.currentText()
 
-            dataset_data = self.data_dict[dataset_name]
+            for dataset_name in dataset_names:
 
-            if dataset_name not in json_dataset_dict.keys():
-                json_dataset_dict["data"][dataset_name] = []
+                dataset_data = self.data_dict[dataset_name]
 
-            for localisation_number, localisation_data in enumerate(dataset_data):
+                if dataset_name not in json_dataset_dict.keys():
+                    json_dataset_dict["data"][dataset_name] = []
 
-                json_localisation_dict = {}
+                for localisation_number, localisation_data in enumerate(dataset_data):
 
-                user_label = localisation_data["user_label"]
-                nucleotide_label = localisation_data["nucleotide_label"]
+                    json_localisation_dict = {}
 
-                for key, value in localisation_data.items():
+                    user_label = localisation_data["user_label"]
+                    nucleotide_label = localisation_data["nucleotide_label"]
 
-                    if key in json_list_keys:
-                        json_localisation_dict[key] = list(value)
+                    for key, value in localisation_data.items():
 
-                    elif key in json_var_keys:
-                        json_localisation_dict[key] = value
+                        if key in json_list_keys:
+                            json_localisation_dict[key] = list(value)
 
-                else:
+                        elif key in json_var_keys:
+                            json_localisation_dict[key] = value
 
-                    for key in json_list_keys:
-                        json_localisation_dict[key] = []
+                        else:
 
-                    for key in json_var_keys:
-                        json_localisation_dict[key] = None
+                            for key in json_list_keys:
+                                json_localisation_dict[key] = []
 
-                json_dataset_dict["data"][dataset_name].append(json_localisation_dict)
+                            for key in json_var_keys:
+                                json_localisation_dict[key] = None
+
+                    json_dataset_dict["data"][dataset_name].append(json_localisation_dict)
+
+        except:
+            print(traceback.format_exc())
 
         return json_dataset_dict
