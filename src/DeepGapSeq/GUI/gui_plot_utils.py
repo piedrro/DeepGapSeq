@@ -578,9 +578,8 @@ class _plotting_methods:
                         plot_line.setData(data_x, data)
                         plot_line.setDownsampling(ds=downsample)
 
-                        print(f"xrange: {data_x[0]} {data_x[-1]}, yrange: {np.min(data)} {np.max(data)}")
-
-                        plot.setRange(xRange=[data_x[0], data_x[-1]], yRange=[np.min(data), np.max(data)], padding=0)
+                        if len(data_x) > 1 and len(data) > 1:
+                            plot.setRange(xRange=[np.min(data_x), np.max(data_x)], yRange=[np.min(data), np.max(data)], padding=0)
 
         except:
             print(traceback.format_exc())

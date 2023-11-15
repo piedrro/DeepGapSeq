@@ -213,9 +213,16 @@ class _import_methods:
     def compute_state_means(self, dataset_name=None):
 
         def _compute_state_means(data, labels):
-            state_means = labels.copy()
-            for state in np.unique(labels):
-                state_means[state_means == state] = np.mean(data[state_means == state])
+
+            unique_labels = np.unique(labels)
+
+            if len(unique_labels) == 1:
+                state_means = [np.mean(data)]*len(data)
+            else:
+                state_means = labels.copy()
+                for state in np.unique(labels):
+                    state_means[state_means == state] = np.mean(data[state_means == state])
+
             return state_means
 
         if dataset_name is None:
@@ -246,8 +253,6 @@ class _import_methods:
                                 trace_data["state_means"][plot] = [state_means_x, state_means_y]
 
                             else:
-
-                                print(crop_range)
 
                                 plot_data = plot_data[int(crop_range[0]):int(crop_range[1])]
                                 state_means_y = _compute_state_means(plot_data, labels)
@@ -337,9 +342,8 @@ class _import_methods:
             self.plot_mode.addItem("DA")
             self.plot_mode.addItem("AD")
             self.plot_mode.addItem("ALEX Data")
-        if "efficiency" in plot_names:
-            self.plot_mode.addItem("ALEX Efficiency")
         if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+            self.plot_mode.addItem("ALEX Efficiency")
             self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
 
 
