@@ -24,6 +24,7 @@ class _ebFRET_methods:
 
                 dataset_names = list(self.data_dict.keys())
 
+
                 data_names = np.unique([list(value[0].keys()) for key,value in self.data_dict.items()])
 
                 self.fitting_window.ebfret_fit_data.clear()
@@ -37,7 +38,15 @@ class _ebFRET_methods:
                     self.fitting_window.ebfret_fit_data.addItem("Acceptor")
                 if "FRET Efficiency" in plot_mode_items:
                     self.fitting_window.ebfret_fit_data.addItem("FRET Efficiency")
-                if "Alex Efficiency" in plot_mode_items:
+                if "DA" in plot_mode_items:
+                    self.fitting_window.ebfret_fit_data.addItem("DA")
+                if "AA" in plot_mode_items:
+                    self.fitting_window.ebfret_fit_data.addItem("AA")
+                if "DD" in plot_mode_items:
+                    self.fitting_window.ebfret_fit_data.addItem("DD")
+                if "AD" in plot_mode_items:
+                    self.fitting_window.ebfret_fit_data.addItem("AD")
+                if "ALEX Efficiency" in plot_mode_items:
                     self.fitting_window.ebfret_fit_data.addItem("Alex Efficiency")
 
                 self.fitting_window.ebfret_fit_dataset.clear()

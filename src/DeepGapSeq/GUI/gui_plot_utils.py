@@ -273,6 +273,22 @@ class _plotting_methods:
                     plot = True
                     self.plot_line_labels = ["donor", "acceptor", "efficiency"]
                     self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "DA" and set(["DA"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = ["DA"]
+                    self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "DD" and set(["DD"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = ["DD"]
+                    self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "AA" and set(["AA"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = ["AA"]
+                    self.n_plot_lines = len(self.plot_line_labels)
+                elif plot_mode == "AD" and set(["AD"]).issubset(plot_labels):
+                    plot = True
+                    self.plot_line_labels = ["AD"]
+                    self.n_plot_lines = len(self.plot_line_labels)
                 elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
                     plot = True
                     self.plot_line_labels = alex_channels
@@ -562,10 +578,9 @@ class _plotting_methods:
                         plot_line.setData(data_x, data)
                         plot_line.setDownsampling(ds=downsample)
 
+                        print(f"xrange: {data_x[0]} {data_x[-1]}, yrange: {np.min(data)} {np.max(data)}")
+
                         plot.setRange(xRange=[data_x[0], data_x[-1]], yRange=[np.min(data), np.max(data)], padding=0)
-
-
-
 
         except:
             print(traceback.format_exc())

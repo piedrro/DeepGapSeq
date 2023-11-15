@@ -246,6 +246,9 @@ class _import_methods:
                                 trace_data["state_means"][plot] = [state_means_x, state_means_y]
 
                             else:
+
+                                print(crop_range)
+
                                 plot_data = plot_data[int(crop_range[0]):int(crop_range[1])]
                                 state_means_y = _compute_state_means(plot_data, labels)
                                 state_means_x = np.arange(int(crop_range[0]),int(crop_range[1]))
@@ -314,28 +317,30 @@ class _import_methods:
         plot_names = []
 
         for dataset_name in self.data_dict.keys():
-            for plot_name in self.data_dict[dataset_name][0].keys():
-                if plot_name not in plot_names:
-                    plot_names.append(plot_name)
+            for plot_name, plot_value in self.data_dict[dataset_name][0].items():
+                if plot_name in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                    if len(plot_value) > 0:
+                        plot_names.append(plot_name)
 
-        if self.import_settings.import_data_alex.isChecked() == False:
-            if "donor" in plot_names:
-                self.plot_mode.addItem("Donor")
-            if "acceptor" in plot_names:
-                self.plot_mode.addItem("Acceptor")
-            if set(["donor", "acceptor"]).issubset(plot_names):
-                self.plot_mode.addItem("FRET Data")
-            if "efficiency" in plot_names:
-                self.plot_mode.addItem("FRET Efficiency")
-            if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
-                self.plot_mode.addItem("FRET Data + FRET Efficiency")
-        else:
-            if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
-                self.plot_mode.addItem("ALEX Data")
-            if "efficiency" in plot_names:
-                self.plot_mode.addItem("ALEX Efficiency")
-            if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
-                self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
+        if "donor" in plot_names:
+            self.plot_mode.addItem("Donor")
+        if "acceptor" in plot_names:
+            self.plot_mode.addItem("Acceptor")
+        if set(["donor", "acceptor"]).issubset(plot_names):
+            self.plot_mode.addItem("FRET Data")
+        if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
+            self.plot_mode.addItem("FRET Efficiency")
+            self.plot_mode.addItem("FRET Data + FRET Efficiency")
+        if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
+            self.plot_mode.addItem("DD")
+            self.plot_mode.addItem("AA")
+            self.plot_mode.addItem("DA")
+            self.plot_mode.addItem("AD")
+            self.plot_mode.addItem("ALEX Data")
+        if "efficiency" in plot_names:
+            self.plot_mode.addItem("ALEX Efficiency")
+        if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+            self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
 
 
     def import_gapseq_json(self):
@@ -374,7 +379,6 @@ class _import_methods:
                         localisation_dict = {}
 
                         for key, value in localisation_data.items():
-
 
                             if key in expected_data.keys():
                                 expected_type = type(expected_data[key])
