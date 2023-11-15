@@ -52,10 +52,10 @@ class _ebFRET_methods:
         try:
             if hasattr(self, "ebfret_states"):
 
+                ebfret_dataset = self.build_ebFRET_dataset()
+
                 state = self.fitting_window.ebfret_visualisation_state.currentText()
                 dataset_name = self.fitting_window.ebfret_fit_dataset.currentText()
-
-                self.print_notification(f"Visualising state {state} for dataset {'dataset_name'}")
 
                 if state.isdigit():
                     state = int(state)
@@ -157,15 +157,24 @@ class _ebFRET_methods:
                 dataset_name = self.fitting_window.ebfret_fit_dataset.currentText()
 
                 data_name = self.fitting_window.ebfret_fit_data.currentText()
+                crop_plots = self.fitting_window.ebfret_crop_plots.isChecked()
 
                 for localisation_index, localisation_data in enumerate(self.data_dict[dataset_name]):
 
                     if data_name == "Donor":
-                        ebfret_dataset.append(np.array(localisation_data["donor"]))
+                        data = localisation_data["donor"]
                     elif data_name == "Acceptor":
-                        ebfret_dataset.append(np.array(localisation_data["acceptor"]))
+                        data = localisation_data["acceptor"]
                     elif "efficiency" in data_name.lower():
-                        ebfret_dataset.append(np.array(localisation_data["efficiency"]))
+                        data = localisation_data["efficiency"]
+
+                    crop_range = localisation_data["crop_range"]
+
+                    if crop_plots == True and len(crop_range) == 2:
+                        crop_range = sorted(crop_range)
+                        data = data[int(crop_range[0]):int(crop_range[1])]
+
+                    ebfret_dataset.append(np.array(data))
 
         except:
             print(traceback.format_exc())
@@ -249,12 +258,12 @@ class _ebFRET_methods:
                     launch_ebfret = False
 
         if launch_ebfret:
-            print("launching MATLAB/ebFRET")
+            self.print_notification("launching MATLAB/ebFRET")
             worker = Worker(self._launch_ebFRET)
             worker.signals.result.connect(self._launch_ebFRET_cleanup)
             self.threadpool.start(worker)
         else:
-            print("closing MATLAB/ebFRET")
+            self.print_notification("closing MATLAB/ebFRET")
             worker = Worker(self._close_ebFRET)
             worker.signals.result.connect(self._launch_ebFRET_cleanup)
             self.threadpool.start(worker)

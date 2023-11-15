@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(354, 323)
+        Form.resize(354, 347)
         self.verticalLayout = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout.setObjectName("verticalLayout")
         self.tabWidget = QtWidgets.QTabWidget(Form)
@@ -96,6 +96,9 @@ class Ui_Form(object):
         self.label_39.setObjectName("label_39")
         self.gridLayout_17.addWidget(self.label_39, 0, 2, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout_17)
+        self.ebfret_crop_plots = QtWidgets.QCheckBox(self.tab)
+        self.ebfret_crop_plots.setObjectName("ebfret_crop_plots")
+        self.verticalLayout_2.addWidget(self.ebfret_crop_plots)
         self.ebfret_run_analysis = QtWidgets.QPushButton(self.tab)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -159,6 +162,7 @@ class Ui_Form(object):
         self.ebfret_min_states.setItemText(4, _translate("Form", "6"))
         self.label_38.setText(_translate("Form", "Min States:"))
         self.label_39.setText(_translate("Form", "Max States:"))
+        self.ebfret_crop_plots.setText(_translate("Form", "Crop Plots"))
         self.ebfret_run_analysis.setText(_translate("Form", "Run ebFRET analysis"))
         self.label_4.setText(_translate("Form", "ebFRET Visualisation"))
         self.label_66.setText(_translate("Form", "ebFRET fitted States:"))

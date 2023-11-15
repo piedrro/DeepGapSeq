@@ -5,6 +5,7 @@ import pyqtgraph as pg
 import traceback
 from functools import partial
 import uuid
+import copy
 
 class _plotting_methods:
 
@@ -216,7 +217,7 @@ class _plotting_methods:
             self.n_traces = len(self.localisation_numbers)
 
         else:
-            self.n_traces = np.max([len(self.data_dict[dataset]) - 1 for dataset in self.plot_datasets])
+            self.n_traces = np.max([len(self.data_dict[dataset]) for dataset in self.plot_datasets])
             self.localisation_numbers = list(range(self.n_traces))
 
         return self.localisation_numbers, self.n_traces
@@ -514,16 +515,17 @@ class _plotting_methods:
                     plot_lines = grid["plot_lines"]
                     plot_lines_labels = grid["plot_lines_labels"]
                     title_plot = grid["title_plot"]
-                    efficiency_plot = grid["efficiency_plot"]
 
                     user_label = self.data_dict[plot_dataset][localisation_number]["user_label"]
                     nucleotide_label = self.data_dict[plot_dataset][localisation_number]["nucleotide_label"]
-                    crop_range = self.data_dict[plot_dataset][localisation_number]["crop_range"]
+                    crop_range = copy.deepcopy(self.data_dict[plot_dataset][localisation_number]["crop_range"])
+                    gamma_correction_ranges = self.data_dict[plot_dataset][localisation_number]["gamma_ranges"]
 
-                    if crop_plots == True and len(crop_range) == 2:
+                    if len(crop_range) == 2:
                         crop_range = sorted(crop_range)
                         crop_range = [int(crop_range[0]), int(crop_range[1])]
 
+                    if crop_plots == True and len(crop_range) == 2:
                         plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label} Cropped:{True}]"
 
                     else:
@@ -531,94 +533,120 @@ class _plotting_methods:
 
                     title_plot.setTitle(plot_details)
 
-                    for plot in sub_axes:
-                        self.remove_plot_item(plot, "hmm_mean")
-
                     for line_index, (plot, crop_region, gamma_ranges, line,  plot_label) in enumerate(zip(sub_axes, crop_regions, plot_gamma_ranges, plot_lines, plot_lines_labels)):
 
                         legend = plot.legend
                         data = self.data_dict[plot_dataset][localisation_number][plot_label]
+                        data_x = np.arange(len(data))
 
                         break_points = self.data_dict[plot_dataset][localisation_number]["break_points"]
-                        state_means = self.data_dict[plot_dataset][localisation_number]["state_means"][plot_label]
-
-                        gamma_correction_ranges = self.data_dict[plot_dataset][localisation_number]["gamma_ranges"]
+                        state_means_x, state_means_y = self.data_dict[plot_dataset][localisation_number]["state_means"][plot_label]
 
                         if crop_plots == True and len(crop_range) == 2:
-                            crop_range = sorted(crop_range)
-                            crop_range = [int(crop_range[0]), int(crop_range[1])]
 
                             data = data[crop_range[0]:crop_range[1]]
-                            state_means = state_means[crop_range[0]:crop_range[1]]
+                            data_x = data_x[crop_range[0]:crop_range[1]]
 
                         if self.plot_settings.plot_normalise.isChecked() and "Efficiency" not in plot_label:
                             data = (data - np.min(data)) / (np.max(data) - np.min(data))
 
+                        # self.plot_gamma_correction_ranges(gamma_correction_ranges, gamma_ranges, plot, show_gamma)
+
+                        self.plot_detected_states(state_means_x, state_means_y, plot, legend, plot_label, line_index, sub_axes, downsample=1)
+
+                        self.plot_crop_ranges(crop_plots, show_crop_range, crop_range, crop_region, crop_regions, plot)
+
+                        self.plot_break_points(break_points, plot)
+
                         plot_line = plot_lines[line_index]
-                        plot_line.setData(data)
-                        plot_line.setDownsampling(ds = downsample)
-                        plot.enableAutoRange()
-                        plot.autoRange()
+                        plot_line.setData(data_x, data)
+                        plot_line.setDownsampling(ds=downsample)
 
-                        if self.plot_settings.show_detected_states.isChecked() and len(state_means) > 0:
-
-                            if self.plot_settings.plot_normalise.isChecked():
-                                state_means = (state_means - np.min(state_means)) / (np.max(state_means) - np.min(state_means))
-
-                            if "Efficiency" in plot_mode:
-                                if line_index == len(sub_axes) - 1:
-                                    plot.plot(state_means, pen=pg.mkPen('b', width=3), name="hmm_mean", downsample=downsample)
-                                    legend.removeItem("hmm_mean")
-                            else:
-                                if line_index == 0:
-                                    plot.plot(state_means, pen=pg.mkPen('b', width=3), name="hmm_mean", downsample=downsample)
-                                    legend.removeItem("hmm_mean")
-
-                        if crop_plots == False and show_crop_range == True and len(crop_range) == 2:
-
-                            if self.get_plot_item_instance(plot, pg.LinearRegionItem) is None:
-                                plot.addItem(crop_region)
-                                crop_region.setRegion(crop_range)
-                                self.unique_crop_regions.append(crop_region)
-
-                        else:
-                            for crop_region in crop_regions:
-                                plot.removeItem(crop_region)
-
-                        if show_gamma == True and len(gamma_correction_ranges) > 0:
-
-                            for gamma_range in gamma_ranges:
-                                if gamma_range in plot.items:
-                                    plot.removeItem(gamma_range)
-
-                            for gamma_index, correction_x in enumerate(gamma_correction_ranges):
-
-                                gamma_range = gamma_ranges[gamma_index]
-
-                                if gamma_range not in plot.items:
-                                    plot.addItem(gamma_range)
-                                    gamma_range.setRegion([correction_x-10, correction_x+10])
-                                else:
-                                    gamma_range.setRegion([correction_x-10, correction_x+10])
-                        else:
-                            for gamma_range in gamma_ranges:
-                                if gamma_range in plot.items:
-                                    plot.removeItem(gamma_range)
+                        plot.setRange(xRange=[data_x[0], data_x[-1]], yRange=[np.min(data), np.max(data)], padding=0)
 
 
 
-                        if len(break_points) > 2 and self.show_cpd_breakpoints.isChecked():
-
-                            break_points = np.unique(break_points).tolist()
-
-                            for break_point in break_points[1:-1]:
-                                bp = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('g', width=3))
-                                plot.addItem(bp)
-                                bp.setPos(break_point)
 
         except:
             print(traceback.format_exc())
             pass
+
+
+    def plot_break_points(self, break_points, plot):
+
+        if len(break_points) > 2 and self.show_cpd_breakpoints.isChecked():
+            break_points = np.unique(break_points).tolist()
+
+            for break_point in break_points[1:-1]:
+                bp = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen('g', width=3))
+                plot.addItem(bp)
+                bp.setPos(break_point)
+
+    def plot_crop_ranges(self, crop_plots, show_crop_range, crop_range, crop_region, crop_regions, plot):
+
+        if crop_plots == False and show_crop_range == True and len(crop_range) == 2:
+            if crop_region in plot.items:
+                crop_region.setRegion(crop_range)
+            else:
+                plot.addItem(crop_region)
+                crop_region.setRegion(crop_range)
+        else:
+            for crop_region in crop_regions:
+                plot.removeItem(crop_region)
+
+
+    def plot_gamma_correction_ranges(self, show_gamma, gamma_correction_ranges, gamma_ranges, plot):
+
+        if show_gamma == True and len(gamma_correction_ranges) > 0:
+            for gamma_range in gamma_ranges:
+                if gamma_range in plot.items:
+                    plot.removeItem(gamma_range)
+
+            for gamma_index, correction_x in enumerate(gamma_correction_ranges):
+                gamma_range = gamma_ranges[gamma_index]
+
+                if gamma_range not in plot.items:
+                    plot.addItem(gamma_range)
+                    gamma_range.setRegion([correction_x - 10, correction_x + 10])
+                else:
+                    gamma_range.setRegion([correction_x - 10, correction_x + 10])
+        else:
+            for gamma_range in gamma_ranges:
+                if gamma_range in plot.items:
+                    plot.removeItem(gamma_range)
+
+    def plot_detected_states(self,state_means_x, state_means_y, plot, legend, plot_label, line_index, sub_axes, downsample = 1):
+
+        if self.plot_settings.show_detected_states.isChecked() and len(state_means_x) > 0:
+            if self.plot_settings.plot_normalise.isChecked():
+                state_means_y = (state_means_y - np.min(state_means_y)) / (np.max(state_means_y) - np.min(state_means_y))
+
+            show_state_means = False
+
+            if "Efficiency" in plot_label:
+                show_state_means = True
+            if "Efficiency" not in plot_label and line_index == len(sub_axes) - 1:
+                show_state_means = True
+
+            if show_state_means == True:
+                if hasattr(self, "hmm_mean"):
+                    if self.hmm_mean in plot.items:
+                        self.hmm_mean.setData(state_means_x, state_means_y)
+                    else:
+                        self.hmm_mean = plot.plot(state_means_x, state_means_y, pen=pg.mkPen('b', width=3), name="hmm_mean", downsample=downsample)
+                        legend.removeItem("hmm_mean")
+                else:
+                    self.hmm_mean = plot.plot(state_means_x, state_means_y, pen=pg.mkPen('b', width=3), name="hmm_mean", downsample=downsample)
+                    legend.removeItem("hmm_mean")
+
+            else:
+                if hasattr(self, "hmm_mean"):
+                    if self.hmm_mean in plot.items:
+                        plot.removeItem(self.hmm_mean)
+        else:
+            if hasattr(self, "hmm_mean"):
+                if self.hmm_mean in plot.items:
+                    plot.removeItem(self.hmm_mean)
 
 
 
@@ -642,25 +670,27 @@ def auto_scale_y(sub_plots):
             plot_x_min, plot_x_max = p.getViewBox().viewRange()[0]
 
             for index, item in enumerate(data_items):
-                y_data = item.yData
-                x_data = item.xData
+                if item.name() != "hmm_mean":
 
-                # Get the indices of y_data that lies within the current x-range
-                idx = np.where((x_data >= plot_x_min) & (x_data <= plot_x_max))
+                    y_data = item.yData
+                    x_data = item.xData
 
-                if len(idx[0]) > 0:  # If there's any data within the x-range
-                    y_min = min(y_min, y_data[idx].min())
-                    y_max = max(y_max, y_data[idx].max())
+                    # Get the indices of y_data that lies within the current x-range
+                    idx = np.where((x_data >= plot_x_min) & (x_data <= plot_x_max))
 
-                if plot_x_min < 0:
-                    x_min = 0
-                else:
-                    x_min = plot_x_min
+                    if len(idx[0]) > 0:  # If there's any data within the x-range
+                        y_min = min(y_min, y_data[idx].min())
+                        y_max = max(y_max, y_data[idx].max())
 
-                if plot_x_max > x_data.max():
-                    x_max = x_data.max()
-                else:
-                    x_max = plot_x_max
+                    if plot_x_min < 0:
+                        x_min = 0
+                    else:
+                        x_min = plot_x_min
+
+                    if plot_x_max > x_data.max():
+                        x_max = x_data.max()
+                    else:
+                        x_max = plot_x_max
 
             p.getViewBox().setYRange(y_min, y_max, padding=0)
             p.getViewBox().setXRange(x_min, x_max, padding=0)

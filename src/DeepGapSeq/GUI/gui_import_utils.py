@@ -149,7 +149,12 @@ class _import_methods:
 
                     if import_error == False:
 
-                        for i in range(0, len(data.columns), len(column_names)):
+                        if traces_per_file == "Multiple":
+                            import_range = range(0, n_columns, len(column_names))
+                        else:
+                            import_range = range(0, len(column_names))
+
+                        for i in import_range:
 
                             loc_data = {"efficiency" : [], "states": [],
                                         "filter": False, "state_means": {},
@@ -180,11 +185,11 @@ class _import_methods:
                                     loc_data["efficiency"] = self.calculate_fret_efficiency(loc_data["donor"], loc_data["acceptor"])
 
                             self.data_dict[dataset_name].append(loc_data)
-                            n_traces += 1
+                            n_traces += 1/len(column_names)
 
             if n_traces > 1:
 
-                self.print_notification(f"Imported {n_traces} traces")
+                self.print_notification(f"Imported {int(n_traces)} traces")
 
                 self.compute_state_means()
 
@@ -221,6 +226,8 @@ class _import_methods:
         for dataset_name in dataset_names:
             for i in range(len(self.data_dict[dataset_name])):
                 trace_data = self.data_dict[dataset_name][i]
+                crop_range = copy.deepcopy(trace_data["crop_range"])
+
                 labels = np.array(trace_data["states"])
 
                 if "state_means" not in trace_data:
@@ -229,9 +236,23 @@ class _import_methods:
                 for plot in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
                     if plot in trace_data.keys():
                         plot_data = np.array(trace_data[plot])
-                        if len(plot_data) > 0:
-                            state_means = _compute_state_means(plot_data, labels)
-                            trace_data["state_means"][plot] = state_means
+
+                        if len(plot_data) > 0 and len(labels) > 0:
+
+                            if len(plot_data) == len(labels):
+
+                                state_means_y = _compute_state_means(plot_data, labels)
+                                state_means_x = np.arange(len(state_means_y))
+                                trace_data["state_means"][plot] = [state_means_x, state_means_y]
+
+                            else:
+                                plot_data = plot_data[int(crop_range[0]):int(crop_range[1])]
+                                state_means_y = _compute_state_means(plot_data, labels)
+                                state_means_x = np.arange(int(crop_range[0]),int(crop_range[1]))
+                                trace_data["state_means"][plot] = [state_means_x, state_means_y]
+
+                        else:
+                            trace_data["state_means"][plot] = [[], []]
 
                 self.data_dict[dataset_name][i] = copy.deepcopy(trace_data)
 

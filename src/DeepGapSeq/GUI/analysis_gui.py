@@ -200,6 +200,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
         self.format_export_settings()
 
+        self.current_dialog = None
+
     def format_export_settings(self):
 
         export_mode = self.export_settings.export_mode.currentText()
@@ -277,6 +279,10 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
             self.fitting_window.raise_()
             self.fitting_window.activateWindow()
             self.fitting_window.setFocus()
+
+            # self.fitting_window.exec_()
+
+            self.current_dialog = self.fitting_window
         else:
             self.fitting_window.hide()
             self.activateWindow()
@@ -288,6 +294,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
             self.plot_settings.raise_()
             self.plot_settings.activateWindow()
             self.plot_settings.setFocus()
+            # self.plot_settings.exec_()
+
+            self.current_dialog = self.fitting_window
 
         else:
             self.plot_settings.hide()
@@ -300,23 +309,27 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
             self.import_settings.raise_()
             self.import_settings.activateWindow()
             self.import_settings.setFocus()
+            # self.import_settings.exec_()
+
+            self.current_dialog = self.fitting_window
         else:
             self.import_settings.hide()
             self.activateWindow()
 
     def toggle_export_settings(self):
 
-            if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
+        if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
 
-                self.populate_export_selection()
+            self.populate_export_selection()
 
-                self.export_settings.show()
-                self.export_settings.raise_()
-                self.export_settings.activateWindow()
-                self.export_settings.setFocus()
-            else:
-                self.export_settings.hide()
-                self.activateWindow()
+            self.export_settings.show()
+            self.export_settings.raise_()
+            self.export_settings.activateWindow()
+            self.export_settings.setFocus()
+            # self.export_settings.exec_()
+        else:
+            self.export_settings.hide()
+            self.activateWindow()
 
 
     def print_notification(self, message):

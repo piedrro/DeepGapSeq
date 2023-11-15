@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>354</width>
-    <height>323</height>
+    <height>347</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -215,6 +215,13 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="ebfret_crop_plots">
+         <property name="text">
+          <string>Crop Plots</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="ebfret_run_analysis">

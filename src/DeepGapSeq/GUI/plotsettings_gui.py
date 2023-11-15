@@ -111,7 +111,7 @@ class Ui_Form(object):
         self.show_plot_details.setObjectName("show_plot_details")
         self.gridLayout_25.addWidget(self.show_plot_details, 0, 0, 1, 1)
         self.show_detected_states = QtWidgets.QCheckBox(Form)
-        self.show_detected_states.setChecked(False)
+        self.show_detected_states.setChecked(True)
         self.show_detected_states.setObjectName("show_detected_states")
         self.gridLayout_25.addWidget(self.show_detected_states, 0, 1, 1, 1)
         self.show_breakpoints = QtWidgets.QCheckBox(Form)
