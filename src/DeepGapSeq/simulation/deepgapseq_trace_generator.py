@@ -167,7 +167,7 @@ class trace_generator():
     
     def generate_two_colour_traces(self):
         
-        traces = training_data_2color.simulate_2color_traces(
+        traces, tmats = training_data_2color.simulate_2color_traces(
             n_traces=int(self.n_traces),
             max_n_states=self.n_states,
             n_frames=self.n_frames,
@@ -191,7 +191,6 @@ class trace_generator():
         for trace in traces:
             
             training_labels.append(trace["label"].values)
-            
             if self.reduce_memory:
                 
                 if self.state_mode or self.n_states_mode:
@@ -209,7 +208,7 @@ class trace_generator():
                                             "_noise_level", 
                                             "_min_E_diff", "trans_mean"]].values)
                 
-        return training_data, training_labels
+        return training_data, training_labels, tmats
         
     def export_traces(self, training_data, training_labels):
 
@@ -323,7 +322,7 @@ class trace_generator():
                 
         elif self.n_colors == 2 or (self.n_colors == 1 and self.state_mode):
             
-            training_data, training_labels = self.generate_two_colour_traces()
+            training_data, training_labels, training_tmats = self.generate_two_colour_traces()
             
         stop = time()
         duration = stop - start
@@ -335,7 +334,7 @@ class trace_generator():
         
         self.export_traces(training_data, training_labels)
         
-        return training_data, training_labels
+        return training_data, training_labels, training_tmats
         
 
 

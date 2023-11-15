@@ -27,7 +27,7 @@ def simulate_2color_traces(
         trans_mat=None,
         max_trans_prob=.2,
         noise=(.01, 1.2),
-        gamma_noise_prob=.8,  
+        gamma_noise_prob=.8,
         aggregation_prob=0.15,
         max_aggregate_size=20,
         non_spFRET_E=-1,
@@ -103,7 +103,7 @@ def simulate_2color_traces(
         # randomized transition probability matrix
         if mode == "dynamic":
             if tmat is None:
-                trans_prob = 1 / np.random.randint(1, 10)
+                trans_prob = 1 / np.random.randint(1, 100)
                 tmat = np.random.uniform(trans_prob, trans_prob, [n_states, n_states])
                 for i in range(n_states):
                     tmat[i, i] = 0
@@ -526,7 +526,6 @@ def simulate_2color_traces(
                     "DD": DD,
                     "DA": DA,
                     "AA": AA,
-                    "E": E_obs,
                     "label": label,
                 }
             )
@@ -547,12 +546,10 @@ def simulate_2color_traces(
         trace.replace([np.inf, -np.inf, np.nan], -1, inplace=True)
         trace.fillna(method="pad", inplace=True)
 
-        return trace, matrix
+        return trace
     
     
     traces_list = []
-    matrix_list = []        
-
     if parallel_asynchronous:
         if platform.processor() == 'arm':  # m1 macs
             ctx = mp.get_context("fork")
@@ -563,12 +560,11 @@ def simulate_2color_traces(
         pool.close()
         trace_index = 0
         for index, job in enumerate(tqdm(jobs)):
-            trace,matrix = job.get()
+            trace = job.get()
             if type(trace) != type(None):
                 trace["trace_index"] = trace_index
                 traces = check_states(trace, n_states_mode)
                 traces_list.append(trace)
-                matrix_list.append(matrix)
                 trace_index +=1
         pool.join()
     else:
@@ -576,15 +572,11 @@ def simulate_2color_traces(
         rng.random()
         trace_index = 0
         for _ in tqdm(range(n_traces)):
-            try: 
-                trace,matrix = single_2color_trace()
+            trace = single_2color_trace()
+            if type(trace) != type(None):
                 trace["trace_index"] = trace_index
                 traces = check_states(trace, n_states_mode)
                 traces_list.append(trace)
-                matrix_list.append(matrix)
                 trace_index +=1
-            except TypeError: 
-                pass
-            
-    
-    return traces_list, matrix_list
+                
+    return traces_list

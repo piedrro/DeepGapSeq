@@ -10,6 +10,10 @@ class Model(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
+    def predict(self, data):
+        pass
+
+    @abc.abstractmethod
     def get_performance():
         pass
 
@@ -20,17 +24,32 @@ class HMM_pg(Model):
         self.model = None
 
     def fit(self,data):
-        return pg.HiddenMarkovModel.from_samples(
+        self.model = pg.HiddenMarkovModel.from_samples(
             pg.NormalDistribution,
             n_components=self.n_states,
             X=data,
             n_jobs=-1,
             algorithm=self.algorithem
             )
-    def get_performance():
-        
-        
-        pass
+        return self.model
+
+    def predict(self,data):
+        return np.array(self.model.predict(data)).reshape(-1)
+
+
+    def get_performance(self,predicted_states, labels, verbose=False):
+        score = 0
+        for i in range(predicted_states.shape[0]):
+            if predicted_states[i] == labels[i]:
+                score += 1
+        score = score/len(predicted_states)
+        tmat = self.model.dense_transition_matrix()
+        if verbose:
+            print(f'correct estimation rate: {score}')
+            print(f'transition matrix:\n{tmat}')
+        return score, tmat
+
+                
 
 class HMM_learn():
     def __init__(self,n_states=2):
@@ -57,7 +76,7 @@ class HMM_learn():
         if several_times:
             self.train_several_times(data,lengths,10)
 
-    def predict(self,data,lengths):
+    def predict(self,data,lengths=None):
         data = data - np.mean(data)
         data = data / np.std(data)
         return self.model.predict(data,lengths)
