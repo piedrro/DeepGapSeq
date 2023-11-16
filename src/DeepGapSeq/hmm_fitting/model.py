@@ -2,7 +2,24 @@ import abc
 import pomegranate as pg
 import numpy as np 
 import hmmlearn.hmm as hmm
+import itertools
 
+def permute_array_values(arr, n):
+    # Generate all permutations of the range of values
+    value_permutations = itertools.permutations(range(n))
+
+    # Initialize an empty list to store the permuted arrays
+    permuted_arrays = []
+
+    for perm in value_permutations:
+        # Create a mapping from original values to permuted values
+        mapping = np.array(perm)
+
+        # Apply the mapping to the array
+        permuted_array = mapping[arr.astype(int)]
+        permuted_arrays.append(permuted_array)
+
+    return permuted_arrays
 
 class Model(metaclass=abc.ABCMeta):
     @abc.abstractmethod
@@ -18,13 +35,13 @@ class Model(metaclass=abc.ABCMeta):
         pass
 
 class HMM_pg(Model):
-    def __init__(self, n_states=2,algorithem='baum-welch'):
+    def __init__(self, n_states=2,algorithem='baum-welch',stop_threshold=1E-4, max_iterations=100):
         self.n_states = n_states
         self.algorithem = algorithem
         self.model = None
 
     def fit(self,data):
-        self.model = pg.HiddenMarkovModel.from_samples(
+        self.model = pg.HiddenMarkovModel.from_samples( #note that the data should be in the shape (trace,n_frames,features)
             pg.NormalDistribution,
             n_components=self.n_states,
             X=data,
@@ -34,19 +51,23 @@ class HMM_pg(Model):
         return self.model
 
     def predict(self,data):
-        return np.array(self.model.predict(data)).reshape(-1)
-
-
-    def get_performance(self,predicted_states, labels, verbose=False):
-        score = 0
-        for i in range(predicted_states.shape[0]):
-            if predicted_states[i] == labels[i]:
-                score += 1
-        score = score/len(predicted_states)
+        return np.array(self.model.predict(data))
+   
+    def get_performance(self,predicted_states, labels, verbose=False): 
+        score = []
+        permutation_of_labels = permute_array_values(labels, self.n_states)
+        for perm in permutation_of_labels:
+            mark = 0
+            for i in range(predicted_states.shape[0]):
+                if predicted_states[i] == perm[i]:
+                    mark += 1
+            mark = mark/len(predicted_states)
+            score.append(mark)
+        # score = np.max(score)            
         tmat = self.model.dense_transition_matrix()
         if verbose:
             print(f'correct estimation rate: {score}')
-            print(f'transition matrix:\n{tmat}')
+            print(f'fitted transition matrix:\n{tmat}')
         return score, tmat
 
                 

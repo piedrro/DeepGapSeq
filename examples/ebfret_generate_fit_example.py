@@ -15,7 +15,7 @@ generator = trace_generator(n_colors=1,
                             export_name = "trace_dataset_example",
                             export_mode="ebfret")
 
-training_data, training_labels = generator.generate_traces()
+training_data, training_labels, training_tmat = generator.generate_traces()
 
 
 #  ebFRET controller will accept a list of numpy arrays in the shape (N,2), (N,1) or (N,)

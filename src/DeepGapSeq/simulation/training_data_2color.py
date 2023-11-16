@@ -103,7 +103,7 @@ def simulate_2color_traces(
         # randomized transition probability matrix
         if mode == "dynamic":
             if tmat is None:
-                trans_prob = 1 / np.random.randint(1, 10)
+                trans_prob = 1 / np.random.randint(1, 100)
                 tmat = np.random.uniform(trans_prob, trans_prob, [n_states, n_states])
                 for i in range(n_states):
                     tmat[i, i] = 0
