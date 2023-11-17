@@ -151,6 +151,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.actionFit_Hidden_States_F.triggered.connect(self.toggle_fitting_window)
 
         self.export_settings.export_gapseq.clicked.connect(self.initialise_export)
+        self.export_settings.export_json.clicked.connect(self.initialise_json_export)
 
         self.fitting_window.ebfret_connect_matlab.clicked.connect(self.launch_ebFRET)
         self.fitting_window.ebfret_run_analysis.clicked.connect(self.run_ebFRET_analysis)

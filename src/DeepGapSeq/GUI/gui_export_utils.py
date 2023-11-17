@@ -49,6 +49,22 @@ class _export_methods:
                 self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "efficiency"]
 
 
+    def initialise_json_export(self):
+
+        export_location = self.export_settings.json_export_location.currentText()
+
+        export_path = self.get_export_paths(extension="json")[0]
+
+        if export_location == "Select Directory":
+
+            export_path, _ = QFileDialog.getSaveFileName(self, "Select Directory", export_path)
+
+        export_dir = os.path.dirname(export_path)
+
+        if os.path.isdir(export_dir) == True:
+
+            self.export_gapseq_json(export_path)
+
     def initialise_export(self):
 
         export_mode = self.export_settings.export_mode.currentText()
@@ -73,10 +89,6 @@ class _export_methods:
             if export_dir != "":
                 export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
                 export_paths = [os.path.abspath(export_path) for export_path in export_paths]
-
-        if export_mode == "GapSeq (.json)":
-
-                self.export_gapseq_json(export_paths, split_datasets)
 
         elif export_mode == "Excel (.xlsx)":
 
@@ -245,7 +257,7 @@ class _export_methods:
 
 
 
-    def export_gapseq_json(self, export_paths = [], split_datasets = False):
+    def export_gapseq_json(self, export_path):
 
         try:
 
@@ -257,10 +269,8 @@ class _export_methods:
 
                 json_dataset_dict = self.build_json_dict(dataset_names=dataset_names)
 
-                export_path = export_paths[-1]
-
                 with open(export_path, "w") as f:
-                    json.dump(json_dataset_dict, f)
+                    json.dump(json_dataset_dict, f, cls=npEncoder)
 
                 self.print_notification(f"Exported data to {export_path}")
 
@@ -287,7 +297,6 @@ class _export_methods:
 
         return filter
 
-
     def build_json_dict(self, dataset_names = []):
 
         try:
@@ -301,9 +310,6 @@ class _export_methods:
             if len(dataset_names) == 0:
                 dataset_names = self.data_dict.keys()
 
-            user_filter = self.export_settings.export_user_filter.currentText()
-            nucleotide_filter = self.export_settings.export_nucleotide_filter.currentText()
-
             for dataset_name in dataset_names:
 
                 dataset_data = self.data_dict[dataset_name]
@@ -315,13 +321,10 @@ class _export_methods:
 
                     json_localisation_dict = {}
 
-                    user_label = localisation_data["user_label"]
-                    nucleotide_label = localisation_data["nucleotide_label"]
-
                     for key, value in localisation_data.items():
 
                         if key in json_list_keys:
-                            json_localisation_dict[key] = list(value)
+                            json_localisation_dict[str(key)] = list(value)
 
                         elif key in json_var_keys:
                             json_localisation_dict[key] = value
@@ -340,3 +343,11 @@ class _export_methods:
             print(traceback.format_exc())
 
         return json_dataset_dict
+
+
+
+class npEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.int32):
+            return int(obj)
+        return json.JSONEncoder.default(self, obj)
