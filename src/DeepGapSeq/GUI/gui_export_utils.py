@@ -5,7 +5,7 @@ import traceback
 from PyQt5.QtWidgets import QFileDialog
 import numpy as np
 import pandas as pd
-
+import originpro as op
 
 class _export_methods:
 
@@ -49,6 +49,8 @@ class _export_methods:
                 self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "efficiency"]
 
 
+
+
     def initialise_excel_export(self):
 
         if self.data_dict != {}:
@@ -71,6 +73,33 @@ class _export_methods:
                     export_paths = [os.path.abspath(export_path) for export_path in export_paths]
 
             self.export_excel_data(export_selection, crop_mode,export_states, export_paths, split_datasets)
+
+    def initialise_origin_export(self):
+
+        if self.data_dict != {}:
+
+            export_location = self.export_settings.origin_export_location.currentText()
+            split_datasets = self.export_settings.origin_export_split_datasets.isChecked()
+            export_selection = self.export_settings.origin_export_data_selection.currentText()
+            crop_mode = self.export_settings.origin_export_crop_data.isChecked()
+            export_states = self.export_settings.origin_export_fitted_states.isChecked()
+
+            export_paths = self.get_export_paths(extension="opju")
+
+            if export_location == "Select Directory":
+                export_dir = os.path.dirname(export_paths[0])
+
+                export_dir = QFileDialog.getExistingDirectory(self, "Select Directory", export_dir)
+
+                if export_dir != "":
+                    export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
+                    export_paths = [os.path.abspath(export_path) for export_path in export_paths]
+
+            self.export_origin_data(export_selection, crop_mode, export_states, export_paths, split_datasets)
+
+
+
+
 
     def initialise_json_export(self):
 
@@ -208,36 +237,110 @@ class _export_methods:
             print(traceback.format_exc())
 
 
+    def export_origin_data(self,export_selection, crop_mode, export_states=False, export_paths = [], split_datasets = False):
+
+         try:
+
+             if self.data_dict != {}:
+                 if split_datasets == False:
+                     export_path = export_paths[0]
+
+                     export_data_dict = self.get_export_data("origin", export_selection, crop_mode, export_states)
+
+                     export_data = export_data_dict["data"]
+
+                     max_length = max([len(data) for data in export_data])
+
+                     export_data = [np.pad(data, (0, max_length - len(data)), mode="constant", constant_values=np.nan) for data in export_data]
+
+                     export_dataset = np.stack(export_data, axis=0).T
+
+                     export_dataset = pd.DataFrame(export_dataset)
+
+                     export_dataset.columns = export_data_dict["data_name"]
+
+                     if os.path.exists(export_path):
+                         os.remove(export_path)
+
+                     op.new()
+
+                     wks = op.new_sheet()
+                     wks.cols_axis('YY')
+                     wks.from_df(export_dataset, addindex=True)
+
+                     for i in range(len(export_data_dict["data_name"])):
+
+                         index = export_data_dict["index"][i]
+                         dataset = export_data_dict["dataset"][i]
+                         user_label = export_data_dict["user_label"][i]
+                         nucleotide_label = export_data_dict["nucleotide_label"][i]
+
+                         wks.set_label(i, dataset, 'Dataset')
+                         wks.set_label(i, index, 'Index')
+                         wks.set_label(i, user_label, 'User Label')
+                         wks.set_label(i, nucleotide_label, 'Nucleotide Label')
+
+                     op.save(export_path)
+
+                     op.exit()
+
+                     self.print_notification(f"Exported data to {export_path}")
+
+                 else:
+
+                     for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+                         export_data_dict = self.get_export_data("origin", export_selection, crop_mode, export_states, [dataset_name])
+
+                         export_dataset = np.stack(export_data_dict["data"], axis=0).T
+
+                         export_dataset = pd.DataFrame(export_dataset)
+
+                         export_dataset.columns = export_data_dict["data_name"]
+
+                         export_dataset.columns = export_data_dict["data_name"]
+
+                         if os.path.exists(export_path):
+                             os.remove(export_path)
+
+                         op.new()
+
+                         wks = op.new_sheet()
+                         wks.cols_axis('YY')
+                         wks.from_df(export_dataset, addindex=True)
+
+                         for i in range(len(export_data_dict["data_name"])):
+                             index = export_data_dict["index"][i]
+                             dataset = export_data_dict["dataset"][i]
+                             user_label = export_data_dict["user_label"][i]
+                             nucleotide_label = export_data_dict["nucleotide_label"][i]
+
+                             wks.set_label(i, dataset, 'Dataset')
+                             wks.set_label(i, index, 'Index')
+                             wks.set_label(i, user_label, 'User Label')
+                             wks.set_label(i, nucleotide_label, 'Nucleotide Label')
+
+                         op.save(export_path)
+
+                         op.exit()
+
+                         self.print_notification(f"Exported data to {export_path}")
+
+
+
+         except:
+             print(traceback.format_exc())
+
+
     def export_dat(self,export_selection, crop_mode, export_states = False, data_separator=",", export_paths = [], split_datasets = False):
 
-        try:
+            try:
 
-            if self.data_dict != {}:
-                if split_datasets == False:
+                if self.data_dict != {}:
+                    if split_datasets == False:
 
-                    export_path = export_paths[0]
+                        export_path = export_paths[0]
 
-                    export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states)
-
-                    export_dataset = np.stack(export_data_dict["data"], axis=0).T
-
-                    export_dataset = pd.DataFrame(export_dataset)
-
-                    export_dataset.columns = [export_data_dict["index"],
-                                              export_data_dict["dataset"],
-                                              export_data_dict["data_name"],
-                                              export_data_dict["user_label"],
-                                              export_data_dict["nucleotide_label"]]
-
-                    export_dataset.to_csv(export_path, sep=data_separator, index=False, header=True)
-
-                    self.print_notification(f"Exported data to {export_path}")
-
-                else:
-
-                    for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
-
-                        export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states, [dataset_name])
+                        export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states)
 
                         export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
@@ -253,8 +356,28 @@ class _export_methods:
 
                         self.print_notification(f"Exported data to {export_path}")
 
-        except:
-            print(traceback.format_exc())
+                    else:
+
+                        for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+
+                            export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states, [dataset_name])
+
+                            export_dataset = np.stack(export_data_dict["data"], axis=0).T
+
+                            export_dataset = pd.DataFrame(export_dataset)
+
+                            export_dataset.columns = [export_data_dict["index"],
+                                                      export_data_dict["dataset"],
+                                                      export_data_dict["data_name"],
+                                                      export_data_dict["user_label"],
+                                                      export_data_dict["nucleotide_label"]]
+
+                            export_dataset.to_csv(export_path, sep=data_separator, index=False, header=True)
+
+                            self.print_notification(f"Exported data to {export_path}")
+
+            except:
+                print(traceback.format_exc())
 
 
 
@@ -366,6 +489,9 @@ class _export_methods:
         elif export_mode.lower() == "excel":
             user_filter = self.export_settings.excel_export_user_filter.currentText()
             nucleotide_filter = self.export_settings.excel_export_nucleotide_filter.currentText()
+        elif export_mode.lower() == "origin":
+            user_filter = self.export_settings.origin_export_user_filter.currentText()
+            nucleotide_filter = self.export_settings.origin_export_nucleotide_filter.currentText()
 
         filter = False
 

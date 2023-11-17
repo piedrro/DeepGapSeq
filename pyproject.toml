@@ -31,6 +31,7 @@ dependencies = [
     "spyder",
     "pyqt5",
     "pyqtgraph",
+    "originpro",
 ]
 
 [project.urls]
