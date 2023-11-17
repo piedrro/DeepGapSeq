@@ -396,6 +396,8 @@ class _import_methods:
                             if key not in localisation_dict.keys():
                                 localisation_dict[key] = value
 
+                        localisation_dict["import_path"] = path
+
                         self.data_dict[dataset_name].append(localisation_dict)
                         n_traces += 1
 

@@ -150,8 +150,9 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.actionExport_E.triggered.connect(self.toggle_export_settings)
         self.actionFit_Hidden_States_F.triggered.connect(self.toggle_fitting_window)
 
-        self.export_settings.export_gapseq.clicked.connect(self.initialise_export)
+        self.export_settings.export_gapseq.clicked.connect(self.initialise_file_export)
         self.export_settings.export_json.clicked.connect(self.initialise_json_export)
+        self.export_settings.export_excel.clicked.connect(self.initialise_excel_export)
 
         self.fitting_window.ebfret_connect_matlab.clicked.connect(self.launch_ebFRET)
         self.fitting_window.ebfret_run_analysis.clicked.connect(self.run_ebFRET_analysis)
@@ -207,25 +208,14 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
         export_mode = self.export_settings.export_mode.currentText()
 
-        if "json" in export_mode.lower():
-            # hide controls
-            self.export_settings.export_data_selection.hide()
-            self.export_settings.export_user_filter.hide()
-            self.export_settings.export_nucleotide_filter.hide()
-            self.export_settings.export_data_selection_label.hide()
-            self.export_settings.export_user_filter_label.hide()
-            self.export_settings.export_nucleotide_filter_label.hide()
-            self.export_settings.export_split_datasets.hide()
+        if "csv" in export_mode.lower():
+
+            self.export_settings.export_separator.clear()
+            self.export_settings.export_separator.addItems(["Comma"])
 
         else:
-            # show controls
-            self.export_settings.export_data_selection.show()
-            self.export_settings.export_user_filter.show()
-            self.export_settings.export_nucleotide_filter.show()
-            self.export_settings.export_data_selection_label.show()
-            self.export_settings.export_user_filter_label.show()
-            self.export_settings.export_nucleotide_filter_label.show()
-            self.export_settings.export_split_datasets.show()
+            self.export_settings.export_separator.clear()
+            self.export_settings.export_separator.addItems(["Tab","Comma", "Space"])
 
 
     def closeEvent(self, event):

@@ -49,54 +49,84 @@ class _export_methods:
                 self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "efficiency"]
 
 
+    def initialise_excel_export(self):
+
+        if self.data_dict != {}:
+
+            export_location = self.export_settings.excel_export_location.currentText()
+            split_datasets = self.export_settings.excel_export_split_datasets.isChecked()
+            export_selection = self.export_settings.excel_export_data_selection.currentText()
+            crop_mode = self.export_settings.excel_export_crop_data.isChecked()
+            export_states = self.export_settings.excel_export_fitted_states.isChecked()
+
+            export_paths = self.get_export_paths(extension="xlsx")
+
+            if export_location == "Select Directory":
+                export_dir = os.path.dirname(export_paths[0])
+
+                export_dir = QFileDialog.getExistingDirectory(self, "Select Directory", export_dir)
+
+                if export_dir != "":
+                    export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
+                    export_paths = [os.path.abspath(export_path) for export_path in export_paths]
+
+            self.export_excel_data(export_selection, crop_mode,export_states, export_paths, split_datasets)
+
     def initialise_json_export(self):
 
-        export_location = self.export_settings.json_export_location.currentText()
+        if self.data_dict != {}:
 
-        export_path = self.get_export_paths(extension="json")[0]
+            export_location = self.export_settings.json_export_location.currentText()
 
-        if export_location == "Select Directory":
+            export_path = self.get_export_paths(extension="json")[0]
 
-            export_path, _ = QFileDialog.getSaveFileName(self, "Select Directory", export_path)
+            if export_location == "Select Directory":
 
-        export_dir = os.path.dirname(export_path)
+                export_path, _ = QFileDialog.getSaveFileName(self, "Select Directory", export_path)
 
-        if os.path.isdir(export_dir) == True:
+            export_dir = os.path.dirname(export_path)
 
-            self.export_gapseq_json(export_path)
+            if os.path.isdir(export_dir) == True:
 
-    def initialise_export(self):
+                self.export_gapseq_json(export_path)
 
-        export_mode = self.export_settings.export_mode.currentText()
-        export_data_selection = self.export_settings.export_data_selection.currentText()
-        export_location = self.export_settings.export_location.currentText()
-        split_datasets = self.export_settings.export_split_datasets.isChecked()
+    def initialise_file_export(self):
 
-        if export_mode == "GapSeq (.json)":
-            export_paths = self.get_export_paths(extension="json")
-        elif export_mode == "Excel (.xlsx)":
-            export_paths = self.get_export_paths(extension="xlsx")
-        elif export_mode == "Dat (.dat)":
-            export_paths = self.get_export_paths(extension="dat")
+        if self.data_dict != {}:
 
-        n_datasets = len(self.data_dict.keys())
+            export_mode = self.export_settings.export_mode.currentText()
+            export_location = self.export_settings.export_location.currentText()
+            split_datasets = self.export_settings.export_split_datasets.isChecked()
+            export_selection = self.export_settings.export_data_selection.currentText()
+            crop_mode = self.export_settings.export_crop_data.isChecked()
+            data_separator = self.export_settings.export_separator.currentText()
+            export_states = self.export_settings.excel_export_fitted_states.isChecked()
 
-        if export_location == "Select Directory":
-            export_dir = os.path.dirname(export_paths[0])
+            if export_mode == "Dat (.dat)":
+                export_paths = self.get_export_paths(extension="dat")
+            if export_mode == "Text (.txt)":
+                export_paths = self.get_export_paths(extension="txt")
+            if export_mode == "CSV (.csv)":
+                export_paths = self.get_export_paths(extension="csv")
 
-            export_dir = QFileDialog.getExistingDirectory(self, "Select Directory", export_dir)
 
-            if export_dir != "":
-                export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
-                export_paths = [os.path.abspath(export_path) for export_path in export_paths]
+            if data_separator.lower() == "space":
+                data_separator = " "
+            elif data_separator.lower() == "tab":
+                data_separator = "\t"
+            elif data_separator.lower() == "comma":
+                data_separator = ","
 
-        elif export_mode == "Excel (.xlsx)":
+            if export_location == "Select Directory":
+                export_dir = os.path.dirname(export_paths[0])
 
-            self.export_excel(export_paths, split_datasets)
+                export_dir = QFileDialog.getExistingDirectory(self, "Select Directory", export_dir)
 
-        elif export_mode == "Dat (.dat)":
+                if export_dir != "":
+                    export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
+                    export_paths = [os.path.abspath(export_path) for export_path in export_paths]
 
-            self.export_dat(export_paths, split_datasets)
+            self.export_dat(export_selection, crop_mode, export_states, data_separator, export_paths, split_datasets)
 
 
     def get_export_paths(self, extension="json"):
@@ -119,7 +149,7 @@ class _export_methods:
         return export_paths
 
 
-    def export_excel(self,export_paths = [], split_datasets = False):
+    def export_excel_data(self,export_selection, crop_mode, export_states=False, export_paths = [], split_datasets = False):
 
         try:
             if self.data_dict != {}:
@@ -128,9 +158,15 @@ class _export_methods:
 
                     export_path = export_paths[0]
 
-                    export_data_dict = self.get_export_data()
+                    export_data_dict = self.get_export_data("excel",export_selection, crop_mode, export_states)
 
-                    export_dataset = np.stack(export_data_dict["data"], axis=0).T
+                    export_data = export_data_dict["data"]
+
+                    max_length = max([len(data) for data in export_data])
+
+                    export_data = [np.pad(data, (0, max_length - len(data)), mode="constant", constant_values=np.nan) for data in export_data]
+
+                    export_dataset = np.stack(export_data, axis=0).T
 
                     export_dataset = pd.DataFrame(export_dataset)
 
@@ -151,7 +187,7 @@ class _export_methods:
 
                     for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
 
-                        export_data_dict = self.get_export_data([dataset_name])
+                        export_data_dict = self.get_export_data("excel",export_selection, crop_mode, export_states, [dataset_name])
 
                         export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
@@ -168,13 +204,11 @@ class _export_methods:
                         with pd.ExcelWriter(export_path) as writer:
                             export_dataset.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
 
-                        self.print_notification(f"Exported data to {export_path}")
-
         except:
             print(traceback.format_exc())
 
 
-    def export_dat(self,export_paths = [], split_datasets = False):
+    def export_dat(self,export_selection, crop_mode, export_states = False, data_separator=",", export_paths = [], split_datasets = False):
 
         try:
 
@@ -183,13 +217,19 @@ class _export_methods:
 
                     export_path = export_paths[0]
 
-                    export_data_dict = self.get_export_data()
+                    export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states)
 
                     export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
                     export_dataset = pd.DataFrame(export_dataset)
 
-                    export_dataset.to_csv(export_path, sep=" ", index=False, header=False)
+                    export_dataset.columns = [export_data_dict["index"],
+                                              export_data_dict["dataset"],
+                                              export_data_dict["data_name"],
+                                              export_data_dict["user_label"],
+                                              export_data_dict["nucleotide_label"]]
+
+                    export_dataset.to_csv(export_path, sep=data_separator, index=False, header=True)
 
                     self.print_notification(f"Exported data to {export_path}")
 
@@ -197,13 +237,19 @@ class _export_methods:
 
                     for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
 
-                        export_data_dict = self.get_export_data([dataset_name])
+                        export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states, [dataset_name])
 
                         export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
                         export_dataset = pd.DataFrame(export_dataset)
 
-                        export_dataset.to_csv(export_path, sep=" ", index=False, header=False)
+                        export_dataset.columns = [export_data_dict["index"],
+                                                  export_data_dict["dataset"],
+                                                  export_data_dict["data_name"],
+                                                  export_data_dict["user_label"],
+                                                  export_data_dict["nucleotide_label"]]
+
+                        export_dataset.to_csv(export_path, sep=data_separator, index=False, header=True)
 
                         self.print_notification(f"Exported data to {export_path}")
 
@@ -212,9 +258,7 @@ class _export_methods:
 
 
 
-    def get_export_data(self, dataset_names = []):
-
-        export_selection = self.export_settings.export_data_selection.currentText()
+    def get_export_data(self, export_mode, export_selection, crop_data, export_states, dataset_names = [], pad_data = True, pad_value = np.nan):
 
         loc_index = []
         loc_dataset = []
@@ -234,17 +278,44 @@ class _export_methods:
 
                 user_label = localisation_data["user_label"]
                 nucleotide_label = localisation_data["nucleotide_label"]
+                crop_range = localisation_data["crop_range"]
 
-                if self.get_filter_status(user_label, nucleotide_label) == False:
+                if self.get_filter_status(export_mode, user_label, nucleotide_label) == False:
 
                     for data_name in self.export_selection_dict[export_selection]:
+
+                        data = localisation_data[data_name]
+                        state_means_x, state_means_y = localisation_data["state_means"][data_name]
+
+                        if crop_data == True and len(crop_range) == 2:
+                            crop_range = [int(crop_range[0]), int(crop_range[1])]
+                            crop_range = sorted(crop_range)
+                            if crop_range[0] > 0 and crop_range[1] < len(data):
+                                data = data[crop_range[0]:crop_range[1]]
+                                state_means_y = state_means_y[crop_range[0]:crop_range[1]]
+                        else:
+                            if len(state_means_y) < len(data):
+                                state_indeces = state_means_x
+                                padded_state_means_y = [pad_value] * len(data)
+                                for index, value in zip(state_indeces, state_means_y):
+                                    padded_state_means_y[index] = value
+                                state_means_y = padded_state_means_y
 
                         loc_index.append(localisation_number)
                         loc_dataset.append(dataset_name)
                         loc_user_label.append(user_label)
                         loc_nucleotide_label.append(nucleotide_label)
-                        loc_data.append(localisation_data[data_name])
+                        loc_data.append(data)
                         loc_data_name.append(data_name)
+
+                        if export_states:
+
+                            loc_index.append(localisation_number)
+                            loc_dataset.append(dataset_name)
+                            loc_user_label.append(user_label)
+                            loc_nucleotide_label.append(nucleotide_label)
+                            loc_data.append(state_means_y)
+                            loc_data_name.append(data_name+"_states")
 
         export_data_dict = {"index": loc_index,
                             "dataset": loc_dataset,
@@ -252,6 +323,16 @@ class _export_methods:
                             "nucleotide_label": loc_nucleotide_label,
                             "data": loc_data,
                             "data_name": loc_data_name}
+
+        if pad_data == True:
+
+            data = export_data_dict["data"]
+
+            max_length = max([len(data) for data in data])
+
+            padded_data = [np.pad(data, (0, max_length - len(data)), mode="constant", constant_values=pad_value) for data in data]
+
+            export_data_dict["data"] = padded_data
 
         return export_data_dict
 
@@ -274,14 +355,17 @@ class _export_methods:
 
                 self.print_notification(f"Exported data to {export_path}")
 
-
         except:
             print(traceback.format_exc())
 
-    def get_filter_status(self, user_label, nucleotide_label):
+    def get_filter_status(self, export_mode = "data", user_label = "", nucleotide_label= ""):
 
-        user_filter = self.export_settings.export_user_filter.currentText()
-        nucleotide_filter = self.export_settings.export_nucleotide_filter.currentText()
+        if export_mode.lower() == "data":
+            user_filter = self.export_settings.export_user_filter.currentText()
+            nucleotide_filter = self.export_settings.export_nucleotide_filter.currentText()
+        elif export_mode.lower() == "excel":
+            user_filter = self.export_settings.excel_export_user_filter.currentText()
+            nucleotide_filter = self.export_settings.excel_export_nucleotide_filter.currentText()
 
         filter = False
 

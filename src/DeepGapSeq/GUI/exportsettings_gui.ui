@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>506</width>
-    <height>242</height>
+    <height>292</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -64,24 +64,29 @@
           <widget class="QComboBox" name="export_mode">
            <item>
             <property name="text">
-             <string>Excel (.xlsx)</string>
+             <string>Dat (.dat)</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Dat (.dat)</string>
+             <string>Text (.txt)</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>CSV (.csv)</string>
             </property>
            </item>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="export_data_selection_label">
            <property name="text">
             <string>Export Data</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QComboBox" name="export_data_selection">
            <item>
             <property name="text">
@@ -125,14 +130,14 @@
            </item>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="export_user_filter_label">
            <property name="text">
             <string>Localisation Filter</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QComboBox" name="export_user_filter">
            <item>
             <property name="text">
@@ -191,15 +196,254 @@
            </item>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="5" column="0">
           <widget class="QLabel" name="export_nucleotide_filter_label">
            <property name="text">
             <string>Nucleotide Filter</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="5" column="1">
           <widget class="QComboBox" name="export_nucleotide_filter">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>A</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>T</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>C</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>G</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Export Separator</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="export_separator">
+           <item>
+            <property name="text">
+             <string>Tab</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Comma</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Space</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="export_crop_data">
+         <property name="text">
+          <string>Crop Data using Crop Ranges</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="export_fitted_states">
+         <property name="text">
+          <string>Export Fitted States Data</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="export_split_datasets">
+         <property name="text">
+          <string>Split Datasets into seperate files</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="export_gapseq">
+         <property name="text">
+          <string>Export Files</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="title">
+       <string>Export Excel</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QFormLayout" name="formLayout_5">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Export Location</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="excel_export_location">
+           <item>
+            <property name="text">
+             <string>Select Directory</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Import Directory</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="export_data_selection_label_3">
+           <property name="text">
+            <string>Export Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="excel_export_data_selection">
+           <item>
+            <property name="text">
+             <string>Donor</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Acceptor</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>FRET Data</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>FRET Efficiency</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>FRET Data + FRET Efficiency</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ALEX Data</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ALEX Efficiency</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ALEX Data + ALEX Efficiency</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="export_user_filter_label_3">
+           <property name="text">
+            <string>Localisation Filter</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="excel_export_user_filter">
+           <item>
+            <property name="text">
+             <string>None</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>7</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>8</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>9</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="export_nucleotide_filter_label_3">
+           <property name="text">
+            <string>Nucleotide Filter</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="excel_export_nucleotide_filter">
            <item>
             <property name="text">
              <string>None</string>
@@ -230,16 +474,30 @@
         </layout>
        </item>
        <item>
-        <widget class="QCheckBox" name="export_split_datasets">
+        <widget class="QCheckBox" name="excel_export_crop_data">
+         <property name="text">
+          <string>Crop Data using Crop Ranges</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="excel_export_fitted_states">
+         <property name="text">
+          <string>Export Fitted States Data</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="excel_export_split_datasets">
          <property name="text">
           <string>Split Datasets into seperate files</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="export_gapseq">
+        <widget class="QPushButton" name="export_excel">
          <property name="text">
-          <string>Export Files</string>
+          <string>Export Excel</string>
          </property>
         </widget>
        </item>
