@@ -262,6 +262,9 @@ class _export_methods:
                      if os.path.exists(export_path):
                          os.remove(export_path)
 
+                     if op.oext:
+                         op.set_show(False)
+
                      op.new()
 
                      wks = op.new_sheet()
@@ -282,7 +285,8 @@ class _export_methods:
 
                      op.save(export_path)
 
-                     op.exit()
+                     if op.oext:
+                         op.exit()
 
                      self.print_notification(f"Exported data to {export_path}")
 
@@ -301,6 +305,9 @@ class _export_methods:
 
                          if os.path.exists(export_path):
                              os.remove(export_path)
+
+                         if op.oext:
+                             op.set_show(False)
 
                          op.new()
 
@@ -321,7 +328,8 @@ class _export_methods:
 
                          op.save(export_path)
 
-                         op.exit()
+                         if op.oext:
+                             op.exit()
 
                          self.print_notification(f"Exported data to {export_path}")
 
