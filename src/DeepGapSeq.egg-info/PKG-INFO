@@ -24,6 +24,8 @@ Requires-Dist: scipy
 Requires-Dist: spyder
 Requires-Dist: pyqt5
 Requires-Dist: pyqtgraph
+Requires-Dist: originpro
+Requires-Dist: tensorflow[and-cuda]
 
 # DeepGapSeq
 

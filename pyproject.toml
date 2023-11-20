@@ -32,6 +32,7 @@ dependencies = [
     "pyqt5",
     "pyqtgraph",
     "originpro",
+    "tensorflow[and-cuda]",
 ]
 
 [project.urls]

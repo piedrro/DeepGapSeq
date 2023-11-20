@@ -24,7 +24,6 @@ class _ebFRET_methods:
 
                 dataset_names = list(self.data_dict.keys())
 
-
                 data_names = np.unique([list(value[0].keys()) for key,value in self.data_dict.items()])
 
                 self.fitting_window.ebfret_fit_data.clear()

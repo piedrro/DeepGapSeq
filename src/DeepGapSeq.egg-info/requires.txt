@@ -11,3 +11,5 @@ scipy
 spyder
 pyqt5
 pyqtgraph
+originpro
+tensorflow[and-cuda]
