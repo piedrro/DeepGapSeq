@@ -78,7 +78,7 @@ class DeepLasiWrapper():
         assert self.n_colors in [1,2,3], "n_colors must be one of [1,2,3]"
         assert self.n_states in [2,3,4], "n_states must be one of [2,3,4]"
 
-        model_directory = resources.files(importlib.import_module(f'DeepGapSeq.deep-lasi'))
+        model_directory = resources.files(importlib.import_module(f'DeepGapSeq.DeepLASI'))
         
         if self.model_type == "states":
             model_name = "DeepLASI_{}color_{}state_classifier.h5".format(self.n_colors, self.n_states)
@@ -93,7 +93,7 @@ class DeepLasiWrapper():
             elif self.n_colors == 3:
                 model_name = "DeepLASI_3Color_trace_classifier.h5"
                 
-        model_path = os.path.join(model_directory,"models",model_name)
+        model_path = os.path.join(model_directory, "models",model_name)
         
         if os.path.exists(model_path):
             print(f"loading model: {model_name}")
@@ -115,8 +115,8 @@ class DeepLasiWrapper():
         if n_states in [2,3,4]:
             self.n_states = n_states
 
-        states = []
-        predictions = []
+        predicted_states = []
+        predicted_confidence = []
 
         correct_format, traces = self.check_data_format(traces)
         
@@ -129,11 +129,16 @@ class DeepLasiWrapper():
                 traces = tf.convert_to_tensor(traces, dtype=tf.float32)
 
                 predictions = self.model.predict(traces)
+                
+                for prediction in predictions:
+                    
+                    state = np.argmax(prediction,axis=1)
+                    confidence = np.max(prediction,axis=1)
+                    
+                    predicted_states.append(state)
+                    predicted_confidence.append(confidence)
 
-                states = np.argmax(predictions,axis=1)
-                confidence = np.max(predictions,axis=1)
-
-        return states, confidence
+        return predicted_states, predicted_confidence
         
     def predict_n_states(self, traces = [], n_colors = None):
 
@@ -172,35 +177,6 @@ class DeepLasiWrapper():
       
 
 
-
-desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-
-generator = trace_generator(n_colors=1,
-                            n_states=2,
-                            n_frames=500,
-                            n_traces=100,
-                            outdir=desktop,
-                            export_name = "trace_dataset_example",
-                            export_mode="pickledict")
-
-traces, labels = generator.generate_traces()        
-      
-
-evaluator = DeepLasiWrapper(n_colors=1)
-
-n_states_list, confidence_list = evaluator.predict_n_states(traces)
-
-
-
-
-
-# for trace, trace_prediction in zip(traces, predictions):
-#
-#     trace_prediction = np.argmax(trace_prediction,axis=1)
-#
-#     plt.plot(trace[:,0])
-#     plt.plot(trace_prediction)
-#     plt.show()
 
 
 
