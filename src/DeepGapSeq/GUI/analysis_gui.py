@@ -11,6 +11,8 @@ from DeepGapSeq.GUI.importwindow_gui import Ui_Form as importwindow_gui
 from DeepGapSeq.GUI.exportsettings_gui import Ui_Form as exportwindow_gui
 from DeepGapSeq.GUI.fittingwindow_gui import Ui_Form as fittingwindow_gui
 
+
+
 import pyqtgraph as pg
 from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QSizePolicy,QSlider, QLabel, QFileDialog)
 import numpy as np
@@ -25,7 +27,7 @@ from DeepGapSeq.GUI.gui_plot_utils import CustomPlot, auto_scale_y, CustomGraphi
 from DeepGapSeq.GUI.gui_import_utils import _import_methods
 from DeepGapSeq.GUI.gui_export_utils import _export_methods
 from DeepGapSeq.GUI.gui_ebfret_utils import _ebFRET_methods
-
+from DeepGapSeq.GUI.gui_deeplasi_utils import _DeepLasi_methods
 
 
 class FittingWindow(QDialog, fittingwindow_gui):
@@ -118,7 +120,7 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
 
 
-class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods, _export_methods, _ebFRET_methods):
+class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods, _export_methods, _ebFRET_methods, _DeepLasi_methods):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -158,6 +160,8 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.fitting_window.ebfret_connect_matlab.clicked.connect(self.launch_ebFRET)
         self.fitting_window.ebfret_run_analysis.clicked.connect(self.run_ebFRET_analysis)
         self.fitting_window.ebfret_visualisation_state.currentIndexChanged.connect(self.gapseq_visualise_ebfret)
+
+        self.fitting_window.deeplasi_detect_states.clicked.connect(self.detect_deeplasi_states)
 
         self.plot_settings.crop_reset_active.clicked.connect(partial(self.reset_crop_ranges, mode = "active"))
         self.plot_settings.crop_reset_all.clicked.connect(partial(self.reset_crop_ranges, mode = "all"))

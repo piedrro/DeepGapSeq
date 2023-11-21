@@ -122,7 +122,8 @@ class DeepLasiWrapper():
         
         if correct_format:
 
-            self.model = self.initialise_model()
+            if self.model == None:
+                self.model = self.initialise_model(model_type="n_states", n_colors=self.n_colors)
 
             if self.model != None:
 
@@ -154,7 +155,8 @@ class DeepLasiWrapper():
 
         if correct_format:
 
-            self.model = self.initialise_model(model_type="n_states", n_colors=self.n_colors)
+            if self.model==None:
+                self.model = self.initialise_model(model_type="n_states", n_colors=self.n_colors)
 
             if self.model != None:
 

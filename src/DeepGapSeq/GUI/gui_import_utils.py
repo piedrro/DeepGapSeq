@@ -11,71 +11,78 @@ class _import_methods:
 
     def import_simulated_data(self):
 
-        desktop = os.path.expanduser("~/Desktop")
-        path, _ = QFileDialog.getOpenFileName(self, "Open Files", desktop, "DeepGapSeq Simulated Traces (*.pkl)")
+        try:
 
-        if os.path.isfile(path):
+            desktop = os.path.expanduser("~/Desktop")
+            path, _ = QFileDialog.getOpenFileName(self, "Open Files", desktop, "DeepGapSeq Simulated Traces (*.pkl)")
 
-            self.data_dict = {}
+            if os.path.isfile(path):
 
-            file_name = os.path.basename(path)
+                self.data_dict = {}
 
-            self.print_notification("Loading simulated data from: " + file_name)
+                file_name = os.path.basename(path)
 
-            with open(path, 'rb') as handle:
-                trace_dictionary = pickle.load(handle)
+                self.print_notification("Loading simulated data from: " + file_name)
 
-            dataset_name = "Data"
+                with open(path, 'rb') as handle:
+                    trace_dictionary = pickle.load(handle)
 
-            trace_data = trace_dictionary["data"]
-            trace_labels = trace_dictionary["labels"]
+                dataset_name = "Data"
 
-            self.data_dict[dataset_name] = []
+                trace_data = trace_dictionary["data"]
+                trace_labels = trace_dictionary["labels"]
 
-            for i in range(len(trace_data)):
+                self.data_dict[dataset_name] = []
 
-                data = trace_data[i]
+                for i in range(len(trace_data)):
 
-                if len(data.shape) == 1:
-                    donor_data =[]
-                    acceptor_data = []
-                    efficiency_data = data
-                elif data.shape[-1] == 2:
-                    donor_data = data[:,0]
-                    acceptor_data = data[:,1]
-                    efficiency_data = np.divide(acceptor_data, donor_data)
-                else:
-                    donor_data = []
-                    acceptor_data = []
-                    efficiency_data = []
+                    data = trace_data[i]
 
-                labels = trace_labels[i]
+                    if len(data.shape) == 1:
+                        print(data.shape)
+                        donor_data = []
+                        acceptor_data = []
+                        efficiency_data = data
+                    elif data.shape[-1] == 2:
+                        donor_data = data[:,0]
+                        acceptor_data = data[:,1]
+                        efficiency_data = np.divide(acceptor_data, donor_data)
+                    else:
+                        donor_data = []
+                        acceptor_data = []
+                        efficiency_data = []
 
-                self.data_dict[dataset_name].append({"donor": donor_data,
-                                                     "acceptor": acceptor_data,
-                                                     "efficiency": efficiency_data,
-                                                     "states": labels,
-                                                     "filter": False,
-                                                     "state_means": {},
-                                                     "user_label" : 0,
-                                                     "nucleotide_label" : 0,
-                                                     "break_points" : [],
-                                                     "crop_range" : [],
-                                                     "gamma_ranges" : [],
-                                                     "import_path" : path,
-                                                     })
+                    labels = trace_labels[i]
+
+                    self.data_dict[dataset_name].append({"donor": donor_data,
+                                                         "acceptor": acceptor_data,
+                                                         "efficiency": efficiency_data,
+                                                         "states": labels,
+                                                         "filter": False,
+                                                         "state_means": {},
+                                                         "user_label" : 0,
+                                                         "nucleotide_label" : 0,
+                                                         "break_points" : [],
+                                                         "crop_range" : [],
+                                                         "gamma_ranges" : [],
+                                                         "import_path" : path,
+                                                         })
 
 
-            self.compute_state_means()
+                self.compute_state_means()
 
-            self.plot_data.clear()
-            self.plot_data.addItems(list(self.data_dict.keys()))
+                self.plot_data.clear()
+                self.plot_data.addItems(list(self.data_dict.keys()))
 
-            self.populate_plot_mode()
+                self.populate_plot_mode()
+                self.populate_deeplasi_options()
 
-            self.plot_localisation_number.setValue(0)
+                self.plot_localisation_number.setValue(0)
 
-            self.initialise_plot()
+                self.initialise_plot()
+
+        except:
+            print(traceback.format_exc())
 
 
     def import_data_files(self):
@@ -201,6 +208,7 @@ class _import_methods:
                     self.plot_data.addItems(list(self.data_dict.keys()))
 
                 self.populate_plot_mode()
+                self.populate_deeplasi_options()
 
                 self.plot_localisation_number.setValue(0)
 
@@ -212,16 +220,21 @@ class _import_methods:
 
     def compute_state_means(self, dataset_name=None):
 
-        def _compute_state_means(data, labels):
+        def _compute_state_means(data, labels, print_data=False):
 
             unique_labels = np.unique(labels)
+
+            labels = np.array(labels).astype(int).copy()
+            data = np.array(data).astype(float).copy()
 
             if len(unique_labels) == 1:
                 state_means = [np.mean(data)]*len(data)
             else:
-                state_means = labels.copy()
+                state_means = np.zeros(len(data))
                 for state in np.unique(labels):
-                    state_means[state_means == state] = np.mean(data[state_means == state])
+                    state_mean = np.mean(data[labels == state])
+                    indices = np.where(labels == state)[0]
+                    state_means[indices] = state_mean
 
             return state_means
 
@@ -248,8 +261,14 @@ class _import_methods:
 
                             if len(plot_data) == len(labels):
 
-                                state_means_y = _compute_state_means(plot_data, labels)
+                                if plot == "donor" and i == 17:
+                                    print_data = True
+                                else:
+                                    print_data = False
+
+                                state_means_y = _compute_state_means(plot_data, labels, print_data=print_data)
                                 state_means_x = np.arange(len(state_means_y))
+
                                 trace_data["state_means"][plot] = [state_means_x, state_means_y]
 
                             else:
@@ -413,6 +432,7 @@ class _import_methods:
                     self.plot_data.addItems(list(self.data_dict.keys()))
 
                 self.populate_plot_mode()
+                self.populate_deeplasi_options()
 
                 self.plot_localisation_number.setValue(0)
 

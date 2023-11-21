@@ -33,6 +33,7 @@ dependencies = [
     "pyqtgraph",
     "originpro",
     "tensorflow[and-cuda]",
+    "mat4py",
 ]
 
 [project.urls]

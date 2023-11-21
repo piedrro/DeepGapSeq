@@ -5,7 +5,7 @@ from DeepGapSeq.DeepLASI.wrapper import DeepLasiWrapper
 import os
 
 
-n_colors = 1
+n_colors = 2
 n_states = 2
 n_frames = 500
 n_traces = 100
