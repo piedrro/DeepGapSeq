@@ -44,7 +44,17 @@ class InceptionModule(nn.Module):
         return x
 
 class InceptionFRET(nn.Module):
-    def __init__(self, in_channels, n_classes = 2, depth=6, lstm_hidden_sizes = [128,64], dropout_rate=0.5, use_skip_connections=True, n_filters=40, bottleneck_channels=32, kernel_sizes=[9, 19, 39], activation_function=F.relu):
+    def __init__(self,
+            in_channels,
+            n_classes = 2,
+            depth=6,
+            lstm_hidden_sizes = [128,128,128],
+            dropout_rate=0.5,
+            use_skip_connections=True,
+            n_filters=40,
+            bottleneck_channels=32,
+            kernel_sizes=[9, 19, 39],
+            activation_function=F.relu):
 
         super(InceptionFRET, self).__init__()
         self.use_skip_connections = use_skip_connections

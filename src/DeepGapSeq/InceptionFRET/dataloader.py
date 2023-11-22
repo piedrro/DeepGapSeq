@@ -46,7 +46,7 @@ class load_dataset(data.Dataset):
         X = torch.from_numpy(X.copy()).float()
 
         y = torch.tensor(y, dtype=torch.long)
-        y = F.one_hot(y, num_classes=self.num_classes)
+        y = F.one_hot(y, num_classes=self.num_classes).float()
 
         return X, y
 

@@ -34,7 +34,8 @@ dependencies = [
     "originpro",
     "tensorflow[and-cuda]",
     "mat4py",
-    "tsaug"
+    "tsaug",
+    "tensorboard",
 ]
 
 [project.urls]
