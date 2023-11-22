@@ -21,7 +21,7 @@ class trace_generator():
                  mode = "state_mode",
                  parallel_asynchronous = False,
                  outdir = "",
-                 export_mode = "text_files",
+                 export_mode = "",
                  export_name = "trace_dataset",
                  ):
         
@@ -56,7 +56,7 @@ class trace_generator():
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
-        assert export_mode in ["text_files", "pickledict","ebfret", "ebFRET_files"], "available export modes: 'text_files', 'pickledict', 'ebfret', 'ebFRET_files'"
+        assert export_mode in ["","text_files", "pickledict","ebfret", "ebFRET_files"], "available export modes: '','text_files', 'pickledict', 'ebfret', 'ebFRET_files'"
         
     def check_outdir(self, overwrite=True, folder_name = "simulated_traces"):
     
@@ -252,6 +252,8 @@ class trace_generator():
             mat4py.savemat(file_path, smd_dict)
 
             print(f"exporting ebFRET SMD file to: {file_path}")
+
+
 
 
     def generate_traces(self):
