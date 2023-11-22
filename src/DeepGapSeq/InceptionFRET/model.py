@@ -107,57 +107,24 @@ class InceptionFRET(nn.Module):
 
 
 
-# Parameters for the input data
-batch_size = 10
-in_channels = 2  # Number of input channels (e.g., features in your time series)
-depth = 6
-n_classes = 4  # Number of classes (output size)
-lstm_hidden_sizes = [128, 64]  # Size of the hidden states in each LSTM layer
-sequence_length = 100  # Length of the time series
-
-input_data = torch.randn(batch_size, sequence_length, in_channels)
-print("Input shape:", input_data.shape)
-
-
-# Initialize the Inception module
-model = InceptionFRET(in_channels, n_classes)
-
-# Pass the input data through the Inception module
-output_data = model(input_data)
-
-print("Output shape:", output_data.shape)
-
-
-
-
-
-
-#
-#
-#
-#
-# # Initialize the Inception module
-# inception_module = InceptionModule(in_channels)
-#
-# # Pass the input data through the Inception module
-# output_data = inception_module(input_data)
-#
-# print("Output shape:", output_data.shape)
-
-
-
-
 # # Parameters for the input data
 # batch_size = 10
 # in_channels = 2  # Number of input channels (e.g., features in your time series)
+# depth = 6
+# n_classes = 4  # Number of classes (output size)
+# lstm_hidden_sizes = [128, 64]  # Size of the hidden states in each LSTM layer
 # sequence_length = 100  # Length of the time series
-# kernel_size = 40
+#
+# input_data = torch.randn(batch_size, sequence_length, in_channels)
+# print("Input shape:", input_data.shape)
+#
+#
+# # Initialize the Inception module
+# model = InceptionFRET(in_channels, n_classes)
+#
+# # Pass the input data through the Inception module
+# output_data = model(input_data)
+#
+# print("Output shape:", output_data.shape)
 #
 
-#
-# padding = kernel_size // 2
-#
-# conv = nn.Conv1d(2, 2, kernel_size=kernel_size, padding=40//2, stride=1)
-# output = conv(input_data)
-#
-# print("Output shape:", output.shape)

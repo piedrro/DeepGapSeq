@@ -5,15 +5,14 @@ import importlib
 
 
 dataset_directory = resources.files(importlib.import_module(f'DeepGapSeq.InceptionFRET'))
-dataset_directory = os.path.join(dataset_directory, 'dataset')
 
 generator = trace_generator(n_colors=2,
                             n_states=2,
                             n_frames=500,
-                            n_traces=100,
+                            n_traces=10000,
                             outdir=dataset_directory,
                             export_name = "dataset",
                             export_mode= "pickledict")
 
-
+generator.generate_traces()
 
