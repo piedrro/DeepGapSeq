@@ -1,13 +1,4 @@
-/src/DeepGapSeq/simulation/simulated_traces/
-/src/DeepGapSeq/simulation/legacy code/
-/simulated_traces/
-/examples/simulated_traces/
-/dist/
-/ .pypirc
-/publish.yml
-/Untitled-1.ipynb
-/dev.json
-/src/DeepGapSeq/misc/
-/src/DeepGapSeq/InceptionFRET/deepgapseq_simulated_traces/models/
 /src/DeepGapSeq/InceptionFRET/deepgapseq_simulated_traces/
-/src/DeepGapSeq/DeepFretSimulate/deepgapseq_simulated_traces/
+/src/DeepGapSeq/misc/
+/src/DeepGapSeq/DeepLASI/models/
+/src/DeepGapSeq/ebFRET/datasets/
