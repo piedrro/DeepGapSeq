@@ -12,3 +12,5 @@
 /src/DeepGapSeq/InceptionFRET/dataset/
 /src/DeepGapSeq/InceptionFRET/deepgapseq_simulated_traces/
 /src/DeepGapSeq/InceptionFRET/models/
+/src/DeepGapSeq/DeepFretSimulate/
+/src/DeepGapSeq/InceptionFRET/

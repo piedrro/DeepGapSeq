@@ -96,3 +96,22 @@ def build_model(channels=6, classes=12, model_type="trace_classifier", max_prime
     model = Model(inputs=trace_input, outputs=x, name="DeepLASI_" + str(channels) + "channel_" + model_type)
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
     return model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

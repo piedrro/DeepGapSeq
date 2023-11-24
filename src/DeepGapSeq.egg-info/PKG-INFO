@@ -26,6 +26,13 @@ Requires-Dist: pyqt5
 Requires-Dist: pyqtgraph
 Requires-Dist: originpro
 Requires-Dist: tensorflow[and-cuda]
+Requires-Dist: mat4py
+Requires-Dist: tsaug
+Requires-Dist: tensorboard
+Requires-Dist: parmap
+Requires-Dist: retrying
+Requires-Dist: glob2
+Requires-Dist: openpyxl
 
 # DeepGapSeq
 

@@ -36,6 +36,10 @@ dependencies = [
     "mat4py",
     "tsaug",
     "tensorboard",
+    "parmap",
+    "retrying",
+    "glob2",
+    "openpyxl",
 ]
 
 [project.urls]

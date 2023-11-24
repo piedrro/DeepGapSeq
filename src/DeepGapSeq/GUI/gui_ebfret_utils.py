@@ -60,8 +60,6 @@ class _ebFRET_methods:
         try:
             if hasattr(self, "ebfret_states"):
 
-                ebfret_dataset = self.build_ebFRET_dataset()
-
                 state = self.fitting_window.ebfret_visualisation_state.currentText()
                 dataset_name = self.fitting_window.ebfret_fit_dataset.currentText()
 
@@ -73,11 +71,11 @@ class _ebFRET_methods:
                     indices = np.where(state_data[:, 0] == state)
                     state_data = np.take(state_data, indices, axis=0)[0]
 
-                    for localisation_number in range(len(self.data_dict[dataset_name])):
+                    for localisation_index, localisation_number in enumerate(self.ebfret_datadict.keys()):
 
                         localisation_data = self.data_dict[dataset_name][localisation_number]
 
-                        loc_indices = np.where(state_data[:, 1] == localisation_number + 1)
+                        loc_indices = np.where(state_data[:, 1] == localisation_index + 1)
                         loc_state_data = np.take(state_data, loc_indices, axis=0)[0]
 
                         loc_states = loc_state_data[:, 2]
@@ -98,6 +96,8 @@ class _ebFRET_methods:
 
         try:
 
+            pass
+
             if hasattr(self, "ebfret_states"):
                 self.fitting_window.ebfret_visualisation_state.clear()
                 unique_state_list = np.unique(self.ebfret_states[:, 0]).astype(int).tolist()
@@ -115,7 +115,7 @@ class _ebFRET_methods:
 
         try:
 
-            ebfret_dataset = self.build_ebFRET_dataset()
+            self.ebfret_datadict = self.build_ebFRET_dataset()
 
             min_states = int(self.fitting_window.ebfret_min_states.currentText())
             max_states = int(self.fitting_window.ebfret_max_states.currentText())
@@ -123,7 +123,9 @@ class _ebFRET_methods:
             if min_states > max_states:
                 min_states = max_states
 
-            self.ebFRET_controller.python_import_ebfret_data(ebfret_dataset)
+            ebfret_data = list(self.ebfret_datadict.values())
+
+            self.ebFRET_controller.python_import_ebfret_data(ebfret_data)
             self.ebfret_states = self.ebFRET_controller.run_ebfret_analysis(min_states=min_states, max_states=max_states)
 
             self.ebfret_states = np.array(self.ebfret_states)
@@ -157,7 +159,7 @@ class _ebFRET_methods:
 
     def build_ebFRET_dataset(self):
 
-        ebfret_dataset = []
+        ebfret_dataset = {}
 
         try:
             if self.data_dict != {}:
@@ -169,20 +171,24 @@ class _ebFRET_methods:
 
                 for localisation_index, localisation_data in enumerate(self.data_dict[dataset_name]):
 
-                    if data_name == "Donor":
-                        data = localisation_data["donor"]
-                    elif data_name == "Acceptor":
-                        data = localisation_data["acceptor"]
-                    elif "efficiency" in data_name.lower():
-                        data = localisation_data["efficiency"]
-
+                    user_label = localisation_data["user_label"]
+                    nucleotide_label = localisation_data["nucleotide_label"]
                     crop_range = localisation_data["crop_range"]
 
-                    if crop_plots == True and len(crop_range) == 2:
-                        crop_range = sorted(crop_range)
-                        data = data[int(crop_range[0]):int(crop_range[1])]
+                    if self.get_filter_status("ebfret", user_label, nucleotide_label) == False:
 
-                    ebfret_dataset.append(np.array(data))
+                        if data_name == "Donor":
+                            data = localisation_data["donor"]
+                        elif data_name == "Acceptor":
+                            data = localisation_data["acceptor"]
+                        elif "efficiency" in data_name.lower():
+                            data = localisation_data["efficiency"]
+
+                        if crop_plots == True and len(crop_range) == 2:
+                            crop_range = sorted(crop_range)
+                            data = data[int(crop_range[0]):int(crop_range[1])]
+
+                        ebfret_dataset[localisation_index] = data
 
         except:
             print(traceback.format_exc())

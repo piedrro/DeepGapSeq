@@ -5,14 +5,17 @@ import sklearn
 import numpy as np
 from tsaug import TimeWarp, Crop, Quantize, Drift, Reverse
 from sklearn.preprocessing import minmax_scale
+from tsaug import TimeWarp, Crop, Quantize, Drift, Reverse
+
 
 class load_dataset(data.Dataset):
 
-    def __init__(self, data=[], labels=[], num_classes=2, augment=None,):
+    def __init__(self, data=[], labels=[], num_classes=2, augment=None,channel_first=True):
         self.augment = augment
         self.data = data
         self.labels = labels
         self.num_classes = num_classes
+        self.channel_first = channel_first
 
     def __len__(self):
         return len(self.data)
@@ -25,28 +28,28 @@ class load_dataset(data.Dataset):
 
         return X
 
-    def normalize99(self, X):
-
-        minmax_scale(X, feature_range=(0, 1), axis=0, copy=True)
-
-        return X
-
-    def rescale01(self, X):
-
-        X = (X - np.min(X)) / (np.max(X) - np.min(X))
-
-        return X
+    def min_max_normalize(self, x):
+        
+         min_val = x.min(dim=0, keepdim=True)[0]
+         max_val = x.max(dim=0, keepdim=True)[0]
+         x_normalized = (x - min_val) / (max_val - min_val)
+         
+         return x_normalized
 
     def postprocess(self, X, y):
-
-        X = self.normalize99(X)
-        X = self.rescale01(X)
+        
 
         # Typecasting
         X = torch.from_numpy(X.copy()).float()
-
+        
+        X = self.min_max_normalize(X)
+        
         y = torch.tensor(y, dtype=torch.long)
         y = F.one_hot(y, num_classes=self.num_classes).float()
+        
+        if self.channel_first:
+            X = X.t() # Swap the channel and sequence length dimensions
+            y = y.t()
 
         return X, y
 

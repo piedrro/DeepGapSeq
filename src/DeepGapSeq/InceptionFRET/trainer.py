@@ -80,19 +80,16 @@ class Trainer:
 
         self.model_path = os.path.join(model_dir, f"inceptiontime_model_{self.timestamp}")
 
-    def calculate_accuracy(self, logits, labels):
+    def calculate_accuracy(self, preds, labels):
 
-        with torch.no_grad():
-            # Assuming logits are probabilities, get the predicted class
-            _, predicted = torch.max(logits, dim=2)
-
-            # Do the same for the actual labels
-            _, labels = torch.max(labels, dim=2)
-
-            # Compare
-            correct = (predicted == labels).float()
-            accuracy = correct.mean()
-
+        # Assuming preds and labels are of shape [batch_size, num_classes, sequence_length]
+        # Convert probabilities to binary predictions
+        preds_binary = preds.argmax(dim=1)  # Get the indices of the max values
+        labels_binary = labels.argmax(dim=1)
+    
+        correct = (preds_binary == labels_binary).float()  # Convert to float for division
+        accuracy = correct.mean()  # Calculate mean
+    
         return accuracy.item()
 
     def train(self):
@@ -105,6 +102,8 @@ class Trainer:
 
             """Training block"""
             self.train_step()
+            
+            # break
 
             # """Validation block"""
             # if self.valoader is not None:
@@ -141,10 +140,10 @@ class Trainer:
 
         for i, (data, labels) in batch_iter:
             data, labels = data.to(self.device), labels.to(self.device)  # send to device (GPU or CPU)
-
+            
             self.optimizer.zero_grad()  # zerograd the parameters
             pred_labels = self.model(data)  # one forward pass
-
+        
             loss = self.criterion(pred_labels, labels)
             train_losses.append(loss.item())
 
@@ -164,33 +163,33 @@ class Trainer:
 
         batch_iter.close()
 
-    def val_step(self):
+    # def val_step(self):
 
-        self.model.eval()  # evaluation mode
-        valid_losses = []  # accumulate the losses here
-        valid_accuracies = []
+    #     self.model.eval()  # evaluation mode
+    #     valid_losses = []  # accumulate the losses here
+    #     valid_accuracies = []
 
-        batch_iter = tqdm.tqdm(enumerate(self.trainloader), 'Training', total=len(self.trainloader), position=1, leave=True)
+    #     batch_iter = tqdm.tqdm(enumerate(self.trainloader), 'Training', total=len(self.trainloader), position=1, leave=True)
 
-        for i, (data, labels) in batch_iter:
-            data, labels = data.to(self.device), labels.to(self.device)  # send to device (GPU or CPU)
+    #     for i, (data, labels) in batch_iter:
+    #         data, labels = data.to(self.device), labels.to(self.device)  # send to device (GPU or CPU)
 
-            with torch.no_grad():
+    #         with torch.no_grad():
 
-                self.optimizer.zero_grad()  # zerograd the parameters
-                pred_labels = self.model(data)  # one forward pass
+    #             self.optimizer.zero_grad()  # zerograd the parameters
+    #             pred_labels = self.model(data)  # one forward pass
 
-                loss = self.criterion(pred_labels, labels)
-                valid_losses.append(loss.item())
+    #             loss = self.criterion(pred_labels, labels)
+    #             valid_losses.append(loss.item())
 
-                accuracy = self.calculate_accuracy(pred_labels, labels)
-                valid_accuracies.append(accuracy)
+    #             accuracy = self.calculate_accuracy(pred_labels, labels)
+    #             valid_accuracies.append(accuracy)
 
-                current_lr = self.optimizer.param_groups[0]['lr']
+    #             current_lr = self.optimizer.param_groups[0]['lr']
 
-                batch_iter.set_description(f'Validation: (loss {np.mean(valid_losses):.5f}, Acc {np.mean(valid_accuracies):.2f} LR {current_lr})')  # update progressbar
+    #             batch_iter.set_description(f'Validation: (loss {np.mean(valid_losses):.5f}, Acc {np.mean(valid_accuracies):.2f} LR {current_lr})')  # update progressbar
 
-        self.validation_loss.append(np.mean(valid_losses))
-        self.validation_accuracy.append(np.mean(valid_accuracies))
+    #     self.validation_loss.append(np.mean(valid_losses))
+    #     self.validation_accuracy.append(np.mean(valid_accuracies))
 
-        batch_iter.close()
+    #     batch_iter.close()
