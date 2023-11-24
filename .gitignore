@@ -5,9 +5,6 @@
 /dist/
 / .pypirc
 /publish.yml
-
 /Untitled-1.ipynb
 /dev.json
 /src/DeepGapSeq/misc/
-/src/DeepGapSeq/DeepFretSimulate/
-/src/DeepGapSeq/InceptionFRET/
