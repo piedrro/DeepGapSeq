@@ -18,5 +18,6 @@ tsaug
 tensorboard
 parmap
 retrying
-glob2
 openpyxl
+glob2
+pyqt5-tools

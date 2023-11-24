@@ -1,4 +1,3 @@
 DeepGapSeq
 __init__
-deepgapseq_simulated_traces
 ebfret_generate_fit_example

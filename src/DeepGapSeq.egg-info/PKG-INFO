@@ -31,8 +31,9 @@ Requires-Dist: tsaug
 Requires-Dist: tensorboard
 Requires-Dist: parmap
 Requires-Dist: retrying
-Requires-Dist: glob2
 Requires-Dist: openpyxl
+Requires-Dist: glob2
+Requires-Dist: pyqt5-tools
 
 # DeepGapSeq
 

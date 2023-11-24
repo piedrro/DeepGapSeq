@@ -2,6 +2,7 @@ LICENCE
 README.md
 pyproject.toml
 src/__init__.py
+src/ebfret_generate_fit_example.py
 src/DeepGapSeq/__init__.py
 src/DeepGapSeq/_utils_worker.py
 src/DeepGapSeq.egg-info/PKG-INFO
@@ -44,11 +45,14 @@ src/DeepGapSeq/InceptionFRET/model.py
 src/DeepGapSeq/InceptionFRET/trainer.py
 src/DeepGapSeq/ebFRET/__init__.py
 src/DeepGapSeq/ebFRET/ebfret_utils.py
+src/DeepGapSeq/hmm_fitting/__init__.py
+src/DeepGapSeq/hmm_fitting/model.py
 src/DeepGapSeq/misc/process_kinsoft_data.py
 src/DeepGapSeq/simulation/__init__.py
 src/DeepGapSeq/simulation/deepgapseq_trace_generator.py
 src/DeepGapSeq/simulation/training_data_1color.py
 src/DeepGapSeq/simulation/training_data_2color.py
+src/DeepGapSeq/simulation/training_data_3color.py
 src/DeepGapSeq/simulation/legacy code/__init__.py
 src/DeepGapSeq/simulation/legacy code/generate_training_data_from_MATLAB.py
 src/DeepGapSeq/simulation/legacy code/training_data_3color.py
