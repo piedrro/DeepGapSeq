@@ -31,6 +31,16 @@ dependencies = [
     "spyder",
     "pyqt5",
     "pyqtgraph",
+    "originpro",
+    "tensorflow[and-cuda]",
+    "mat4py",
+    "tsaug",
+    "tensorboard",
+    "parmap",
+    "retrying",
+    "openpyxl",
+    "glob2",
+    "pyqt5-tools",
 ]
 
 [project.urls]

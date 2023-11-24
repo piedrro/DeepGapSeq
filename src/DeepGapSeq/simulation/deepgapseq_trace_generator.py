@@ -21,61 +21,23 @@ class trace_generator():
                  mode = "state_mode",
                  parallel_asynchronous = False,
                  outdir = "",
-                 export_mode = "text_files",
+                 export_mode = "",
                  export_name = "trace_dataset",
-                 blink_prob= 0,
-                 d_lifetime = None,
-                 a_lifetime = None,
-                 crosstalk = (0,0),
-                 dir_exc = (0,0),
-                 aggregation_prob = 0,
-                 falloff_prob = 0,
-                 falloff_lifetime = 500
                  ):
         
         """
         Simulation scripts are inspired by the DeepLASI implementation of DeepFRET simulation scripts.
     
-        n_traces: 
-            Number of traces
-        n_timesteps: 
-            Number of frames per trace
-        n_colors: 
-            Number of colors (1-color, 2-color or 3-color data possible)
-        balance_classes: 
-            Balance classes based on minimum number of labeled frames
-        reduce_memory: 
-            Include/exclude trace parameters beside countrates
-        state_mode: 
-            Label dynamic traces according to state occupancy, used for training state classifiers
-        n_states_model: 
-            Label each trace according to number of observed traces, used for number of states classifier
-        parallel_asynchronous: 
-            parallel processing (faster)
-        outdir: 
-            Output directory
-        export_mode: 
-            export mode, more modes will be added over time
-        blink_prob:
-            Probability of observing photoblinking in a trace.
-        D_lifetime:
-            Lifetime of donor fluorophore, as drawn from exponential distribution.
-            Set to None if fluorophore shouldn't bleach.
-        A_lifetime:
-            Lifetime of acceptor fluorophore, as drawn from exponential
-            distribution. Set to None if fluorophore shouldn't bleach.
-        cross_talk:    
-            signal mixing from two fluorophores, at least two traces
-        dir_exc: 
-            direct excitation of acceptor fluorophore, at least two traces
-        aggregation_prob:
-            Probability of trace being an aggregate. Note that this locks the
-            labelled molecule in a random, fixed FRET state.
-        falloff_prob:
-            Probability that the molecule will spontaneously fall off the surface
-            (All intensities zero)
-        falloff_lifetime:
-            Exponential average lifetime if the molecule falls off the surface
+        n_traces: Number of traces
+        n_timesteps: Number of frames per trace
+        n_colors: Number of colors (1-color, 2-color or 3-color data possible)
+        balance_classes: Balance classes based on minimum number of labeled frames
+        reduce_memory: Include/exclude trace parameters beside countrates
+        state_mode: Label dynamic traces according to state occupancy, used for training state classifiers
+        n_states_model: Label each trace according to number of observed traces, used for number of states classifier
+        parallel_asynchronous: parallel processing (faster)
+        outdir: Output directory
+        export_mode: export mode, more modes will be added over time
         """
         
         self.n_traces = n_traces
@@ -89,20 +51,12 @@ class trace_generator():
         self.outdir = outdir
         self.export_mode = export_mode
         self.export_name = export_name
-        self.blink_prob = blink_prob
-        self.d_lifetime = d_lifetime    
-        self.a_lifetime = a_lifetime
-        self.crosstalk = crosstalk
-        self.dir_exc = dir_exc
-        self.aggregation_prob = aggregation_prob
-        self.falloff_prob = falloff_prob
-        self.falloff_lifetime = falloff_lifetime
-
+        
         self.check_mode()
         self.check_outdir()
 
         assert n_colors in [1,2], "available colours: 1, 2"
-        assert export_mode in ["text_files", "pickledict","ebfret", "ebFRET_files"], "available export modes: 'text_files', 'pickledict', 'ebfret', 'ebFRET_files'"
+        assert export_mode in ["","text_files", "pickledict","ebfret", "ebFRET_files"], "available export modes: '','text_files', 'pickledict', 'ebfret', 'ebFRET_files'"
         
     def check_outdir(self, overwrite=True, folder_name = "simulated_traces"):
     
@@ -139,13 +93,7 @@ class trace_generator():
             state_mode=self.state_mode,
             n_states_mode=self.n_states_mode,
             reduce_memory=self.reduce_memory,
-            parallel_asynchronous=self.parallel_asynchronous,
-            blink_prob= self.blink_prob,
-            d_lifetime = self.d_lifetime,
-            a_lifetime = self.a_lifetime,
-            aggregation_prob = self.aggregation_prob,
-            falloff_prob = self.falloff_prob,
-            falloff_lifetime = self.falloff_lifetime
+            parallel_asynchronous=self.parallel_asynchronous
         )
         
         training_data = []
@@ -167,7 +115,7 @@ class trace_generator():
     
     def generate_two_colour_traces(self):
         
-        traces, tmats = training_data_2color.simulate_2color_traces(
+        traces = training_data_2color.simulate_2color_traces(
             n_traces=int(self.n_traces),
             max_n_states=self.n_states,
             n_frames=self.n_frames,
@@ -175,14 +123,6 @@ class trace_generator():
             n_states_mode=self.n_states_mode,
             reduce_memory=self.reduce_memory,
             parallel_asynchronous=self.parallel_asynchronous,
-            blink_prob= self.blink_prob,
-            d_lifetime = self.d_lifetime,
-            a_lifetime = self.a_lifetime,
-            crosstalk = self.crosstalk,
-            dir_exc = self.dir_exc,
-            aggregation_prob = self.aggregation_prob,
-            falloff_prob = self.falloff_prob,
-            falloff_lifetime = self.falloff_lifetime
         )
         
         training_data = []
@@ -191,6 +131,7 @@ class trace_generator():
         for trace in traces:
             
             training_labels.append(trace["label"].values)
+            
             if self.reduce_memory:
                 
                 if self.state_mode or self.n_states_mode:
@@ -208,7 +149,7 @@ class trace_generator():
                                             "_noise_level", 
                                             "_min_E_diff", "trans_mean"]].values)
                 
-        return training_data, training_labels, tmats
+        return training_data, training_labels
         
     def export_traces(self, training_data, training_labels):
 
@@ -268,6 +209,7 @@ class trace_generator():
 
             print(f"exporting pickled dictionary to: {file_path}")
 
+
         if self.export_mode == "ebfret":
 
             file_path = os.path.join(self.outdir, f"{self.export_name}_{date}_SMD.mat")
@@ -311,6 +253,9 @@ class trace_generator():
 
             print(f"exporting ebFRET SMD file to: {file_path}")
 
+
+
+
     def generate_traces(self):
         
         print("Generating traces...")
@@ -322,7 +267,7 @@ class trace_generator():
                 
         elif self.n_colors == 2 or (self.n_colors == 1 and self.state_mode):
             
-            training_data, training_labels, training_tmats = self.generate_two_colour_traces()
+            training_data, training_labels = self.generate_two_colour_traces()
             
         stop = time()
         duration = stop - start
@@ -334,7 +279,7 @@ class trace_generator():
         
         self.export_traces(training_data, training_labels)
         
-        return training_data, training_labels, training_tmats
+        return training_data, training_labels
         
 
 
