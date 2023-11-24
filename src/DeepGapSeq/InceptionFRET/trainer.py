@@ -60,10 +60,10 @@ class Trainer:
         self.best_model_weights = None
 
         if os.path.exists(save_dir):
-            model_dir = os.path.join(save_dir, "models", model_folder + "_" + self.timestamp)
+            model_dir = os.path.join(save_dir, "deepgapseq_simulated_traces/models", model_folder + "_" + self.timestamp)
         else:
 
-            model_dir = os.path.join("models", model_folder + "_" + self.timestamp)
+            model_dir = os.path.join("deepgapseq_simulated_traces/models", model_folder + "_" + self.timestamp)
 
         model_dir = os.path.abspath(model_dir)
 
