@@ -173,6 +173,7 @@ class _ebFRET_methods:
 
                     user_label = localisation_data["user_label"]
                     nucleotide_label = localisation_data["nucleotide_label"]
+
                     crop_range = localisation_data["crop_range"]
 
                     if self.get_filter_status("ebfret", user_label, nucleotide_label) == False:
@@ -186,6 +187,10 @@ class _ebFRET_methods:
 
                         if crop_plots == True and len(crop_range) == 2:
                             crop_range = sorted(crop_range)
+                            if crop_range[0] < 0:
+                                crop_range[0] = 0
+                            if crop_range[1] > len(data):
+                                crop_range[1] = len(data)
                             data = data[int(crop_range[0]):int(crop_range[1])]
 
                         ebfret_dataset[localisation_index] = data

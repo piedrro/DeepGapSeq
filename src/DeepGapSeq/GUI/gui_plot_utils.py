@@ -102,11 +102,21 @@ class _plotting_methods:
 
         slider_value = self.plot_localisation_number.value()
         localisation_number = self.localisation_numbers[slider_value]
+        plot_mode = self.plot_mode.currentText()
 
         if mode == "click":
 
             for dataset_name in self.data_dict.keys():
+
                 crop_range = self.data_dict[dataset_name][localisation_number]["crop_range"]
+                data_length = self.data_dict[dataset_name][localisation_number][plot_mode].shape[0]
+
+                if event < 0:
+                    event = 0
+                if event > data_length:
+                    event = data_length
+
+                event = int(event)
 
                 crop_range.append(event)
 

@@ -17,7 +17,7 @@ mat4py
 tsaug
 tensorboard
 parmap
-retrying
 openpyxl
+retrying
 glob2
 pyqt5-tools
