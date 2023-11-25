@@ -1,6 +1,6 @@
 
 import time
-from DeepGapSeq.ebFRET.ebfret_utils import ebFRET_controller
+from DeepGapSeq.GUI.ebfret_utils import ebFRET_controller
 
 controller = ebFRET_controller()
 

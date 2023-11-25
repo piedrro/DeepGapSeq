@@ -16,9 +16,6 @@ matlab_files_directory = 'src/DeepGapSeq/ebFRET'
 matlab_files = list(list_matlab_files(matlab_files_directory))
 
 setup(
-    name='DeepGapSeq',
-    version='0.1',
-    packages=find_packages(),
     package_data={
         # Include MATLAB files in the package
         'DeepGapSeq': matlab_files,

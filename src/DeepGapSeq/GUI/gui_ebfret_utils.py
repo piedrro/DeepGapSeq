@@ -205,7 +205,7 @@ class _ebFRET_methods:
         ebFRET_controller = None
 
         try:
-            from DeepGapSeq.ebFRET.ebfret_utils import ebFRET_controller
+            from DeepGapSeq.GUI.ebfret_utils import ebFRET_controller
 
             ebFRET_controller = ebFRET_controller()
             progress_callback.emit(10)

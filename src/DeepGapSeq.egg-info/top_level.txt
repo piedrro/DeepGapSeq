@@ -1,3 +1,2 @@
 DeepGapSeq
 __init__
-ebfret_generate_fit_example

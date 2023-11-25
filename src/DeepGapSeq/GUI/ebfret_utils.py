@@ -14,13 +14,16 @@ import pandas as pd
 import os
 import threading
 import time
+import importlib
 import importlib.resources as resources
 
 class ebFRET_controller:
 
     def __init__(self,
-                 ebfret_dir: str = os.path.dirname(os.path.realpath(__file__)),
+                 package_dir: str = resources.files(importlib.import_module(f'DeepGapSeq')),
                  num_workers: int = 2,):
+
+        ebfret_dir = os.path.join(package_dir, "ebFRET")
 
         self.engine = None
         atexit.register(self.cleanup)  # Register cleanup method to be called on exit
@@ -32,10 +35,6 @@ class ebFRET_controller:
         self.ebfret_running = False
 
         self.num_workers = num_workers
-
-        self.ebfret_dir_status = self.check_ebfret_dir()
-        self.matlab_engine_status = self.check_matlab_engine_installed()
-
         self.lock = threading.Lock()
 
     def check_ebfret_dir(self):

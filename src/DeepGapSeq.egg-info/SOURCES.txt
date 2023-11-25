@@ -2,8 +2,8 @@ LICENCE
 MANIFEST.in
 README.md
 pyproject.toml
+setup.py
 src/__init__.py
-src/ebfret_generate_fit_example.py
 src/DeepGapSeq/__init__.py
 src/DeepGapSeq/_utils_worker.py
 src/DeepGapSeq.egg-info/PKG-INFO
@@ -26,6 +26,7 @@ src/DeepGapSeq/DeepLASI/wrapper.py
 src/DeepGapSeq/GUI/__init__.py
 src/DeepGapSeq/GUI/analysis_gui.py
 src/DeepGapSeq/GUI/analysiswindow_gui.py
+src/DeepGapSeq/GUI/ebfret_utils.py
 src/DeepGapSeq/GUI/exportsettings_gui.py
 src/DeepGapSeq/GUI/fittingwindow_gui.py
 src/DeepGapSeq/GUI/gui_deeplasi_utils.py
@@ -44,10 +45,10 @@ src/DeepGapSeq/InceptionFRET/generate_training_set.py
 src/DeepGapSeq/InceptionFRET/main.py
 src/DeepGapSeq/InceptionFRET/model.py
 src/DeepGapSeq/InceptionFRET/trainer.py
-src/DeepGapSeq/ebFRET/__init__.py
-src/DeepGapSeq/ebFRET/ebfret_utils.py
+src/DeepGapSeq/ebFRET/ebFRET.m
 src/DeepGapSeq/ebFRET/+ebfret/check_matlab_version.m
 src/DeepGapSeq/ebFRET/+ebfret/check_parfor.m
+src/DeepGapSeq/ebFRET/+ebfret/ebFRET.m
 src/DeepGapSeq/ebFRET/+ebfret/escape_tex.m
 src/DeepGapSeq/ebFRET/+ebfret/join.m
 src/DeepGapSeq/ebFRET/+ebfret/nan_to_zero.m
