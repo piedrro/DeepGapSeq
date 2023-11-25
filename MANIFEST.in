@@ -1,1 +1,1 @@
-recursive-include src/ebFRET*
+recursive-include src/ebFRET *.m
