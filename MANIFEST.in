@@ -1,1 +1,1 @@
-recursive-include src/ebFRET *.m
+recursive-include src/DeepGapSeq/ebFRET *.m

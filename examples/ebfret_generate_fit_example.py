@@ -1,6 +1,6 @@
 import os
 from DeepGapSeq.simulation.deepgapseq_trace_generator import trace_generator
-from ebFRET.ebfret_utils import ebFRET_controller
+from DeepGapSeq.ebFRET.ebfret_utils import ebFRET_controller
 
 desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 

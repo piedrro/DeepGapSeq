@@ -10,7 +10,7 @@ def list_matlab_files(directory):
                 yield os.path.relpath(os.path.join(root, file), 'src')
 
 # Specify the directory containing MATLAB files
-matlab_files_directory = 'src/ebFRET'
+matlab_files_directory = 'src/DeepGapSeq/ebFRET'
 
 # List all MATLAB files
 matlab_files = list(list_matlab_files(matlab_files_directory))
