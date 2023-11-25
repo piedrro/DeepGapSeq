@@ -1,7 +1,5 @@
-import time
 import traceback
 from DeepGapSeq.GUI.gui_worker import Worker
-import os
 import numpy as np
 import copy
 
@@ -207,7 +205,7 @@ class _ebFRET_methods:
         ebFRET_controller = None
 
         try:
-            from DeepGapSeq.ebFRET.ebfret_utils import ebFRET_controller
+            from ebFRET.ebfret_utils import ebFRET_controller
 
             ebFRET_controller = ebFRET_controller()
             progress_callback.emit(10)
