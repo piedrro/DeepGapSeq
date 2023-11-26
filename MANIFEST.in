@@ -1,1 +1,2 @@
 recursive-include src/DeepGapSeq/ebFRET *.m
+recursive-include src/DeepGapSeq/DeepLASI/models *.h5

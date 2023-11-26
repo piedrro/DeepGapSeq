@@ -16,13 +16,13 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="mainwindow_tab">
       <property name="currentIndex">
        <number>0</number>
       </property>
       <widget class="QWidget" name="traces_tab">
        <attribute name="title">
-        <string>View Traces</string>
+        <string>Trace Graphs</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -157,8 +157,88 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Trace Analysis</string>
+        <string>Analysis Graphs</string>
        </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QWidget" name="analysis_graph_container" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Plot Data</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_63">
+            <property name="text">
+             <string>Plot Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QComboBox" name="analysis_graph_mode">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Donor</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Acceptor</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FRET Data</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FRET Efficiency</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FRET Data + FRET Efficiency</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="analysis_graph_data">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>All Images</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -182,7 +262,7 @@
    </widget>
    <widget class="QMenu" name="menuAnalysis_2">
     <property name="title">
-     <string>Analysis</string>
+     <string>Fit</string>
     </property>
     <addaction name="actionFit_Hidden_States_F"/>
    </widget>

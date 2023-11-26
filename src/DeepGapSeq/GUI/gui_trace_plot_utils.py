@@ -1,13 +1,18 @@
 from PyQt5.QtGui import QCursor
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QVBoxLayout, QWidget
 import numpy as np
 import pyqtgraph as pg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 import traceback
 from functools import partial
 import uuid
 import copy
 
-class _plotting_methods:
+
+
+class _trace_plotting_methods:
 
     def reset_crop_ranges(self, mode="active"):
         slider_value = self.plot_localisation_number.value()
@@ -753,10 +758,11 @@ class CustomPlot(pg.PlotItem):
         return self.metadata
 
 
-class CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
+class CustomPyQTGraphWidget(pg.GraphicsLayoutWidget):
 
     def __init__(self, parent):
         super().__init__()
+
         self.parent = parent
         self.frame_position_memory = {}
         self.frame_position = None
@@ -815,4 +821,13 @@ class CustomGraphicsLayoutWidget(pg.GraphicsLayoutWidget):
             self.xpos = plot_coords.x()
 
         return self.xpos
+
+
+
+
+
+
+
+
+
 

@@ -1,29 +1,20 @@
 import sys
-import pickle
-from glob2 import glob
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from qtpy.QtCore import QThreadPool
 
-from DeepGapSeq.GUI.mainwindow_gui import Ui_MainWindow
-from DeepGapSeq.GUI.plotsettings_gui import Ui_Form as plotsettings_gui
-from DeepGapSeq.GUI.importwindow_gui import Ui_Form as importwindow_gui
-from DeepGapSeq.GUI.exportsettings_gui import Ui_Form as exportwindow_gui
-from DeepGapSeq.GUI.fittingwindow_gui import Ui_Form as fittingwindow_gui
+from DeepGapSeq.GUI.GUI_windows.mainwindow_gui import Ui_MainWindow
+from DeepGapSeq.GUI.GUI_windows.plotsettings_gui import Ui_Form as plotsettings_gui
+from DeepGapSeq.GUI.GUI_windows.importwindow_gui import Ui_Form as importwindow_gui
+from DeepGapSeq.GUI.GUI_windows.exportsettings_gui import Ui_Form as exportwindow_gui
+from DeepGapSeq.GUI.GUI_windows.fittingwindow_gui import Ui_Form as fittingwindow_gui
 
-
-
-import pyqtgraph as pg
-from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QSizePolicy,QSlider, QLabel, QFileDialog)
-import numpy as np
+from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QSizePolicy,QSlider, QLabel)
 import traceback
 from functools import partial
-import os
-import pandas as pd
-import uuid
 
-
-from DeepGapSeq.GUI.gui_plot_utils import CustomPlot, auto_scale_y, CustomGraphicsLayoutWidget, _plotting_methods
+from DeepGapSeq.GUI.gui_trace_plot_utils import CustomPyQTGraphWidget, _trace_plotting_methods
+from DeepGapSeq.GUI.gui_analysis_plot_utils import  CustomMatplotlibWidget, _analysis_plotting_methods
 from DeepGapSeq.GUI.gui_import_utils import _import_methods
 from DeepGapSeq.GUI.gui_export_utils import _export_methods
 from DeepGapSeq.GUI.gui_ebfret_utils import _ebFRET_methods
@@ -120,7 +111,7 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
 
 
-class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _import_methods, _export_methods, _ebFRET_methods, _DeepLasi_methods):
+class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _trace_plotting_methods, _import_methods, _export_methods, _ebFRET_methods, _DeepLasi_methods, _analysis_plotting_methods):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -133,16 +124,27 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
         self.export_settings = ExportSettingsWindow(self)
         self.fitting_window = FittingWindow(self)
 
-        self.graph_container = self.findChild(QWidget, "graph_container")
+
         self.setWindowTitle("DeepGapSeq-Analysis")  # Set the window title
 
-        #create matplotib plot graph
+        #create pyqt graph container
+        self.graph_container = self.findChild(QWidget, "graph_container")
         self.graph_container.setLayout(QVBoxLayout())
         self.graph_container.setMinimumWidth(100)
 
-        self.graph_canvas = CustomGraphicsLayoutWidget(self)
+        self.graph_canvas = CustomPyQTGraphWidget(self)
         self.graph_container.layout().addWidget(self.graph_canvas)
         self.graph_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # create matlotlib graph container
+        self.analysis_graph_container = self.findChild(QWidget, "analysis_graph_container")
+        self.analysis_graph_container.setLayout(QVBoxLayout())
+        self.analysis_graph_container.setMinimumWidth(100)
+
+        self.analysis_graph_canvas = CustomMatplotlibWidget(self)
+        self.analysis_graph_container.layout().addWidget(self.analysis_graph_canvas)
+        self.analysis_graph_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
 
         self.plotsettings_button = self.findChild(QtWidgets.QPushButton, "plotsettings_button")
         self.plotsettings_button.clicked.connect(self.toggle_plot_settings)
