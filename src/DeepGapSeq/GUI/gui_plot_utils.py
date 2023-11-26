@@ -109,7 +109,7 @@ class _plotting_methods:
             for dataset_name in self.data_dict.keys():
 
                 crop_range = self.data_dict[dataset_name][localisation_number]["crop_range"]
-                data_length = self.data_dict[dataset_name][localisation_number][plot_mode].shape[0]
+                data_length = self.data_dict[dataset_name][localisation_number][plot_mode.lower()].shape[0]
 
                 if event < 0:
                     event = 0

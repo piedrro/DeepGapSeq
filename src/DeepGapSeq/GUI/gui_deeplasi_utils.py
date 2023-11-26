@@ -51,7 +51,7 @@ class _DeepLasi_methods:
 
     def build_deeplasi_dataset(self):
 
-        deeplasi_dataset = []
+        deeplasi_dataset = {}
         n_colors = None
 
         try:
@@ -64,44 +64,48 @@ class _DeepLasi_methods:
 
                 for localisation_index, localisation_data in enumerate(self.data_dict[dataset_name]):
 
-                    if data_name == "Donor":
-                        data = localisation_data["donor"]
-                        n_colors=1
-                    elif data_name == "Acceptor":
-                        data = localisation_data["acceptor"]
-                        n_colors = 1
-                    elif data_name == "FRET Data":
-                        data = np.array([localisation_data["donor"], localisation_data["acceptor"]])
-                        n_colors = 2
-                    elif "efficiency" in data_name.lower():
-                        data = localisation_data["efficiency"]
-                        n_colors = 1
-                    elif data_name == "DD":
-                        data = localisation_data["DD"]
-                        n_colors = 1
-                    elif data_name == "AA":
-                        data = localisation_data["AA"]
-                        n_colors = 1
-                    elif data_name == "DA":
-                        data = localisation_data["DA"]
-                        n_colors = 1
-                    elif data_name == "AD":
-                        data = localisation_data["AD"]
-                        n_colors = 1
-
+                    user_label = localisation_data["user_label"]
+                    nucleotide_label = localisation_data["nucleotide_label"]
                     crop_range = localisation_data["crop_range"]
 
-                    if len(data.shape) == 1:
-                        data = np.expand_dims(data, axis=0)
+                    if self.get_filter_status("deeplasi", user_label, nucleotide_label) == False:
 
-                    if crop_plots == True and len(crop_range) == 2:
-                        crop_range = sorted(crop_range)
-                        data = np.array(data)
-                        data = data[:, crop_range[0]:crop_range[1]]
+                        if data_name == "Donor":
+                            data = localisation_data["donor"]
+                            n_colors=1
+                        elif data_name == "Acceptor":
+                            data = localisation_data["acceptor"]
+                            n_colors = 1
+                        elif data_name == "FRET Data":
+                            data = np.array([localisation_data["donor"], localisation_data["acceptor"]])
+                            n_colors = 2
+                        elif "efficiency" in data_name.lower():
+                            data = localisation_data["efficiency"]
+                            n_colors = 1
+                        elif data_name == "DD":
+                            data = localisation_data["DD"]
+                            n_colors = 1
+                        elif data_name == "AA":
+                            data = localisation_data["AA"]
+                            n_colors = 1
+                        elif data_name == "DA":
+                            data = localisation_data["DA"]
+                            n_colors = 1
+                        elif data_name == "AD":
+                            data = localisation_data["AD"]
+                            n_colors = 1
 
-                    data = np.array(data).T
+                        if len(data.shape) == 1:
+                            data = np.expand_dims(data, axis=0)
 
-                    deeplasi_dataset.append(data)
+                        if crop_plots == True and len(crop_range) == 2:
+                            crop_range = sorted(crop_range)
+                            data = np.array(data)
+                            data = data[:, crop_range[0]:crop_range[1]]
+
+                        data = np.array(data).T
+
+                        deeplasi_dataset[localisation_index] = data
 
         except:
             print(traceback.format_exc())
@@ -113,59 +117,59 @@ class _DeepLasi_methods:
     def _detect_deeplasi_states(self, progress_callback = None, deeplasi_dataset = []):
 
         detected_states = []
+        detected_labels = []
 
         try:
 
-            deeplasi_dataset, n_colors = self.build_deeplasi_dataset()
+            self.deeplasi_datadict, n_colors = self.build_deeplasi_dataset()
 
-            n_states = int(self.fitting_window.deeplasi_n_states.currentText())
-            crop_data = self.fitting_window.deeplasi_crop_plots.isChecked()
+            deeplasi_data = list(self.deeplasi_datadict.values())
 
-            detected_states = []
-            confidence_list = []
+            lengths = np.unique([len(data) for data in deeplasi_data])
 
-            wrapper = DeepLasiWrapper(n_colors=n_colors, n_states=n_states)
-
-            wrapper.initialise_model()
-
-            if crop_data:
-
-                for index, data in enumerate(deeplasi_dataset):
-
-                    state, confidence = wrapper.predict_states([data], n_colors=n_colors, n_states=n_states)
-
-                    detected_states.append(state[0])
-                    confidence_list.append(confidence[0])
-
+            if len(lengths) == 1:
+                deeplasi_mode = "fast"
             else:
+                deeplasi_mode = "slow"
 
-                detected_states, confidence_list = wrapper.predict_states(deeplasi_dataset, n_colors=n_colors, n_states=n_states)
+            wrapper = DeepLasiWrapper(parent=self, n_colors=n_colors)
+
+            detected_states, detected_labels = wrapper.predict(
+                deeplasi_data,
+                n_colors=n_colors,
+                deeplasi_mode=deeplasi_mode,
+                progress_callback=progress_callback)
 
         except:
             print(traceback.format_exc())
 
-        self.deeplasi_detected_states = detected_states
+        self.detected_states = detected_states
+        self.detected_labels = detected_labels
+
+        return detected_states, detected_labels
 
 
-    def _detect_deeplasi_states_cleanup(self, detected_states=[]):
+    def _detect_deeplasi_states_cleanup(self):
 
         try:
 
             dataset_name = self.fitting_window.deeplasi_fit_dataset.currentText()
 
-            for localisation_number, state in enumerate(self.deeplasi_detected_states):
+            for localisation_index, localisation_number in enumerate(self.deeplasi_datadict.keys()):
 
                 localisation_data = self.data_dict[dataset_name][localisation_number]
+                state = self.detected_states[localisation_index]
+                label = self.detected_labels[localisation_index]
 
                 localisation_data["states"] = np.array(state).astype(int)
-
-                # if localisation_number == 17:
-                #     print(state)
 
                 self.data_dict[dataset_name][localisation_number] = copy.deepcopy(localisation_data)
 
             self.compute_state_means(dataset_name=dataset_name)
             self.plot_traces(update_plot=True)
+
+            self.gui_progrssbar(progress=0, name="deeplasi")
+            self.print_notification(f"DeepLasi prediction complete.")
 
         except:
             print(traceback.format_exc())
@@ -177,6 +181,7 @@ class _DeepLasi_methods:
 
             worker = Worker(self._detect_deeplasi_states)
             worker.signals.finished.connect(self._detect_deeplasi_states_cleanup)
+            worker.signals.progress.connect(partial(self.gui_progrssbar,name="deeplasi"))
             self.threadpool.start(worker)
 
 

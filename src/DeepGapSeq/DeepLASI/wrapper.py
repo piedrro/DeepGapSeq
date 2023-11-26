@@ -16,12 +16,13 @@ import matplotlib.pyplot as plt
 class DeepLasiWrapper():
 
     def __init__(self,
+            parent = None,
             n_colors = 2,
             n_states = 2,
             model_type = "states",
             traces = []):
         
-        
+        self.AnalysisGUI = parent
         self.n_colors = n_colors
         self.n_states = n_states
         self.model_type = model_type
@@ -45,16 +46,23 @@ class DeepLasiWrapper():
         
         self.check_gpu()
 
+    def print_notification(self, message):
+
+        if self.AnalysisGUI is not None:
+            self.AnalysisGUI.print_notification(message)
+        else:
+            print(message)
+
     def check_gpu(self):
         
         devices = tf.config.list_physical_devices('GPU')
         
         if len(devices) == 0:
-            print("Tensorflow running on CPU")
+            self.print_notification("Tensorflow running on CPU")
             self.gpu = False
             self.device = None
         else:
-            print("Tensorflow running on GPU")
+            self.print_notification("Tensorflow running on GPU")
             self.gpu = True
             self.device = devices[0]
 
@@ -77,7 +85,7 @@ class DeepLasiWrapper():
                     break
 
         if correct_format == False:
-            print("input data must be a list of numpy arrays of shape (B,N,C)")
+            self.print_notification("input data must be a list of numpy arrays of shape (B,N,C)")
 
         return correct_format, traces
 
@@ -99,7 +107,6 @@ class DeepLasiWrapper():
         if self.model_type == "states":
             model_name = "DeepLASI_{}color_{}state_classifier.h5".format(self.n_colors, self.n_states)
         elif self.model_type == "n_states":
-            print(True)
             model_name = "DeepLASI_{}color_number_of_states_classifier.h5".format(self.n_colors)
         elif self.model_type == "trace":
             if self.n_colors == 1:
@@ -112,27 +119,27 @@ class DeepLasiWrapper():
         model_path = os.path.join(model_directory, "models",model_name)
         
         if os.path.exists(model_path):
-            print(f"loading model: {model_name}")
+            self.print_notification(f"loading model: {model_name}")
             
             self.model = tf.keras.models.load_model(model_path)
         else:
             self.model = None
-            print(f"model {model_name}, does not exist")
+            self.print_notification(f"model {model_name}, does not exist")
 
         return self.model
 
 
     def initialise_models(self, n_colors=""):
-        
-        print("Loading DeepLASI pretrained models")
-        
+
         self.deeplasi_models = {"states":{}, "n_states":"", "trace":""}
         
         model_directory = resources.files(importlib.import_module(f'DeepGapSeq.DeepLASI'))
         
         if n_colors.isdigit():
             self.n_colors = int(n_colors)
-        
+
+        self.print_notification(f"Loading DeepLASI pretrained {self.n_colors}colour models")
+
         for n_states in range(2,5):
             
             state_model_name = "DeepLASI_{}color_{}state_classifier.h5".format(self.n_colors, n_states)
@@ -142,8 +149,7 @@ class DeepLasiWrapper():
             state_model = tf.keras.models.load_model(state_model_path)
             
             self.deeplasi_models["states"][n_states] = state_model
-            
-            
+
         n_states_model_name = "DeepLASI_{}color_number_of_states_classifier.h5".format(self.n_colors)
         n_states_model_path = os.path.join(model_directory, "models", n_states_model_name)
         n_states_model = tf.keras.models.load_model(n_states_model_path)
@@ -374,7 +380,7 @@ class DeepLasiWrapper():
         return prediction_list, confidence_list
     
     
-    def predict(self, traces = [], n_colors = None, crop_mode = True):
+    def predict(self, traces = [], n_colors = None, deeplasi_mode = "fast", progress_callback = None):
         
         if len(traces) > 0:
             self.traces = traces
@@ -394,15 +400,22 @@ class DeepLasiWrapper():
             traces = self.preprocess_data(traces)
             
             self.initialise_models()
-            
-            # traces = self.pad_traces(traces)
-            
-            if crop_mode == True:
+
+            self.print_notification(f"Predicting DeepLASI states for {len(traces)} traces...")
+
+            if deeplasi_mode.lower() == "fast":
             
                 traces = tf.convert_to_tensor(traces, dtype=tf.float32)
                 
                 trace_prediction, trace_confidence, trace_labels = self._predict_trace(traces, verbose=False)
+
+                if progress_callback is not None:
+                    progress_callback.emit(33)
+
                 n_states_prediction, n_states_confidence = self._predict_n_states(traces, verbose=False)
+
+                if progress_callback is not None:
+                    progress_callback.emit(66)
                 
                 for index, (trace, label, n_states) in enumerate(zip(traces, trace_labels, n_states_prediction)):
                     
@@ -419,6 +432,10 @@ class DeepLasiWrapper():
                         n_states_prediction[index] = "N/A"
                         
                         states_predictions.append(state_prediction)
+
+                    if progress_callback is not None:
+                        progress = int(((index + 1) / len(traces)) * 33) + 67
+                        progress_callback.emit(progress)
                 
             else:
                 
@@ -446,30 +463,11 @@ class DeepLasiWrapper():
                             
                     states_predictions.append(state_prediction[0])
                     trace_labels.append(trace_label[0])
-                            
-                            
-                            
-                            
-                    
-                    
-                    
-            
-            
-            
-            # for trace, states, label, n_states in zip(traces, states_predictions, trace_labels, n_states_prediction):
-                
-            #     plot_title = f"trace_class: {label}, n_states: {n_states}"
-                
-            #     plt.plot(trace)
-                
-            #     plt.title(plot_title)
-            #     plt.show()
-                
-            #     if label == "dynamic":
-            #         plt.plot(states)
-            #         plt.show()
-                    
-                  
+
+                    if progress_callback is not None:
+                        progress = int(((index + 1) / len(traces)) * 100)
+                        progress_callback.emit(progress)
+
         self.deeplasi_states = states_predictions
         self.deeplasi_labels = trace_labels
                     

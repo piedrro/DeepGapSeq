@@ -209,6 +209,13 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _plotting_methods, _impo
 
         self.current_dialog = None
 
+
+    def gui_progrssbar(self,progress, name):
+
+        if name.lower() == "deeplasi":
+            self.fitting_window.deeplasi_progressbar.setValue(progress)
+
+
     def format_export_settings(self):
 
         export_mode = self.export_settings.export_mode.currentText()

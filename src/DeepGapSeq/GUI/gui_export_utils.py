@@ -503,6 +503,9 @@ class _export_methods:
         elif export_mode.lower() == "ebfret":
             user_filter = self.fitting_window.ebfret_user_filter.currentText()
             nucleotide_filter = self.fitting_window.ebfret_nucleotide_filter.currentText()
+        elif export_mode.lower() == "deeplasi":
+            user_filter = self.fitting_window.deeplasi_user_filter.currentText()
+            nucleotide_filter = self.fitting_window.deeplasi_nucleotide_filter.currentText()
 
         filter = False
 
