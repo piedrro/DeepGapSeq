@@ -102,6 +102,7 @@ class _trace_plotting_methods:
                     self.data_dict[dataset_name][localisation_number]["gamma_ranges"] = gamma_ranges
 
             self.plot_traces(update_plot=False)
+            self.initialise_analysis_plot()
 
     def update_crop_range(self, event, mode ="click"):
 
@@ -238,107 +239,110 @@ class _trace_plotting_methods:
         return self.localisation_numbers, self.n_traces
 
     def initialise_plot(self):
+
         try:
-            plot_data = self.plot_data.currentText()
-            plot_mode = self.plot_mode.currentText()
-            show_detected_states = self.plot_settings.show_detected_states.isChecked()
 
-            if plot_data == "All Datasets":
-                self.plot_datasets = list(self.data_dict.keys())
-            elif plot_data != "":
-                self.plot_datasets = [plot_data]
-            else:
-                self.plot_datasets = []
+            if self.data_dict != {}:
 
-            alex_channels = []
+                plot_data = self.plot_data.currentText()
+                plot_mode = self.plot_mode.currentText()
 
-            if self.plot_settings.alex_show_DD.isChecked():
-                alex_channels.append("DD")
-            if self.plot_settings.alex_show_DA.isChecked():
-                alex_channels.append("DA")
-            if self.plot_settings.alex_show_AD.isChecked():
-                alex_channels.append("AD")
-            if self.plot_settings.alex_show_AA.isChecked():
-                alex_channels.append("AA")
-
-            self.n_plot_lines = 0
-
-            if len(self.plot_datasets) > 0:
-                plot_labels = list(self.data_dict[self.plot_datasets[0]][0].keys())
-
-                plot = False
-
-                if plot_mode == "Donor" and set(["donor"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["donor"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "Acceptor" and set(["acceptor"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["acceptor"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "FRET Data" and set(["donor", "acceptor"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["donor", "acceptor"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "FRET Efficiency" and set(["efficiency"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["efficiency"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "FRET Data + FRET Efficiency" and set(["donor", "acceptor", "efficiency"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["donor", "acceptor", "efficiency"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "DA" and set(["DA"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["DA"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "DD" and set(["DD"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["DD"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "AA" and set(["AA"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["AA"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "AD" and set(["AD"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["AD"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = alex_channels
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "ALEX Efficiency" and set(["efficiency"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = ["efficiency"]
-                    self.n_plot_lines = len(self.plot_line_labels)
-                elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_labels):
-                    plot = True
-                    self.plot_line_labels = alex_channels + ["efficiency"]
-                    self.n_plot_lines = len(self.plot_line_labels)
+                if plot_data == "All Datasets":
+                    self.plot_datasets = list(self.data_dict.keys())
+                elif plot_data != "":
+                    self.plot_datasets = [plot_data]
                 else:
+                    self.plot_datasets = []
+
+                alex_channels = []
+
+                if self.plot_settings.alex_show_DD.isChecked():
+                    alex_channels.append("DD")
+                if self.plot_settings.alex_show_DA.isChecked():
+                    alex_channels.append("DA")
+                if self.plot_settings.alex_show_AD.isChecked():
+                    alex_channels.append("AD")
+                if self.plot_settings.alex_show_AA.isChecked():
+                    alex_channels.append("AA")
+
+                self.n_plot_lines = 0
+
+                if len(self.plot_datasets) > 0:
+                    plot_labels = list(self.data_dict[self.plot_datasets[0]][0].keys())
+
                     plot = False
 
-                if plot == True and len(self.plot_line_labels) > 0:
-
-                    self.export_settings.export_data_selection.clear()
-                    self.export_settings.export_data_selection.addItems(self.plot_line_labels)
-
-                    self.localisation_numbers, self.n_traces = self.filter_data_dict()
-
-                    if self.n_traces > 0:
-                        slider_value = self.plot_localisation_number.value()
-                        if slider_value >= self.n_traces:
-                            slider_value = self.n_traces - 1
-                            self.plot_localisation_number.setValue(slider_value)
-
-                        self.plot_localisation_number.setMinimum(0)
-                        self.plot_localisation_number.setMaximum(self.n_traces - 1)
-
-                        self.plot_traces(update_plot=True)
-
+                    if plot_mode == "Donor" and set(["donor"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["donor"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "Acceptor" and set(["acceptor"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["acceptor"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "FRET Data" and set(["donor", "acceptor"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["donor", "acceptor"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "FRET Efficiency" and set(["efficiency"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["efficiency"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "FRET Data + FRET Efficiency" and set(["donor", "acceptor", "efficiency"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["donor", "acceptor", "efficiency"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "DA" and set(["DA"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["DA"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "DD" and set(["DD"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["DD"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "AA" and set(["AA"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["AA"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "AD" and set(["AD"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["AD"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = alex_channels
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "ALEX Efficiency" and set(["efficiency"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = ["efficiency"]
+                        self.n_plot_lines = len(self.plot_line_labels)
+                    elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_labels):
+                        plot = True
+                        self.plot_line_labels = alex_channels + ["efficiency"]
+                        self.n_plot_lines = len(self.plot_line_labels)
                     else:
-                        self.print_notification("No traces to plot")
+                        plot = False
+
+                    if plot == True and len(self.plot_line_labels) > 0:
+
+                        self.export_settings.export_data_selection.clear()
+                        self.export_settings.export_data_selection.addItems(self.plot_line_labels)
+
+                        self.localisation_numbers, self.n_traces = self.filter_data_dict()
+
+                        if self.n_traces > 0:
+                            slider_value = self.plot_localisation_number.value()
+                            if slider_value >= self.n_traces:
+                                slider_value = self.n_traces - 1
+                                self.plot_localisation_number.setValue(slider_value)
+
+                            self.plot_localisation_number.setMinimum(0)
+                            self.plot_localisation_number.setMaximum(self.n_traces - 1)
+
+                            self.plot_traces(update_plot=True)
+
+                        else:
+                            self.print_notification("No traces to plot")
 
         except:
             print(traceback.format_exc())

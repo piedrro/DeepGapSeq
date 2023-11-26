@@ -9,6 +9,16 @@ import copy
 
 class _import_methods:
 
+    def populate_combos(self):
+
+        self.updating_combos = True
+
+        self.populate_trace_graph_combos()
+        self.populate_analysis_graph_combos()
+        self.populate_deeplasi_options()
+
+        self.updating_combos = False
+
     def import_simulated_data(self):
 
         try:
@@ -71,15 +81,12 @@ class _import_methods:
 
                 self.compute_state_means()
 
-                self.plot_data.clear()
-                self.plot_data.addItems(list(self.data_dict.keys()))
-
-                self.populate_plot_mode()
-                self.populate_deeplasi_options()
+                self.populate_combos()
 
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
+                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())
@@ -200,19 +207,12 @@ class _import_methods:
 
                 self.compute_state_means()
 
-                self.plot_data.clear()
-                if len(self.data_dict.keys()) == 1:
-                    self.plot_data.addItems(list(self.data_dict.keys()))
-                else:
-                    self.plot_data.addItem("All Datasets")
-                    self.plot_data.addItems(list(self.data_dict.keys()))
-
-                self.populate_plot_mode()
-                self.populate_deeplasi_options()
+                self.populate_combos()
 
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
+                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())
@@ -334,7 +334,7 @@ class _import_methods:
 
         return alex_dict
 
-    def populate_plot_mode(self):
+    def populate_trace_graph_combos(self):
 
         self.plot_mode.clear()
 
@@ -364,6 +364,47 @@ class _import_methods:
         if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
             self.plot_mode.addItem("ALEX Efficiency")
             self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
+
+        self.plot_data.clear()
+        if len(self.data_dict.keys()) == 1:
+            self.plot_data.addItems(list(self.data_dict.keys()))
+        else:
+            self.plot_data.addItem("All Datasets")
+            self.plot_data.addItems(list(self.data_dict.keys()))
+
+
+    def populate_analysis_graph_combos(self):
+
+        self.analysis_graph_mode.clear()
+
+        plot_names = []
+
+        for dataset_name in self.data_dict.keys():
+            for plot_name, plot_value in self.data_dict[dataset_name][0].items():
+                if plot_name in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                    if len(plot_value) > 0:
+                        plot_names.append(plot_name)
+
+        if "donor" in plot_names:
+            self.analysis_graph_mode.addItem("Donor")
+        if "acceptor" in plot_names:
+            self.analysis_graph_mode.addItem("Acceptor")
+        if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
+            self.analysis_graph_mode.addItem("FRET Efficiency")
+        if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
+            self.analysis_graph_mode.addItem("DD")
+            self.analysis_graph_mode.addItem("AA")
+            self.analysis_graph_mode.addItem("DA")
+            self.analysis_graph_mode.addItem("AD")
+        if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+            self.analysis_graph_mode.addItem("ALEX Efficiency")
+
+        self.analysis_graph_data.clear()
+        if len(self.data_dict.keys()) == 1:
+            self.analysis_graph_data.addItems(list(self.data_dict.keys()))
+        else:
+            self.analysis_graph_data.addItem("All Datasets")
+            self.analysis_graph_data.addItems(list(self.data_dict.keys()))
 
 
     def import_gapseq_json(self):
@@ -424,19 +465,12 @@ class _import_methods:
 
                 self.compute_state_means()
 
-                self.plot_data.clear()
-                if len(self.data_dict.keys()) == 1:
-                    self.plot_data.addItems(list(self.data_dict.keys()))
-                else:
-                    self.plot_data.addItem("All Datasets")
-                    self.plot_data.addItems(list(self.data_dict.keys()))
-
-                self.populate_plot_mode()
-                self.populate_deeplasi_options()
+                self.populate_combos()
 
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
+                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())

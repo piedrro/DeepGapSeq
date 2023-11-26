@@ -111,7 +111,11 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
 
 
-class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _trace_plotting_methods, _import_methods, _export_methods, _ebFRET_methods, _DeepLasi_methods, _analysis_plotting_methods):
+class AnalysisGUI(QtWidgets.QMainWindow,
+    Ui_MainWindow, _trace_plotting_methods,
+    _import_methods, _export_methods,
+    _ebFRET_methods, _DeepLasi_methods,
+    _analysis_plotting_methods):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -176,6 +180,16 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _trace_plotting_methods,
         self.plot_mode.currentIndexChanged.connect(self.initialise_plot)
         self.plot_data.currentIndexChanged.connect(self.initialise_plot)
 
+        self.analysis_graph_data.currentIndexChanged.connect(self.initialise_analysis_plot)
+        self.analysis_graph_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
+        self.analysis_nucleotide_filter.currentIndexChanged.connect(self.initialise_analysis_plot)
+        self.analysis_user_filter.currentIndexChanged.connect(self.initialise_analysis_plot)
+        self.analysis_crop_traces.stateChanged.connect(self.initialise_analysis_plot)
+        self.analysis_histogram_dataset.currentIndexChanged.connect(self.initialise_analysis_plot)
+        self.analysis_histogram_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
+        self.analysis_histogram_bin_size.currentIndexChanged.connect(self.initialise_analysis_plot)
+
+
         self.plot_settings.plot_split_lines.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showx.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showy.stateChanged.connect(partial(self.plot_traces, update_plot=True))
@@ -210,7 +224,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _trace_plotting_methods,
         self.format_export_settings()
 
         self.current_dialog = None
-
+        self.updating_combos = False
 
     def gui_progrssbar(self,progress, name):
 
@@ -377,6 +391,7 @@ class AnalysisGUI(QtWidgets.QMainWindow, Ui_MainWindow, _trace_plotting_methods,
             if new_localisation_number >= 0 and new_localisation_number < len(self.data_dict[dataset_name]):
                 self.plot_localisation_number.setValue(new_localisation_number)
                 self.plot_traces(update_plot=True)
+
 
     def update_slider_label(self, slider_name):
 

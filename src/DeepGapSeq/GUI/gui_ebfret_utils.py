@@ -85,6 +85,7 @@ class _ebFRET_methods:
                 self.compute_state_means(dataset_name=dataset_name)
 
                 self.plot_traces(update_plot = True)
+                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())

@@ -167,6 +167,7 @@ class _DeepLasi_methods:
 
             self.compute_state_means(dataset_name=dataset_name)
             self.plot_traces(update_plot=True)
+            self.initialise_analysis_plot()
 
             self.gui_progrssbar(progress=0, name="deeplasi")
             self.print_notification(f"DeepLasi prediction complete.")
