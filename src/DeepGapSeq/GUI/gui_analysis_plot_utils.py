@@ -8,7 +8,7 @@ from DeepGapSeq._utils_worker import Worker
 
 class CustomMatplotlibWidget(QWidget):
     def __init__(self, parent=None):
-        super(CustomMatplotlibWidget, self).__init__(parent)
+        super().__init__(parent)
 
         # Initialize matplotlib figure
         self.figure = Figure()
@@ -47,31 +47,39 @@ class _analysis_plotting_methods:
         except:
             print(traceback.format_exc())
 
-
     def compute_histograms(self, trace_data, state_data):
 
-        histogram_data = {"intensity": {}, "centres": {}, "noise": {}}
+        histogram_data = {"intensity": {}, "centres": {}, "noise": {}, "dwell_times": {}}
 
         try:
 
-            for trace, states in zip(trace_data, state_data):
+            trace_data = np.concatenate(trace_data)
+            state_data = np.concatenate(state_data)
 
-                trace = np.array(trace)
-                states = np.array(states)
+            change_indices = np.where(np.diff(state_data) != 0)[0] + 1
 
-                for state in np.unique(states):
+            split_trace_data = np.split(trace_data, change_indices)
+            split_state_data = np.split(state_data, change_indices)
 
-                    if state not in histogram_data["intensity"].keys():
-                        histogram_data["intensity"][state] = []
-                        histogram_data["centres"][state] = []
-                        histogram_data["noise"][state] = []
+            for data, state in zip(split_trace_data, split_state_data):
 
-                    state_intensity_data = trace[states == state].tolist()
+                state = state[0]
 
-                    histogram_data["intensity"][state].extend(state_intensity_data)
-                    histogram_data["centres"][state].append(np.mean(state_intensity_data))
-                    histogram_data["noise"][state].append(np.std(state_intensity_data))
+                if state not in histogram_data["intensity"].keys():
+                    histogram_data["intensity"][state] = []
+                    histogram_data["centres"][state] = []
+                    histogram_data["noise"][state] = []
+                    histogram_data["dwell_times"][state] = []
 
+                instensity = data.tolist()
+                centres = [np.mean(data)]*len(data)
+                noise = [np.std(data)]*len(data)
+                dwell_time = len(data)
+
+                histogram_data["intensity"][state].extend(instensity)
+                histogram_data["centres"][state].extend(centres)
+                histogram_data["noise"][state].extend(noise)
+                histogram_data["dwell_times"][state].append(dwell_time)
 
         except:
             print(traceback.format_exc())
@@ -121,16 +129,25 @@ class _analysis_plotting_methods:
 
         histogram_dataset = self.analysis_histogram_dataset.currentText().lower()
         histogram_mode = self.analysis_histogram_mode.currentText().lower()
-        bin_size = int(self.analysis_histogram_bin_size.currentText())
+        bin_size = self.analysis_histogram_bin_size.currentText()
         plot_dataset = self.analysis_graph_data.currentText()
         plot_mode = self.analysis_graph_mode.currentText()
 
+        if bin_size.isdigit():
+            bin_size = int(bin_size)
+        else:
+            bin_size = "auto"
+
+
+        if histogram_dataset == "dwell times":
+            histogram_dataset = "dwell_times"
+
         if histogram_mode.lower() == "frequency":
-            xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize()
+            xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
             ylabel = "Frequency"
             density = False
         else:
-            xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize()
+            xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
             ylabel = "Probability"
             density = True
 
