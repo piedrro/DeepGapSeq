@@ -1,3 +1,6 @@
 /src/DeepGapSeq/InceptionFRET/deepgapseq_simulated_traces/
 /src/DeepGapSeq/misc/
 /src/DeepGapSeq/DeepLASI/models/
+simulated_traces/
+src/DeepGapSeq/ebFRET/src/
+src/deepgapseq_simulated_traces/
