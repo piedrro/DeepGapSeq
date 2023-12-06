@@ -2,7 +2,6 @@ LICENCE
 README.md
 pyproject.toml
 src/__init__.py
-src/ebfret_generate_fit_example.py
 src/DeepGapSeq/__init__.py
 src/DeepGapSeq/_utils_worker.py
 src/DeepGapSeq.egg-info/PKG-INFO
@@ -11,17 +10,45 @@ src/DeepGapSeq.egg-info/dependency_links.txt
 src/DeepGapSeq.egg-info/entry_points.txt
 src/DeepGapSeq.egg-info/requires.txt
 src/DeepGapSeq.egg-info/top_level.txt
+src/DeepGapSeq/DeepFretSimulate/__init__.py
+src/DeepGapSeq/DeepFretSimulate/simulate.py
+src/DeepGapSeq/DeepFretSimulate/lib/__init__.py
+src/DeepGapSeq/DeepFretSimulate/lib/math.py
+src/DeepGapSeq/DeepFretSimulate/lib/utils.py
+src/DeepGapSeq/DeepLASI/__init__.py
+src/DeepGapSeq/DeepLASI/dataloader.py
+src/DeepGapSeq/DeepLASI/deepLASI_architectures.py
+src/DeepGapSeq/DeepLASI/deepLASI_pytorch.py
+src/DeepGapSeq/DeepLASI/main.py
+src/DeepGapSeq/DeepLASI/wrapper.py
 src/DeepGapSeq/GUI/__init__.py
 src/DeepGapSeq/GUI/analysis_gui.py
+src/DeepGapSeq/GUI/analysiswindow_gui.py
+src/DeepGapSeq/GUI/exportsettings_gui.py
+src/DeepGapSeq/GUI/fittingwindow_gui.py
+src/DeepGapSeq/GUI/gui_deeplasi_utils.py
+src/DeepGapSeq/GUI/gui_ebfret_utils.py
+src/DeepGapSeq/GUI/gui_export_utils.py
+src/DeepGapSeq/GUI/gui_import_utils.py
 src/DeepGapSeq/GUI/gui_layout.py
+src/DeepGapSeq/GUI/gui_plot_utils.py
+src/DeepGapSeq/GUI/gui_worker.py
 src/DeepGapSeq/GUI/importwindow_gui.py
 src/DeepGapSeq/GUI/mainwindow_gui.py
 src/DeepGapSeq/GUI/plotsettings_gui.py
+src/DeepGapSeq/InceptionFRET/__init__.py
+src/DeepGapSeq/InceptionFRET/dataloader.py
+src/DeepGapSeq/InceptionFRET/generate_training_set.py
+src/DeepGapSeq/InceptionFRET/main.py
+src/DeepGapSeq/InceptionFRET/model.py
+src/DeepGapSeq/InceptionFRET/trainer.py
 src/DeepGapSeq/ebFRET/__init__.py
 src/DeepGapSeq/ebFRET/ebfret_utils.py
-src/DeepGapSeq/hmm_fitting/__init__.py
-src/DeepGapSeq/hmm_fitting/model.py
+src/DeepGapSeq/misc/process_kinsoft_data.py
 src/DeepGapSeq/simulation/__init__.py
 src/DeepGapSeq/simulation/deepgapseq_trace_generator.py
 src/DeepGapSeq/simulation/training_data_1color.py
 src/DeepGapSeq/simulation/training_data_2color.py
+src/DeepGapSeq/simulation/legacy code/__init__.py
+src/DeepGapSeq/simulation/legacy code/generate_training_data_from_MATLAB.py
+src/DeepGapSeq/simulation/legacy code/training_data_3color.py

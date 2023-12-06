@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 
 desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
 
-generator = trace_generator(n_colors=1,
+generator = trace_generator(n_colors=2,
                             n_states=2,
                             n_frames=500,
                             n_traces=100,
                             outdir=desktop,
                             export_name = "trace_dataset_example",
-                            export_mode="ebfret")
+                            export_mode="pickledict")
 
 training_data, training_labels, training_tmat = generator.generate_traces()
 
