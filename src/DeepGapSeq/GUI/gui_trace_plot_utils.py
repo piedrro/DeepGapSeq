@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QCursor
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QCheckBox
 import numpy as np
 import pyqtgraph as pg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -9,7 +9,7 @@ import traceback
 from functools import partial
 import uuid
 import copy
-
+import re
 
 
 class _trace_plotting_methods:
@@ -244,6 +244,8 @@ class _trace_plotting_methods:
 
             if self.data_dict != {}:
 
+                self.plot_show_dict = {}
+
                 plot_data = self.plot_data.currentText()
                 plot_mode = self.plot_mode.currentText()
 
@@ -254,16 +256,7 @@ class _trace_plotting_methods:
                 else:
                     self.plot_datasets = []
 
-                alex_channels = []
-
-                if self.plot_settings.alex_show_DD.isChecked():
-                    alex_channels.append("DD")
-                if self.plot_settings.alex_show_DA.isChecked():
-                    alex_channels.append("DA")
-                if self.plot_settings.alex_show_AD.isChecked():
-                    alex_channels.append("AD")
-                if self.plot_settings.alex_show_AA.isChecked():
-                    alex_channels.append("AA")
+                alex_channels = ["DD", "DA", "AD", "AA"]
 
                 self.n_plot_lines = 0
 
@@ -339,6 +332,11 @@ class _trace_plotting_methods:
                             self.plot_localisation_number.setMinimum(0)
                             self.plot_localisation_number.setMaximum(self.n_traces - 1)
 
+                            for label in self.plot_line_labels:
+                                if label not in self.plot_show_dict:
+                                    self.plot_show_dict[label] = True
+
+                            self.create_plot_checkboxes()
                             self.plot_traces(update_plot=True)
 
                         else:
@@ -347,6 +345,11 @@ class _trace_plotting_methods:
         except:
             print(traceback.format_exc())
             pass
+
+    def check_efficiency_graph(self, input_string):
+        pattern = r"FRET Data \+ FRET Efficiency|ALEX Data \+ ALEX Efficiency"
+        return re.search(pattern, input_string) is not None
+
 
     def update_plot_layout(self):
 
@@ -369,7 +372,7 @@ class _trace_plotting_methods:
                 sub_plot_gamma_ranges = []
                 sub_plot_crop_regions = []
 
-                if plot_mode == "FRET Data + FRET Efficiency" and split==False:
+                if self.check_efficiency_graph(plot_mode) and split == False and self.plot_show_dict["efficiency"] == True:
 
                     layout = pg.GraphicsLayout()
                     self.graph_canvas.addItem(layout, row=plot_index, col=0)
@@ -465,43 +468,42 @@ class _trace_plotting_methods:
                 plot_lines = []
                 plot_lines_labels = []
 
-
                 for axes_index, plot in enumerate(sub_plots):
 
                     line_label = self.plot_line_labels[axes_index]
-                    line_format = pg.mkPen(color=100 + axes_index * 100, width=2)
-                    plot_line = plot.plot(np.zeros(10), pen=line_format, name=line_label)
-                    plot.enableAutoRange()
-                    plot.autoRange()
 
-                    legend = plot.legend
-                    legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(-10, 10))
+                    if self.plot_show_dict[line_label] == True:
 
-                    plot_details = f"{plot_dataset}   #:{localisation_number} C:{user_label}  N:{nucleotide_label}"
+                        line_format = pg.mkPen(color=100 + axes_index * 100, width=2)
+                        plot_line = plot.plot(np.zeros(10), pen=line_format, name=line_label)
+                        plot.enableAutoRange()
+                        plot.autoRange()
 
-                    if axes_index == 0:
-                        plot.setTitle(plot_details)
-                        title_plot = plot
+                        legend = plot.legend
+                        legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(-10, 10))
 
-                    plotmeta = plot.metadata
-                    plotmeta[axes_index] = {"plot_dataset": plot_dataset, "line_label": line_label}
+                        plot_details = f"{plot_dataset}   #:{localisation_number} C:{user_label}  N:{nucleotide_label}"
 
-                    plot_lines.append(plot_line)
-                    plot_lines_labels.append(line_label)
+                        plotmeta = plot.metadata
+                        plotmeta[axes_index] = {"plot_dataset": plot_dataset, "line_label": line_label}
 
-                    self.plot_grid[plot_index] = {
-                        "sub_axes": sub_plots,
-                        "sub_plot_crop_regions": sub_plot_crop_regions,
-                        "sub_plot_gamma_ranges": sub_plot_gamma_ranges,
-                        "title_plot": title_plot,
-                        "plot_lines": plot_lines,
-                        "plot_dataset": plot_dataset,
-                        "plot_index": plot_index,
-                        "n_plot_lines": self.n_plot_lines,
-                        "split": split,
-                        "plot_lines_labels": plot_lines_labels,
-                        "efficiency_plot": efficiency_plot,
-                        }
+                        plot_lines.append(plot_line)
+
+                        plot_lines_labels.append(line_label)
+
+                        self.plot_grid[plot_index] = {
+                            "sub_axes": sub_plots,
+                            "sub_plot_crop_regions": sub_plot_crop_regions,
+                            "sub_plot_gamma_ranges": sub_plot_gamma_ranges,
+                            "plot_lines": plot_lines,
+                            "plot_details": plot_details,
+                            "plot_dataset": plot_dataset,
+                            "plot_index": plot_index,
+                            "n_plot_lines": self.n_plot_lines,
+                            "split": split,
+                            "plot_lines_labels": plot_lines_labels,
+                            "efficiency_plot": efficiency_plot,
+                            }
 
             plot_list = []
             for plot_index, grid in enumerate(self.plot_grid.values()):
@@ -514,16 +516,79 @@ class _trace_plotting_methods:
                 plot_list[i].setXLink(plot_list[0])
             plot.getViewBox().sigXRangeChanged.connect(lambda: auto_scale_y(plot_list))
 
-
-            # print(f"len unique crop regions: {len(self.unique_crop_regions)}")
-
         except:
             print(traceback.format_exc())
             pass
 
         return self.plot_grid
 
-    def plot_traces(self, update_plot = False):
+
+    def create_plot_checkboxes(self):
+
+        try:
+
+            checkbox_qgrid = self.plot_checkbox_qgrid
+
+            line_list = []
+
+            for label in np.unique(self.plot_line_labels):
+                if label not in line_list:
+                    line_list.append(label)
+
+            for i in range(checkbox_qgrid.count()):
+                item = checkbox_qgrid.itemAt(i)
+                checkbox = item.widget()
+                if isinstance(checkbox, QCheckBox):
+                    checkbox.deleteLater()
+                    checkbox.hide()
+
+
+            if len(line_list) > 1:
+                for col_index, line_label in enumerate(line_list):
+                    check_box_name = f"plot_show_{line_label}"
+                    check_box_label = f"Show: {line_label}"
+
+                    setattr(self, check_box_name, QCheckBox(check_box_label))
+                    check_box = getattr(self, check_box_name)
+
+                    check_box.blockSignals(True)
+                    check_box.setChecked(True)
+                    check_box.blockSignals(False)
+
+                    check_box.stateChanged.connect(self.plot_checkbox_event)
+
+                    checkbox_qgrid.addWidget(check_box, 0, col_index)
+
+        except:
+            print(traceback.format_exc())
+            pass
+
+
+    def plot_checkbox_event(self, state):
+
+
+        try:
+
+            grid_layout = self.plot_checkbox_qgrid
+
+            for i in range(grid_layout.count()):
+                item = grid_layout.itemAt(i)
+                widget = item.widget()
+                if isinstance(widget, QCheckBox):
+                    label = widget.text()
+                    state = widget.isChecked()
+
+                    self.plot_show_dict[label.replace("Show: ","")] = state
+
+            self.plot_traces(update_plot=True)
+
+        except:
+            print(traceback.format_exc())
+            pass
+
+
+
+    def plot_traces(self, update_plot = False, update_checkboxes = False):
 
         try:
 
@@ -549,7 +614,7 @@ class _trace_plotting_methods:
                     plot_gamma_ranges = grid["sub_plot_gamma_ranges"]
                     plot_lines = grid["plot_lines"]
                     plot_lines_labels = grid["plot_lines_labels"]
-                    title_plot = grid["title_plot"]
+                    # title_plot = grid["title_plot"]
 
                     user_label = self.data_dict[plot_dataset][localisation_number]["user_label"]
                     nucleotide_label = self.data_dict[plot_dataset][localisation_number]["nucleotide_label"]
@@ -566,9 +631,13 @@ class _trace_plotting_methods:
                     else:
                         plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label} Cropped:{False}]"
 
-                    title_plot.setTitle(plot_details)
+                    plot_ranges = {"xRange": [0, 100], "yRange": [0, 100]}
 
-                    for line_index, (plot, crop_region, gamma_ranges, line,  plot_label) in enumerate(zip(sub_axes, crop_regions, plot_gamma_ranges, plot_lines, plot_lines_labels)):
+                    for line_index, (plot, crop_region, gamma_ranges, line,  plot_label) in enumerate(zip(sub_axes,
+                            crop_regions, plot_gamma_ranges, plot_lines, plot_lines_labels)):
+
+                        if line_index == 0:
+                            plot.setTitle(plot_details)
 
                         legend = plot.legend
                         data = self.data_dict[plot_dataset][localisation_number][plot_label]
@@ -582,7 +651,7 @@ class _trace_plotting_methods:
                             data = data[crop_range[0]:crop_range[1]]
                             data_x = data_x[crop_range[0]:crop_range[1]]
 
-                        if self.plot_settings.plot_normalise.isChecked() and "Efficiency" not in plot_label:
+                        if self.plot_settings.plot_normalise.isChecked() and "efficiency" not in plot_label.lower():
                             data = (data - np.min(data)) / (np.max(data) - np.min(data))
 
                         # self.plot_gamma_correction_ranges(gamma_correction_ranges, gamma_ranges, plot, show_gamma)
@@ -597,8 +666,18 @@ class _trace_plotting_methods:
                         plot_line.setData(data_x, data)
                         plot_line.setDownsampling(ds=downsample)
 
-                        if len(data_x) > 1 and len(data) > 1:
-                            plot.setRange(xRange=[np.min(data_x), np.max(data_x)], yRange=[np.min(data), np.max(data)], padding=0)
+                        if plot_ranges["xRange"][1] < len(data):
+                            plot_ranges["xRange"][1] = len(data)
+                        if plot_ranges["yRange"][1] < np.max(data):
+                            plot_ranges["yRange"][1] = np.max(data)
+                        if plot_ranges["yRange"][0] > np.min(data):
+                            plot_ranges["yRange"][0] = np.min(data)
+                        if plot_ranges["xRange"][0] > 0:
+                            plot_ranges["xRange"][0] = 0
+
+                    for line_index, (plot, line, plot_label) in enumerate(zip(sub_axes, plot_lines, plot_lines_labels)):
+                        plot.setXRange(min=plot_ranges["xRange"][0], max=plot_ranges["xRange"][1])
+                        plot.enableAutoRange(axis="y")
 
         except:
             print(traceback.format_exc())
@@ -626,7 +705,6 @@ class _trace_plotting_methods:
         else:
             for crop_region in crop_regions:
                 plot.removeItem(crop_region)
-
 
     def plot_gamma_correction_ranges(self, show_gamma, gamma_correction_ranges, gamma_ranges, plot):
 

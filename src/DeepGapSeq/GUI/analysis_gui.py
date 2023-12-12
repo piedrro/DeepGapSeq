@@ -196,10 +196,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
         self.plot_settings.plot_user_filter.currentIndexChanged.connect(self.initialise_plot)
         self.plot_settings.plot_nucleotide_filter.currentIndexChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_DD.stateChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_DA.stateChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_AA.stateChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_AD.stateChanged.connect(self.initialise_plot)
 
         self.plot_settings.show_crop_range.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.crop_plots.stateChanged.connect(partial(self.plot_traces, update_plot=False))
@@ -401,10 +397,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.label = self.findChild(QLabel, label_name)
 
         slider_value = self.slider.value()
-
-        if slider_name == "localisation_aspect_ratio":
-            slider_value = self.slider.value() / 10
-
         self.label.setText(str(slider_value))
 
 
