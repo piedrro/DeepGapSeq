@@ -108,14 +108,15 @@ class _trace_plotting_methods:
 
         slider_value = self.plot_localisation_number.value()
         localisation_number = self.localisation_numbers[slider_value]
-        plot_mode = self.plot_mode.currentText()
 
         if mode == "click":
 
             for dataset_name in self.data_dict.keys():
 
+                plot_channel = self.plot_info[dataset_name][0]
+
                 crop_range = self.data_dict[dataset_name][localisation_number]["crop_range"]
-                data_length = self.data_dict[dataset_name][localisation_number][plot_mode.lower()].shape[0]
+                data_length = self.data_dict[dataset_name][localisation_number][plot_channel].shape[0]
 
                 if event < 0:
                     event = 0
@@ -249,77 +250,68 @@ class _trace_plotting_methods:
                 plot_data = self.plot_data.currentText()
                 plot_mode = self.plot_mode.currentText()
 
-                if plot_data == "All Datasets":
-                    self.plot_datasets = list(self.data_dict.keys())
-                elif plot_data != "":
-                    self.plot_datasets = [plot_data]
-                else:
-                    self.plot_datasets = []
+                if plot_mode != "" and plot_data != "":
 
-                alex_channels = ["DD", "DA", "AD", "AA"]
-
-                self.n_plot_lines = 0
-
-                if len(self.plot_datasets) > 0:
-                    plot_labels = list(self.data_dict[self.plot_datasets[0]][0].keys())
-
-                    plot = False
-
-                    if plot_mode == "Donor" and set(["donor"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["donor"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "Acceptor" and set(["acceptor"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["acceptor"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "FRET Data" and set(["donor", "acceptor"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["donor", "acceptor"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "FRET Efficiency" and set(["efficiency"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["efficiency"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "FRET Data + FRET Efficiency" and set(["donor", "acceptor", "efficiency"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["donor", "acceptor", "efficiency"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "DA" and set(["DA"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["DA"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "DD" and set(["DD"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["DD"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "AA" and set(["AA"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["AA"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "AD" and set(["AD"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["AD"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = alex_channels
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "ALEX Efficiency" and set(["efficiency"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = ["efficiency"]
-                        self.n_plot_lines = len(self.plot_line_labels)
-                    elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_labels):
-                        plot = True
-                        self.plot_line_labels = alex_channels + ["efficiency"]
-                        self.n_plot_lines = len(self.plot_line_labels)
+                    if plot_data == "All Datasets":
+                        self.plot_datasets = list(self.data_dict.keys())
+                    elif plot_data != "":
+                        self.plot_datasets = [plot_data]
                     else:
-                        plot = False
+                        self.plot_datasets = []
 
-                    if plot == True and len(self.plot_line_labels) > 0:
+                    plot_label_dict = {}
 
-                        self.export_settings.export_data_selection.clear()
-                        self.export_settings.export_data_selection.addItems(self.plot_line_labels)
+                    for dataset_name in self.plot_datasets:
+                        plot_labels = list(self.data_dict[dataset_name][0].keys())
+                        plot_labels = [label for label in plot_labels if label in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]]
+
+                        if dataset_name not in plot_label_dict.keys():
+                            plot_label_dict[dataset_name] = []
+
+                        if plot_mode == "All Channels":
+                            plot_label_dict[dataset_name].extend(plot_labels)
+                        elif plot_mode == "Donor" and set(["Donor"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].append("Donor")
+                        elif plot_mode == "Acceptor" and set(["Acceptor"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].append("Acceptor")
+                        elif plot_mode == "FRET Data" and set(["Donor", "Acceptor"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].extend(["Donor", "Acceptor"])
+                        elif plot_mode == "FRET Efficiency" and set(["Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].append("Efficiency")
+                        elif plot_mode == "FRET Data + FRET Efficiency" and set(["Donor", "Acceptor", "Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].extend(["Donor", "Acceptor", "Efficiency"])
+                        elif plot_mode == "DA" and "DA" in plot_labels:
+                            plot_label_dict[dataset_name].append("DA")
+                        elif plot_mode == "DD" and "DD" in plot_labels:
+                            plot_label_dict[dataset_name].append("DD")
+                        elif plot_mode == "AA" and "AA" in plot_labels:
+                            plot_label_dict[dataset_name].append("AA")
+                        elif plot_mode == "AD" and "AD" in plot_labels:
+                            plot_label_dict[dataset_name].append("AD")
+                        elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].extend(["DD", "AA", "DA", "AD"])
+                        elif plot_mode == "ALEX Efficiency" and set(["Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].append("Efficiency")
+                        elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].extend(["DD", "AA", "DA", "AD", "Efficiency"])
+
+
+                    self.plot_info = {}
+
+                    for dataset_name, plot_labels in plot_label_dict.items():
+
+                        if dataset_name not in self.plot_info.keys():
+                            self.plot_info[dataset_name] = []
+
+                        plot_labels = [label for label in plot_labels if len(self.data_dict[dataset_name][0][label]) > 0]
+
+                        if len(plot_labels) > 0:
+                            self.plot_info[dataset_name].extend(plot_labels)
+                        else:
+                            if dataset_name in self.plot_datasets and self.plot_mode != "All Channels":
+                                self.plot_datasets.remove(dataset_name)
+
+                    if len(self.plot_info.keys()) > 0 and len(self.plot_datasets) > 0:
 
                         self.localisation_numbers, self.n_traces = self.filter_data_dict()
 
@@ -332,9 +324,13 @@ class _trace_plotting_methods:
                             self.plot_localisation_number.setMinimum(0)
                             self.plot_localisation_number.setMaximum(self.n_traces - 1)
 
-                            for label in self.plot_line_labels:
-                                if label not in self.plot_show_dict:
-                                    self.plot_show_dict[label] = True
+                            for plot_labels in self.plot_info.values():
+                                for label in plot_labels:
+                                    if label not in self.plot_show_dict:
+                                        self.plot_show_dict[label] = True
+
+                            self.export_settings.export_data_selection.clear()
+                            self.export_settings.export_data_selection.addItems(self.plot_show_dict.keys())
 
                             self.create_plot_checkboxes()
                             self.plot_traces(update_plot=True)
@@ -350,7 +346,6 @@ class _trace_plotting_methods:
         pattern = r"FRET Data \+ FRET Efficiency|ALEX Data \+ ALEX Efficiency"
         return re.search(pattern, input_string) is not None
 
-
     def update_plot_layout(self):
 
         try:
@@ -360,7 +355,6 @@ class _trace_plotting_methods:
             self.unique_gamma_ranges = []
 
             self.graph_canvas.clear()
-
             plot_mode = self.plot_mode.currentText()
             split = self.plot_settings.plot_split_lines.isChecked()
 
@@ -372,138 +366,145 @@ class _trace_plotting_methods:
                 sub_plot_gamma_ranges = []
                 sub_plot_crop_regions = []
 
-                if self.check_efficiency_graph(plot_mode) and split == False and self.plot_show_dict["efficiency"] == True:
+                plot_line_labels = self.plot_info[plot_dataset]
+                plot_line_labels = [label for label in plot_line_labels if self.plot_show_dict[label] == True]
 
-                    layout = pg.GraphicsLayout()
-                    self.graph_canvas.addItem(layout, row=plot_index, col=0)
+                n_plot_lines = len(plot_line_labels)
 
-                    for line_index in range(2):
+                if n_plot_lines > 0:
+
+                    if self.check_efficiency_graph(plot_mode) and split == False and self.plot_show_dict["Efficiency"] == True:
+
+                        layout = pg.GraphicsLayout()
+                        self.graph_canvas.addItem(layout, row=plot_index, col=0)
+
+                        for line_index in range(2):
+                            p = CustomPlot()
+
+                            layout.addItem(p, row=line_index, col=0)
+
+                            if self.plot_settings.plot_showy.isChecked() == False:
+                                p.hideAxis('left')
+
+                            if self.plot_settings.plot_showx.isChecked() == False:
+                                p.hideAxis('bottom')
+                            elif line_index != 1:
+                                p.hideAxis('bottom')
+
+                            sub_plots.append(p)
+
+                            crop_region = self.initialise_crop_region()
+                            sub_plot_crop_regions.append(crop_region)
+
+                            gamma_ranges = self.initialise_gamma_ranges()
+                            sub_plot_gamma_ranges.append(gamma_ranges)
+
+                        for j in range(1, len(sub_plots)):
+                            sub_plots[j].setXLink(sub_plots[0])
+
+                        sub_plots = [sub_plots[0] for i in range(n_plot_lines - 1)] + [sub_plots[1]]
+                        sub_plot_crop_regions = [sub_plot_crop_regions[0] for i in range(n_plot_lines - 1)] + [sub_plot_crop_regions[1]]
+                        sub_plot_gamma_ranges = [sub_plot_gamma_ranges[0] for i in range(n_plot_lines - 1)] + [sub_plot_gamma_ranges[1]]
+
+                        efficiency_plot = True
+
+                    elif split == True and n_plot_lines > 1:
+
+                        layout = pg.GraphicsLayout()
+                        self.graph_canvas.addItem(layout, row=plot_index, col=0)
+
+                        for line_index in range(n_plot_lines):
+                            p = CustomPlot()
+
+                            layout.addItem(p, row=line_index, col=0)
+
+                            if self.plot_settings.plot_showy.isChecked() == False:
+                                p.hideAxis('left')
+
+                            if self.plot_settings.plot_showx.isChecked() == False:
+                                p.hideAxis('bottom')
+                            if line_index != n_plot_lines - 1:
+                                p.hideAxis('bottom')
+
+                            sub_plots.append(p)
+
+                            crop_region = self.initialise_crop_region()
+                            sub_plot_crop_regions.append(crop_region)
+
+                            gamma_ranges = self.initialise_gamma_ranges()
+                            sub_plot_gamma_ranges.append(gamma_ranges)
+
+                        for j in range(1, len(sub_plots)):
+                            sub_plots[j].setXLink(sub_plots[0])
+
+                    else:
+                        layout = self.graph_canvas
+
                         p = CustomPlot()
 
-                        layout.addItem(p, row=line_index, col=0)
+                        p.hideAxis('top')
+                        p.hideAxis('right')
 
                         if self.plot_settings.plot_showy.isChecked() == False:
                             p.hideAxis('left')
-
                         if self.plot_settings.plot_showx.isChecked() == False:
                             p.hideAxis('bottom')
-                        elif line_index != 1:
-                            p.hideAxis('bottom')
 
-                        sub_plots.append(p)
+                        layout.addItem(p, row=plot_index, col=0)
 
-                        crop_region = self.initialise_crop_region()
-                        sub_plot_crop_regions.append(crop_region)
+                        for line_index in range(n_plot_lines):
+                            sub_plots.append(p)
 
-                        gamma_ranges = self.initialise_gamma_ranges()
-                        sub_plot_gamma_ranges.append(gamma_ranges)
+                            crop_region = self.initialise_crop_region()
+                            sub_plot_crop_regions.append(crop_region)
 
-                    for j in range(1, len(sub_plots)):
-                        sub_plots[j].setXLink(sub_plots[0])
+                            gamma_ranges = self.initialise_gamma_ranges()
+                            sub_plot_gamma_ranges.append(gamma_ranges)
 
-                    sub_plots = [sub_plots[0] for i in range(self.n_plot_lines - 1)] + [sub_plots[1]]
-                    sub_plot_crop_regions = [sub_plot_crop_regions[0] for i in range(self.n_plot_lines - 1)] + [sub_plot_crop_regions[1]]
-                    sub_plot_gamma_ranges = [sub_plot_gamma_ranges[0] for i in range(self.n_plot_lines - 1)] + [sub_plot_gamma_ranges[1]]
+                    localisation_number = self.plot_localisation_number.value()
 
-                    efficiency_plot = True
+                    user_label = self.data_dict[plot_dataset][localisation_number]["user_label"]
+                    nucleotide_label = self.data_dict[plot_dataset][localisation_number]["nucleotide_label"]
 
-                elif split == True and self.n_plot_lines > 1:
+                    plot_lines = []
+                    plot_lines_labels = []
 
-                    layout = pg.GraphicsLayout()
-                    self.graph_canvas.addItem(layout, row=plot_index, col=0)
+                    for axes_index, plot in enumerate(sub_plots):
 
-                    for line_index in range(self.n_plot_lines):
-                        p = CustomPlot()
+                        line_label = plot_line_labels[axes_index]
 
-                        layout.addItem(p, row=line_index, col=0)
+                        if self.plot_show_dict[line_label] == True:
 
-                        if self.plot_settings.plot_showy.isChecked() == False:
-                            p.hideAxis('left')
+                            line_format = pg.mkPen(color=100 + axes_index * 100, width=2)
+                            plot_line = plot.plot(np.zeros(10), pen=line_format, name=line_label)
+                            plot.enableAutoRange()
+                            plot.autoRange()
 
-                        if self.plot_settings.plot_showx.isChecked() == False:
-                            p.hideAxis('bottom')
-                        if line_index != self.n_plot_lines - 1:
-                            p.hideAxis('bottom')
+                            legend = plot.legend
+                            legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(-10, 10))
 
-                        sub_plots.append(p)
+                            plot_details = f"{plot_dataset}   #:{localisation_number} C:{user_label}  N:{nucleotide_label}"
 
-                        crop_region = self.initialise_crop_region()
-                        sub_plot_crop_regions.append(crop_region)
+                            plotmeta = plot.metadata
+                            plotmeta[axes_index] = {"plot_dataset": plot_dataset, "line_label": line_label}
 
-                        gamma_ranges = self.initialise_gamma_ranges()
-                        sub_plot_gamma_ranges.append(gamma_ranges)
+                            plot_lines.append(plot_line)
 
-                    for j in range(1, len(sub_plots)):
-                        sub_plots[j].setXLink(sub_plots[0])
+                            plot_lines_labels.append(line_label)
 
-                else:
-                    layout = self.graph_canvas
-
-                    p = CustomPlot()
-
-                    p.hideAxis('top')
-                    p.hideAxis('right')
-
-                    if self.plot_settings.plot_showy.isChecked() == False:
-                        p.hideAxis('left')
-                    if self.plot_settings.plot_showx.isChecked() == False:
-                        p.hideAxis('bottom')
-
-                    layout.addItem(p, row=plot_index, col=0)
-
-                    for line_index in range(self.n_plot_lines):
-                        sub_plots.append(p)
-
-                        crop_region = self.initialise_crop_region()
-                        sub_plot_crop_regions.append(crop_region)
-
-                        gamma_ranges = self.initialise_gamma_ranges()
-                        sub_plot_gamma_ranges.append(gamma_ranges)
-
-                localisation_number = self.plot_localisation_number.value()
-
-                user_label = self.data_dict[plot_dataset][localisation_number]["user_label"]
-                nucleotide_label = self.data_dict[plot_dataset][localisation_number]["nucleotide_label"]
-
-                plot_lines = []
-                plot_lines_labels = []
-
-                for axes_index, plot in enumerate(sub_plots):
-
-                    line_label = self.plot_line_labels[axes_index]
-
-                    if self.plot_show_dict[line_label] == True:
-
-                        line_format = pg.mkPen(color=100 + axes_index * 100, width=2)
-                        plot_line = plot.plot(np.zeros(10), pen=line_format, name=line_label)
-                        plot.enableAutoRange()
-                        plot.autoRange()
-
-                        legend = plot.legend
-                        legend.anchor(itemPos=(1, 0), parentPos=(1, 0), offset=(-10, 10))
-
-                        plot_details = f"{plot_dataset}   #:{localisation_number} C:{user_label}  N:{nucleotide_label}"
-
-                        plotmeta = plot.metadata
-                        plotmeta[axes_index] = {"plot_dataset": plot_dataset, "line_label": line_label}
-
-                        plot_lines.append(plot_line)
-
-                        plot_lines_labels.append(line_label)
-
-                        self.plot_grid[plot_index] = {
-                            "sub_axes": sub_plots,
-                            "sub_plot_crop_regions": sub_plot_crop_regions,
-                            "sub_plot_gamma_ranges": sub_plot_gamma_ranges,
-                            "plot_lines": plot_lines,
-                            "plot_details": plot_details,
-                            "plot_dataset": plot_dataset,
-                            "plot_index": plot_index,
-                            "n_plot_lines": self.n_plot_lines,
-                            "split": split,
-                            "plot_lines_labels": plot_lines_labels,
-                            "efficiency_plot": efficiency_plot,
-                            }
+                            self.plot_grid[plot_index] = {
+                                "sub_axes": sub_plots,
+                                "sub_plot_crop_regions": sub_plot_crop_regions,
+                                "sub_plot_gamma_ranges": sub_plot_gamma_ranges,
+                                "plot_lines": plot_lines,
+                                "plot_details": plot_details,
+                                "plot_dataset": plot_dataset,
+                                "plot_index": plot_index,
+                                "n_plot_lines": n_plot_lines,
+                                "split": split,
+                                "plot_lines_labels": plot_lines_labels,
+                                "efficiency_plot": efficiency_plot,
+                                }
 
             plot_list = []
             for plot_index, grid in enumerate(self.plot_grid.values()):
@@ -522,7 +523,6 @@ class _trace_plotting_methods:
 
         return self.plot_grid
 
-
     def create_plot_checkboxes(self):
 
         try:
@@ -531,9 +531,10 @@ class _trace_plotting_methods:
 
             line_list = []
 
-            for label in np.unique(self.plot_line_labels):
-                if label not in line_list:
-                    line_list.append(label)
+            for plot_labels in self.plot_info.values():
+                for label in plot_labels:
+                    if label not in line_list:
+                        line_list.append(label)
 
             for i in range(checkbox_qgrid.count()):
                 item = checkbox_qgrid.itemAt(i)
@@ -563,7 +564,6 @@ class _trace_plotting_methods:
             print(traceback.format_exc())
             pass
 
-
     def plot_checkbox_event(self, state):
 
 
@@ -585,7 +585,6 @@ class _trace_plotting_methods:
         except:
             print(traceback.format_exc())
             pass
-
 
 
     def plot_traces(self, update_plot = False, update_checkboxes = False):
@@ -651,7 +650,7 @@ class _trace_plotting_methods:
                             data = data[crop_range[0]:crop_range[1]]
                             data_x = data_x[crop_range[0]:crop_range[1]]
 
-                        if self.plot_settings.plot_normalise.isChecked() and "efficiency" not in plot_label.lower():
+                        if self.plot_settings.plot_normalise.isChecked() and "Efficiency" not in plot_label:
                             data = (data - np.min(data)) / (np.max(data) - np.min(data))
 
                         # self.plot_gamma_correction_ranges(gamma_correction_ranges, gamma_ranges, plot, show_gamma)

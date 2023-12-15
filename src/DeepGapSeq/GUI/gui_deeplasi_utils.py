@@ -26,24 +26,24 @@ class _DeepLasi_methods:
 
                 for dataset_name in self.data_dict.keys():
                     for plot_name, plot_value in self.data_dict[dataset_name][0].items():
-                        if plot_name in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                        if plot_name in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]:
                             if len(plot_value) > 0:
                                 plot_names.append(plot_name)
 
-                if "donor" in plot_names:
+                if "Donor" in plot_names:
                     self.fitting_window.deeplasi_fit_data.addItem("Donor")
-                if "acceptor" in plot_names:
+                if "Acceptor" in plot_names:
                     self.fitting_window.deeplasi_fit_data.addItem("Acceptor")
-                if set(["donor", "acceptor"]).issubset(plot_names):
+                if set(["Donor", "Acceptor"]).issubset(plot_names):
                     self.fitting_window.deeplasi_fit_data.addItem("FRET Data")
-                if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
+                if set(["Donor", "Acceptor", "Efficiency"]).issubset(plot_names):
                     self.fitting_window.deeplasi_fit_data.addItem("FRET Efficiency")
                 if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
                     self.fitting_window.deeplasi_fit_data.addItem("DD")
                     self.fitting_window.deeplasi_fit_data.addItem("AA")
                     self.fitting_window.deeplasi_fit_data.addItem("DA")
                     self.fitting_window.deeplasi_fit_data.addItem("AD")
-                if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+                if set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(plot_names):
                     self.fitting_window.deeplasi_fit_data.addItem("ALEX Efficiency")
 
         except:
@@ -71,16 +71,16 @@ class _DeepLasi_methods:
                     if self.get_filter_status("deeplasi", user_label, nucleotide_label) == False:
 
                         if data_name == "Donor":
-                            data = localisation_data["donor"]
+                            data = localisation_data["Donor"]
                             n_colors=1
                         elif data_name == "Acceptor":
-                            data = localisation_data["acceptor"]
+                            data = localisation_data["Acceptor"]
                             n_colors = 1
                         elif data_name == "FRET Data":
-                            data = np.array([localisation_data["donor"], localisation_data["acceptor"]])
+                            data = np.array([localisation_data["Donor"], localisation_data["Acceptor"]])
                             n_colors = 2
-                        elif "efficiency" in data_name.lower():
-                            data = localisation_data["efficiency"]
+                        elif "Efficiency" in data_name:
+                            data = localisation_data["Efficiency"]
                             n_colors = 1
                         elif data_name == "DD":
                             data = localisation_data["DD"]

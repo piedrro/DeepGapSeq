@@ -13,7 +13,9 @@ class _import_methods:
 
         self.updating_combos = True
 
-        self.populate_trace_graph_combos()
+        self.update_plot_data_combo()
+        self.update_plot_mode_combo()
+
         self.populate_analysis_graph_combos()
         self.populate_deeplasi_options()
 
@@ -64,9 +66,9 @@ class _import_methods:
 
                     labels = trace_labels[i]
 
-                    self.data_dict[dataset_name].append({"donor": donor_data,
-                                                         "acceptor": acceptor_data,
-                                                         "efficiency": efficiency_data,
+                    self.data_dict[dataset_name].append({"Donor": donor_data,
+                                                         "Acceptor": acceptor_data,
+                                                         "Efficiency": efficiency_data,
                                                          "states": labels,
                                                          "filter": False,
                                                          "state_means": {},
@@ -115,7 +117,7 @@ class _import_methods:
                 sep == ","
 
             column_names = column_format.split("-")
-            column_names = [col.lower() for col in column_names]
+            column_names = [col for col in column_names]
 
             desktop = os.path.expanduser("~/Desktop")
 
@@ -170,7 +172,7 @@ class _import_methods:
 
                         for i in import_range:
 
-                            loc_data = {"efficiency" : [], "states": [],
+                            loc_data = {"Efficiency" : [], "states": [],
                                         "filter": False, "state_means": {},
                                         "user_label": 0, "nucleotide_label": 0,
                                         "break_points": [], "gamma_ranges": [],
@@ -185,21 +187,20 @@ class _import_methods:
                             group_dict = group.to_dict(orient="list")
 
                             if self.import_settings.import_data_alex.isChecked():
-                                alex_dict = self.get_alex_data(group_dict["donor"], group_dict["acceptor"])
+                                alex_dict = self.get_alex_data(group_dict["Donor"], group_dict["Acceptor"])
 
                                 for key, value in alex_dict.items():
                                     loc_data[key] = value
-
                             else:
 
                                 for key, value in group_dict.items():
                                     loc_data[key] = value
 
-                                if loc_data["efficiency"] == []:
-                                    loc_data["efficiency"] = self.calculate_fret_efficiency(loc_data["donor"], loc_data["acceptor"])
+                                if loc_data["Efficiency"] == []:
+                                    loc_data["Efficiency"] = self.calculate_fret_efficiency(loc_data["Donor"], loc_data["Acceptor"])
 
                             self.data_dict[dataset_name].append(loc_data)
-                            n_traces += 1/len(column_names)
+                            n_traces += 1
 
             if n_traces > 1:
 
@@ -253,7 +254,7 @@ class _import_methods:
                 if "state_means" not in trace_data:
                     trace_data["state_means"] = {}
 
-                for plot in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                for plot in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]:
                     if plot in trace_data.keys():
                         plot_data = np.array(trace_data[plot])
 
@@ -261,7 +262,7 @@ class _import_methods:
 
                             if len(plot_data) == len(labels):
 
-                                if plot == "donor" and i == 17:
+                                if plot == "Donor" and i == 17:
                                     print_data = True
                                 else:
                                     print_data = False
@@ -330,9 +331,14 @@ class _import_methods:
 
         alex_dict = {"DD": DD, "DA": DA,
                      "AA": AA, "AD": AD,
-                     "efficiency": efficiency}
+                     "Efficiency": efficiency}
 
         return alex_dict
+
+
+
+
+
 
     def populate_trace_graph_combos(self):
 
@@ -342,17 +348,17 @@ class _import_methods:
 
         for dataset_name in self.data_dict.keys():
             for plot_name, plot_value in self.data_dict[dataset_name][0].items():
-                if plot_name in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                if plot_name in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]:
                     if len(plot_value) > 0:
                         plot_names.append(plot_name)
 
-        if "donor" in plot_names:
+        if "Donor" in plot_names:
             self.plot_mode.addItem("Donor")
-        if "acceptor" in plot_names:
+        if "Acceptor" in plot_names:
             self.plot_mode.addItem("Acceptor")
-        if set(["donor", "acceptor"]).issubset(plot_names):
+        if set(["Donor", "Acceptor"]).issubset(plot_names):
             self.plot_mode.addItem("FRET Data")
-        if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
+        if set(["Donor", "Acceptor", "Efficiency"]).issubset(plot_names):
             self.plot_mode.addItem("FRET Efficiency")
             self.plot_mode.addItem("FRET Data + FRET Efficiency")
         if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
@@ -361,7 +367,7 @@ class _import_methods:
             self.plot_mode.addItem("DA")
             self.plot_mode.addItem("AD")
             self.plot_mode.addItem("ALEX Data")
-        if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+        if set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(plot_names):
             self.plot_mode.addItem("ALEX Efficiency")
             self.plot_mode.addItem("ALEX Data + ALEX Efficiency")
 
@@ -373,6 +379,65 @@ class _import_methods:
             self.plot_data.addItems(list(self.data_dict.keys()))
 
 
+    def update_plot_data_combo(self):
+
+        try:
+
+            plot_datasets = list(self.data_dict.keys())
+
+            if len(plot_datasets) > 1:
+                plot_datasets.insert(0, "All Datasets")
+
+            self.plot_data.clear()
+            self.plot_data.addItems(plot_datasets)
+
+        except:
+            print(traceback.format_exc())
+            pass
+
+
+    def update_plot_mode_combo(self):
+
+        try:
+
+            self.plot_mode.clear()
+
+            plot_channels = []
+
+            if self.plot_data.currentText() == "All Datasets":
+                plot_datasets = list(self.data_dict.keys())
+            else:
+                plot_datasets = [self.plot_data.currentText()]
+
+            for dataset_name in plot_datasets:
+                if dataset_name in self.data_dict.keys():
+                    for plot_name, plot_value in self.data_dict[dataset_name][0].items():
+                        if plot_name in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]:
+                            if len(plot_value) > 0:
+                                plot_channels.append(plot_name)
+
+            if set(["Donor", "Acceptor"]).issubset(plot_channels):
+                plot_channels.insert(0, "FRET Data")
+            if set(["Donor", "Acceptor", "Efficiency"]).issubset(plot_channels):
+                plot_channels.insert(0, "FRET Efficiency")
+                plot_channels.insert(0, "FRET Data + FRET Efficiency")
+            if set(["DD", "AA", "DA", "AD"]).issubset(plot_channels):
+                plot_channels.insert(0, "ALEX Data")
+            if set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(plot_channels):
+                plot_channels.insert(0, "ALEX Efficiency")
+                plot_channels.insert(0, "ALEX Data + ALEX Efficiency")
+
+            if len(plot_channels) > 1:
+                plot_channels.insert(0, "All Channels")
+
+            self.plot_mode.addItems(plot_channels)
+
+        except:
+            print(traceback.format_exc())
+            pass
+
+
+
     def populate_analysis_graph_combos(self):
 
         self.analysis_graph_mode.clear()
@@ -381,22 +446,22 @@ class _import_methods:
 
         for dataset_name in self.data_dict.keys():
             for plot_name, plot_value in self.data_dict[dataset_name][0].items():
-                if plot_name in ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD"]:
+                if plot_name in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]:
                     if len(plot_value) > 0:
                         plot_names.append(plot_name)
 
-        if "donor" in plot_names:
+        if "Donor" in plot_names:
             self.analysis_graph_mode.addItem("Donor")
-        if "acceptor" in plot_names:
+        if "Acceptor" in plot_names:
             self.analysis_graph_mode.addItem("Acceptor")
-        if set(["donor", "acceptor", "efficiency"]).issubset(plot_names):
+        if set(["Donor", "Acceptor", "Efficiency"]).issubset(plot_names):
             self.analysis_graph_mode.addItem("FRET Efficiency")
         if set(["DD", "AA", "DA", "AD"]).issubset(plot_names):
             self.analysis_graph_mode.addItem("DD")
             self.analysis_graph_mode.addItem("AA")
             self.analysis_graph_mode.addItem("DA")
             self.analysis_graph_mode.addItem("AD")
-        if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(plot_names):
+        if set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(plot_names):
             self.analysis_graph_mode.addItem("ALEX Efficiency")
 
         self.analysis_graph_data.clear()
@@ -410,8 +475,8 @@ class _import_methods:
     def import_gapseq_json(self):
 
         try:
-            expected_data = {"donor": np.array([]), "acceptor": np.array([]),
-                             "efficiency": np.array([]), "states": np.array([]),
+            expected_data = {"Donor": np.array([]), "Acceptor": np.array([]),
+                             "Efficiency": np.array([]), "states": np.array([]),
                              "DD": np.array([]), "DA": np.array([]),
                              "AA": np.array([]), "AD": np.array([]),
                              "filter": False, "state_means": {},
@@ -439,6 +504,9 @@ class _import_methods:
                         self.data_dict[dataset_name] = []
 
                     for localisation_index, localisation_data in enumerate(dataset_data):
+                        
+                        if localisation_index==0:
+                            print(dataset_name, localisation_data.keys())
 
                         localisation_dict = {}
 

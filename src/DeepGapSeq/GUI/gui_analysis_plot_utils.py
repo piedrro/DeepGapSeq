@@ -49,37 +49,41 @@ class _analysis_plotting_methods:
 
     def compute_histograms(self, trace_data, state_data):
 
-        histogram_data = {"intensity": {}, "centres": {}, "noise": {}, "dwell_times": {}}
+        histogram_data = {}
 
         try:
 
-            trace_data = np.concatenate(trace_data)
-            state_data = np.concatenate(state_data)
+            if len(trace_data) == len(state_data) and len(trace_data) > 0:
 
-            change_indices = np.where(np.diff(state_data) != 0)[0] + 1
+                histogram_data = {"intensity": {}, "centres": {}, "noise": {}, "dwell_times": {}}
 
-            split_trace_data = np.split(trace_data, change_indices)
-            split_state_data = np.split(state_data, change_indices)
+                trace_data = np.concatenate(trace_data)
+                state_data = np.concatenate(state_data)
 
-            for data, state in zip(split_trace_data, split_state_data):
+                change_indices = np.where(np.diff(state_data) != 0)[0] + 1
 
-                state = state[0]
+                split_trace_data = np.split(trace_data, change_indices)
+                split_state_data = np.split(state_data, change_indices)
 
-                if state not in histogram_data["intensity"].keys():
-                    histogram_data["intensity"][state] = []
-                    histogram_data["centres"][state] = []
-                    histogram_data["noise"][state] = []
-                    histogram_data["dwell_times"][state] = []
+                for data, state in zip(split_trace_data, split_state_data):
 
-                instensity = data.tolist()
-                centres = [np.mean(data)]*len(data)
-                noise = [np.std(data)]*len(data)
-                dwell_time = len(data)
+                    state = state[0]
 
-                histogram_data["intensity"][state].extend(instensity)
-                histogram_data["centres"][state].extend(centres)
-                histogram_data["noise"][state].extend(noise)
-                histogram_data["dwell_times"][state].append(dwell_time)
+                    if state not in histogram_data["intensity"].keys():
+                        histogram_data["intensity"][state] = []
+                        histogram_data["centres"][state] = []
+                        histogram_data["noise"][state] = []
+                        histogram_data["dwell_times"][state] = []
+
+                    instensity = data.tolist()
+                    centres = [np.mean(data)]*len(data)
+                    noise = [np.std(data)]*len(data)
+                    dwell_time = len(data)
+
+                    histogram_data["intensity"][state].extend(instensity)
+                    histogram_data["centres"][state].extend(centres)
+                    histogram_data["noise"][state].extend(noise)
+                    histogram_data["dwell_times"][state].append(dwell_time)
 
         except:
             print(traceback.format_exc())
@@ -94,8 +98,8 @@ class _analysis_plotting_methods:
             dataset_name = self.analysis_graph_data.currentText()
             mode = self.analysis_graph_mode.currentText()
 
-            if "efficiency" in mode.lower():
-                mode = "efficiency"
+            if "Efficiency" in mode:
+                mode = "Efficiency"
 
             trace_data_list = []
             state_data_list = []
@@ -107,12 +111,14 @@ class _analysis_plotting_methods:
 
                 if self.get_filter_status("analysis", user_label, nucleotide_label) == False:
 
-                    trace_data = localisation_data[mode.lower()]
+                    trace_data = localisation_data[mode]
                     state_data = localisation_data["states"]
 
                     if len(trace_data) == len(state_data):
-                        trace_data_list.append(trace_data)
-                        state_data_list.append(state_data)
+
+                        if len(trace_data) == len(state_data):
+                            trace_data_list.append(trace_data)
+                            state_data_list.append(state_data)
 
         except:
             print(traceback.format_exc())
@@ -127,65 +133,67 @@ class _analysis_plotting_methods:
 
     def update_analysis_plot(self, histogram_data):
 
-        histogram_dataset = self.analysis_histogram_dataset.currentText().lower()
-        histogram_mode = self.analysis_histogram_mode.currentText().lower()
-        bin_size = self.analysis_histogram_bin_size.currentText()
-        plot_dataset = self.analysis_graph_data.currentText()
-        plot_mode = self.analysis_graph_mode.currentText()
+        if histogram_data != {}:
 
-        if bin_size.isdigit():
-            bin_size = int(bin_size)
-        else:
-            bin_size = "auto"
+            histogram_dataset = self.analysis_histogram_dataset.currentText().lower()
+            histogram_mode = self.analysis_histogram_mode.currentText().lower()
+            bin_size = self.analysis_histogram_bin_size.currentText()
+            plot_dataset = self.analysis_graph_data.currentText()
+            plot_mode = self.analysis_graph_mode.currentText()
 
+            if bin_size.isdigit():
+                bin_size = int(bin_size)
+            else:
+                bin_size = "auto"
 
-        if histogram_dataset == "dwell times":
-            histogram_dataset = "dwell_times"
+            if histogram_dataset == "dwell times":
+                histogram_dataset = "dwell_times"
 
-        if histogram_mode.lower() == "frequency":
-            xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
-            ylabel = "Frequency"
-            density = False
-        else:
-            xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
-            ylabel = "Probability"
-            density = True
+            if histogram_mode.lower() == "frequency":
+                xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
+                ylabel = "Frequency"
+                density = False
+            else:
+                xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
+                ylabel = "Probability"
+                density = True
 
-        try:
+            try:
 
-            self.analysis_graph_canvas.axes.clear()
+                self.analysis_graph_canvas.axes.clear()
 
-            all_data = []
+                all_data = []
 
-            for state in histogram_data[histogram_dataset].keys():
+                for state in histogram_data[histogram_dataset].keys():
 
-                plot_label = f"State {int(state)}"
+                    plot_label = f"State {int(state)}"
 
-                histogram_values = histogram_data[histogram_dataset][state]
+                    histogram_values = histogram_data[histogram_dataset][state]
 
-                all_data.extend(histogram_values)
+                    all_data.extend(histogram_values)
 
-                self.analysis_graph_canvas.axes.hist(histogram_values,
-                    bins=bin_size,
-                    alpha=0.5,
-                    label=plot_label,
-                    density=density)
+                    self.analysis_graph_canvas.axes.hist(histogram_values,
+                        bins=bin_size,
+                        alpha=0.5,
+                        label=plot_label,
+                        density=density)
 
-            self.analysis_graph_canvas.axes.legend()
+                self.analysis_graph_canvas.axes.legend()
 
-            self.analysis_graph_canvas.axes.set_xlabel(xlabel)
-            self.analysis_graph_canvas.axes.set_ylabel(ylabel)
+                self.analysis_graph_canvas.axes.set_xlabel(xlabel)
+                self.analysis_graph_canvas.axes.set_ylabel(ylabel)
 
-            lower_limit, upper_limit = np.percentile(all_data, [0.1, 99.9])
-            lower_limit = lower_limit - (upper_limit - lower_limit) * 0.1
-            upper_limit = upper_limit + (upper_limit - lower_limit) * 0.1
+                lower_limit, upper_limit = np.percentile(all_data, [0.1, 99.9])
+                lower_limit = lower_limit - (upper_limit - lower_limit) * 0.1
+                upper_limit = upper_limit + (upper_limit - lower_limit) * 0.1
 
-            self.analysis_graph_canvas.axes.set_xlim(lower_limit, upper_limit)
+                self.analysis_graph_canvas.axes.set_xlim(lower_limit, upper_limit)
 
-            self.analysis_graph_canvas.canvas.draw()
-        except:
-            print(traceback.format_exc())
-            pass
+                self.analysis_graph_canvas.canvas.draw()
+
+            except:
+                print(traceback.format_exc())
+                pass
 
 
 

@@ -207,6 +207,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.plot_settings.show_breakpoints.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.plot_downsample.currentIndexChanged.connect(partial(self.plot_traces, update_plot=False))
 
+        self.plot_data.currentIndexChanged.connect(self.update_plot_mode_combo)
+
         self.import_settings.import_data.clicked.connect(self.import_data_files)
         self.import_settings.import_json.clicked.connect(self.import_gapseq_json)
 

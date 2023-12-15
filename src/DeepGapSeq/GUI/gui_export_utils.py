@@ -23,30 +23,30 @@ class _export_methods:
                     all_export_names.append(plot_name)
 
         if self.import_settings.import_data_alex.isChecked() == False:
-            if "donor" in all_export_names:
+            if "Donor" in all_export_names:
                 self.export_settings.export_data_selection.addItem("Donor")
-                self.export_selection_dict["Donor"] = ["donor"]
-            if "acceptor" in all_export_names:
+                self.export_selection_dict["Donor"] = ["Donor"]
+            if "Acceptor" in all_export_names:
                 self.export_settings.export_data_selection.addItem("Acceptor")
-                self.export_selection_dict["Acceptor"] = ["acceptor"]
-            if set(["donor", "acceptor"]).issubset(all_export_names):
+                self.export_selection_dict["Acceptor"] = ["Acceptor"]
+            if set(["Donor", "Acceptor"]).issubset(all_export_names):
                 self.export_settings.export_data_selection.addItem("FRET Data")
-                self.export_selection_dict["FRET Data"] = ["donor", "acceptor"]
-            if "efficiency" in all_export_names:
+                self.export_selection_dict["FRET Data"] = ["Donor", "Acceptor"]
+            if "Efficiency" in all_export_names:
                 self.export_settings.export_data_selection.addItem("FRET Efficiency")
-                self.export_selection_dict["FRET Efficiency"] = ["efficiency"]
-            if set(["donor", "acceptor", "efficiency"]).issubset(all_export_names):
+                self.export_selection_dict["FRET Efficiency"] = ["Efficiency"]
+            if set(["Donor", "Acceptor", "Efficiency"]).issubset(all_export_names):
                 self.export_settings.export_data_selection.addItem("FRET Data + FRET Efficiency")
-                self.export_selection_dict["FRET Data + FRET Efficiency"] = ["donor", "acceptor", "efficiency"]
+                self.export_selection_dict["FRET Data + FRET Efficiency"] = ["Donor", "Acceptor", "Efficiency"]
         else:
             if set(["DD", "AA", "DA", "AD"]).issubset(all_export_names):
                 self.export_settings.export_data_selection.addItem("ALEX Data")
                 self.export_selection_dict["ALEX Data"] = ["DD", "AA", "DA", "AD"]
-            if "efficiency" in all_export_names:
+            if "Efficiency" in all_export_names:
                 self.plot_mode.addItem("ALEX Efficiency")
-            if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(all_export_names):
+            if set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(all_export_names):
                 self.export_settings.export_data_selection.addItem("ALEX Data + ALEX Efficiency")
-                self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "efficiency"]
+                self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "Efficiency"]
 
 
 
@@ -530,7 +530,7 @@ class _export_methods:
 
             json_dataset_dict = {"metadata":{}, "data":{}}
 
-            json_list_keys = ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
+            json_list_keys = ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
 
             json_var_keys = ["user_label", "nucleotide_label", "import_path"]
 

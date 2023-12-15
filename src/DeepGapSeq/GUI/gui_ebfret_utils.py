@@ -178,11 +178,11 @@ class _ebFRET_methods:
                     if self.get_filter_status("ebfret", user_label, nucleotide_label) == False:
 
                         if data_name == "Donor":
-                            data = localisation_data["donor"]
+                            data = localisation_data["Donor"]
                         elif data_name == "Acceptor":
-                            data = localisation_data["acceptor"]
-                        elif "efficiency" in data_name.lower():
-                            data = localisation_data["efficiency"]
+                            data = localisation_data["Acceptor"]
+                        elif "Efficiency" in data_name:
+                            data = localisation_data["Efficiency"]
 
                         if crop_plots == True and len(crop_range) == 2:
                             crop_range = sorted(crop_range)
