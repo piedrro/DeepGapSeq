@@ -224,6 +224,10 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.current_dialog = None
         self.updating_combos = False
 
+    def dev_function(self):
+
+        self.compute_efficiencies()
+
     def gui_progrssbar(self,progress, name):
 
         if name.lower() == "deeplasi":
@@ -278,6 +282,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
                 self.toggle_checkbox(self.plot_settings.plot_split_lines)
             elif event.key() == Qt.Key_Escape:
                 self.close()  # Close the application on pressing the Escape key
+            elif event.key() == Qt.Key_D:
+                self.dev_function()
             # Add more key handling as needed
             else:
                 super().keyPressEvent(event)  # Important to allow unhandled key events to propagate

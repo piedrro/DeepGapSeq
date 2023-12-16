@@ -181,8 +181,10 @@ class _ebFRET_methods:
                             data = localisation_data["Donor"]
                         elif data_name == "Acceptor":
                             data = localisation_data["Acceptor"]
-                        elif "Efficiency" in data_name:
-                            data = localisation_data["Efficiency"]
+                        elif "FRET Efficiency" in data_name:
+                            data = localisation_data["FRET Efficiency"]
+                        elif "ALEX Efficiency" in data_name:
+                            data = localisation_data["ALEX Efficiency"]
 
                         if crop_plots == True and len(crop_range) == 2:
                             crop_range = sorted(crop_range)

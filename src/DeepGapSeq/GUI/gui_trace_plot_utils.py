@@ -263,7 +263,9 @@ class _trace_plotting_methods:
 
                     for dataset_name in self.plot_datasets:
                         plot_labels = list(self.data_dict[dataset_name][0].keys())
-                        plot_labels = [label for label in plot_labels if label in ["Donor", "Acceptor", "Efficiency", "DD", "AA", "DA", "AD"]]
+                        plot_labels = [label for label in plot_labels if label in ["Donor", "Acceptor",
+                                                                                   "FRET Efficiency", "ALEX Efficiency",
+                                                                                   "DD", "AA", "DA", "AD"]]
 
                         if dataset_name not in plot_label_dict.keys():
                             plot_label_dict[dataset_name] = []
@@ -276,10 +278,10 @@ class _trace_plotting_methods:
                             plot_label_dict[dataset_name].append("Acceptor")
                         elif plot_mode == "FRET Data" and set(["Donor", "Acceptor"]).issubset(plot_labels):
                             plot_label_dict[dataset_name].extend(["Donor", "Acceptor"])
-                        elif plot_mode == "FRET Efficiency" and set(["Efficiency"]).issubset(plot_labels):
-                            plot_label_dict[dataset_name].append("Efficiency")
-                        elif plot_mode == "FRET Data + FRET Efficiency" and set(["Donor", "Acceptor", "Efficiency"]).issubset(plot_labels):
-                            plot_label_dict[dataset_name].extend(["Donor", "Acceptor", "Efficiency"])
+                        elif plot_mode == "FRET Efficiency" and set(["FRET Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].append("FRET Efficiency")
+                        elif plot_mode == "FRET Data + FRET Efficiency" and set(["Donor", "Acceptor", "FRET Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].extend(["Donor", "Acceptor", "FRET Efficiency"])
                         elif plot_mode == "DA" and "DA" in plot_labels:
                             plot_label_dict[dataset_name].append("DA")
                         elif plot_mode == "DD" and "DD" in plot_labels:
@@ -290,10 +292,10 @@ class _trace_plotting_methods:
                             plot_label_dict[dataset_name].append("AD")
                         elif plot_mode == "ALEX Data" and set(["DD", "AA", "DA", "AD"]).issubset(plot_labels):
                             plot_label_dict[dataset_name].extend(["DD", "AA", "DA", "AD"])
-                        elif plot_mode == "ALEX Efficiency" and set(["Efficiency"]).issubset(plot_labels):
-                            plot_label_dict[dataset_name].append("Efficiency")
-                        elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "Efficiency"]).issubset(plot_labels):
-                            plot_label_dict[dataset_name].extend(["DD", "AA", "DA", "AD", "Efficiency"])
+                        elif plot_mode == "ALEX Efficiency" and set(["ALEX Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].append("ALEX Efficiency")
+                        elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "ALEX Efficiency"]).issubset(plot_labels):
+                            plot_label_dict[dataset_name].extend(["DD", "AA", "DA", "AD", "ALEX Efficiency"])
 
 
                     self.plot_info = {}
@@ -369,11 +371,20 @@ class _trace_plotting_methods:
                 plot_line_labels = self.plot_info[plot_dataset]
                 plot_line_labels = [label for label in plot_line_labels if self.plot_show_dict[label] == True]
 
+                efficiency_label = [label for label in plot_line_labels if "Efficiency" in label]
+
+                if len(efficiency_label) > 0:
+                    efficiency_label = efficiency_label[0]
+                    efficiency_plot = True
+                else:
+                    efficiency_label = None
+                    efficiency_plot = False
+
                 n_plot_lines = len(plot_line_labels)
 
                 if n_plot_lines > 0:
 
-                    if self.check_efficiency_graph(plot_mode) and split == False and self.plot_show_dict["Efficiency"] == True:
+                    if efficiency_plot and split == False and self.plot_show_dict[efficiency_label] == True:
 
                         layout = pg.GraphicsLayout()
                         self.graph_canvas.addItem(layout, row=plot_index, col=0)
