@@ -239,6 +239,27 @@ class _trace_plotting_methods:
 
         return self.localisation_numbers, self.n_traces
 
+
+    def sort_plot_labels(self, plot_labels):
+
+        try:
+
+            reference_list = ["Donor", "Acceptor", "FRET Efficiency",
+                              "DD", "AA", "DA", "AD","ALEX Efficiency",]
+
+            order = {key: i for i, key in enumerate(reference_list)}
+
+            # Sort the actual list based on the order defined in the reference list
+            sorted_list = sorted(plot_labels, key=lambda x: order.get(x, float('inf')))
+
+        except:
+            pass
+
+        return sorted_list
+
+
+
+
     def initialise_plot(self):
 
         try:
@@ -263,9 +284,8 @@ class _trace_plotting_methods:
 
                     for dataset_name in self.plot_datasets:
                         plot_labels = list(self.data_dict[dataset_name][0].keys())
-                        plot_labels = [label for label in plot_labels if label in ["Donor", "Acceptor",
-                                                                                   "FRET Efficiency", "ALEX Efficiency",
-                                                                                   "DD", "AA", "DA", "AD"]]
+                        plot_labels = [label for label in plot_labels if label in ["Donor", "Acceptor", "FRET Efficiency",
+                                                                                   "DD", "AA", "DA", "AD","ALEX Efficiency",]]
 
                         if dataset_name not in plot_label_dict.keys():
                             plot_label_dict[dataset_name] = []
@@ -297,7 +317,6 @@ class _trace_plotting_methods:
                         elif plot_mode == "ALEX Data + ALEX Efficiency" and set(["DD", "AA", "DA", "AD", "ALEX Efficiency"]).issubset(plot_labels):
                             plot_label_dict[dataset_name].extend(["DD", "AA", "DA", "AD", "ALEX Efficiency"])
 
-
                     self.plot_info = {}
 
                     for dataset_name, plot_labels in plot_label_dict.items():
@@ -306,6 +325,8 @@ class _trace_plotting_methods:
                             self.plot_info[dataset_name] = []
 
                         plot_labels = [label for label in plot_labels if len(self.data_dict[dataset_name][0][label]) > 0]
+
+                        plot_labels = self.sort_plot_labels(plot_labels)
 
                         if len(plot_labels) > 0:
                             self.plot_info[dataset_name].extend(plot_labels)
@@ -381,7 +402,7 @@ class _trace_plotting_methods:
 
                 if n_plot_lines > 0:
 
-                    if efficiency_plot and split == False and self.plot_show_dict[efficiency_label] == True:
+                    if efficiency_plot and split == False and self.plot_show_dict[efficiency_label] == True and n_plot_lines > 1:
 
                         layout = pg.GraphicsLayout()
                         self.graph_canvas.addItem(layout, row=plot_index, col=0)

@@ -83,7 +83,7 @@
           <item row="0" column="2">
            <widget class="QLabel" name="label_61">
             <property name="text">
-             <string>Plot Mode</string>
+             <string>Plot Channel</string>
             </property>
            </widget>
           </item>
@@ -166,7 +166,7 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>State Histograms</string>
+        <string>Histograms</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
@@ -186,6 +186,52 @@
           </item>
           <item>
            <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Plot Data</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="analysis_graph_data">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>10</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_63">
+              <property name="text">
+               <string>Plot Channels</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="analysis_graph_mode">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>10</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_17">
               <property name="text">
@@ -312,52 +358,6 @@
               </item>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Plot Data</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="analysis_graph_data">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>10</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_63">
-              <property name="text">
-               <string>Plot Mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="analysis_graph_mode">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>10</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -421,22 +421,27 @@
               </property>
               <item>
                <property name="text">
-                <string>Intensity</string>
+                <string>Raw Data: Intensity</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Centres</string>
+                <string>Fitted States: Intensity</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Noise</string>
+                <string>Fitted States: Centres</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Dwell Times</string>
+                <string>Fitted States: Noise</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Fitted States: Dwell Times</string>
                </property>
               </item>
              </widget>
@@ -466,8 +471,13 @@
                <bool>true</bool>
               </property>
               <property name="currentIndex">
-               <number>5</number>
+               <number>0</number>
               </property>
+              <item>
+               <property name="text">
+                <string>Auto</string>
+               </property>
+              </item>
               <item>
                <property name="text">
                 <string>10</string>

@@ -138,7 +138,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     Ui_MainWindow, _trace_plotting_methods,
     _import_methods, _export_methods,
     _ebFRET_methods, _DeepLasi_methods,
-    _analysis_plotting_methods, _inceptiontime_methods):
+    _analysis_plotting_methods, _inceptiontime_methods,):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -172,7 +172,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.analysis_graph_canvas = CustomMatplotlibWidget(self)
         self.analysis_graph_container.layout().addWidget(self.analysis_graph_canvas)
         self.analysis_graph_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
 
         self.plotsettings_button = self.findChild(QtWidgets.QPushButton, "plotsettings_button")
         self.plotsettings_button.clicked.connect(self.toggle_plot_settings)
@@ -212,8 +211,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.analysis_crop_traces.stateChanged.connect(self.initialise_analysis_plot)
         self.analysis_histogram_dataset.currentIndexChanged.connect(self.initialise_analysis_plot)
         self.analysis_histogram_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_bin_size.currentIndexChanged.connect(self.initialise_analysis_plot)
-
+        self.analysis_histogram_bin_size.currentTextChanged.connect(self.initialise_analysis_plot)
 
         self.plot_settings.plot_split_lines.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showx.stateChanged.connect(partial(self.plot_traces, update_plot=True))
@@ -256,7 +254,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
     def dev_function(self):
 
-        self.detect_inceptiontime_states()
+        print("Dev function")
+        self.initialise_analysis_plot()
 
     def gui_progrssbar(self,progress, name):
 

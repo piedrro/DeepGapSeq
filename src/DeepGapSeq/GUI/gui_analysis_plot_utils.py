@@ -38,7 +38,7 @@ class _analysis_plotting_methods:
 
         try:
 
-            if self.updating_combos == False and self.data_dict != {}:
+            if self.data_dict != {}:
 
                 worker = Worker(self.compute_trace_analysis)
                 worker.signals.result.connect(self.update_analysis_plot)
@@ -53,37 +53,44 @@ class _analysis_plotting_methods:
 
         try:
 
-            if len(trace_data) == len(state_data) and len(trace_data) > 0:
+            if len(trace_data) > 0:
 
-                histogram_data = {"intensity": {}, "centres": {}, "noise": {}, "dwell_times": {}}
+                self.print_notification("Computing Histograms...")
 
-                trace_data = np.concatenate(trace_data)
-                state_data = np.concatenate(state_data)
+                histogram_data = {"data_intensity": {}, "states_intensity": {},
+                                  "states_centres": {}, "states_noise": {}, "states_dwell_times": {}}
 
-                change_indices = np.where(np.diff(state_data) != 0)[0] + 1
+                histogram_data["data_intensity"][0] = np.concatenate(trace_data).tolist()
 
-                split_trace_data = np.split(trace_data, change_indices)
-                split_state_data = np.split(state_data, change_indices)
+                if len(state_data) == len(trace_data):
 
-                for data, state in zip(split_trace_data, split_state_data):
+                    trace_data = np.concatenate(trace_data)
+                    state_data = np.concatenate(state_data)
 
-                    state = state[0]
+                    change_indices = np.where(np.diff(state_data) != 0)[0] + 1
 
-                    if state not in histogram_data["intensity"].keys():
-                        histogram_data["intensity"][state] = []
-                        histogram_data["centres"][state] = []
-                        histogram_data["noise"][state] = []
-                        histogram_data["dwell_times"][state] = []
+                    split_trace_data = np.split(trace_data, change_indices)
+                    split_state_data = np.split(state_data, change_indices)
 
-                    instensity = data.tolist()
-                    centres = [np.mean(data)]*len(data)
-                    noise = [np.std(data)]*len(data)
-                    dwell_time = len(data)
+                    for data, state in zip(split_trace_data, split_state_data):
 
-                    histogram_data["intensity"][state].extend(instensity)
-                    histogram_data["centres"][state].extend(centres)
-                    histogram_data["noise"][state].extend(noise)
-                    histogram_data["dwell_times"][state].append(dwell_time)
+                        state = state[0]
+
+                        if state not in histogram_data["states_intensity"].keys():
+                            histogram_data["states_intensity"][state] = []
+                            histogram_data["states_centres"][state] = []
+                            histogram_data["states_noise"][state] = []
+                            histogram_data["states_dwell_times"][state] = []
+
+                        instensity = data.tolist()
+                        centres = [np.mean(data)]*len(data)
+                        noise = [np.std(data)]*len(data)
+                        dwell_time = len(data)
+
+                        histogram_data["states_intensity"][state].extend(instensity)
+                        histogram_data["states_centres"][state].extend(centres)
+                        histogram_data["states_noise"][state].extend(noise)
+                        histogram_data["states_dwell_times"][state].append(dwell_time)
 
         except:
             print(traceback.format_exc())
@@ -103,11 +110,10 @@ class _analysis_plotting_methods:
             else:
                 dataset_list = [analysis_dataset]
 
-            if "Efficiency" in mode:
-                mode = "Efficiency"
-
             trace_data_list = []
             state_data_list = []
+
+            self.print_notification("Compiling Histogram Data...")
 
             for dataset in dataset_list:
                 for localisation_index, localisation_data in enumerate(self.data_dict[dataset]):
@@ -120,11 +126,10 @@ class _analysis_plotting_methods:
                         trace_data = localisation_data[mode]
                         state_data = localisation_data["states"]
 
-                        if len(trace_data) == len(state_data) and len(trace_data) > 0:
+                        if len(trace_data) > 0:
 
-                            if len(trace_data) == len(state_data):
-                                trace_data_list.append(trace_data)
-                                state_data_list.append(state_data)
+                            trace_data_list.append(trace_data)
+                            state_data_list.append(state_data)
 
         except:
             print(traceback.format_exc())
@@ -141,7 +146,9 @@ class _analysis_plotting_methods:
 
         if histogram_data != {}:
 
-            histogram_dataset = self.analysis_histogram_dataset.currentText().lower()
+            self.print_notification("Drawing Histogram Data...")
+
+            histogram_dataset = self.analysis_histogram_dataset.currentText()
             histogram_mode = self.analysis_histogram_mode.currentText().lower()
             bin_size = self.analysis_histogram_bin_size.currentText()
             plot_dataset = self.analysis_graph_data.currentText()
@@ -152,15 +159,21 @@ class _analysis_plotting_methods:
             else:
                 bin_size = "auto"
 
-            if histogram_dataset == "dwell times":
-                histogram_dataset = "dwell_times"
+            if histogram_dataset == "Raw Data: Intensity":
+                histogram_key = "data_intensity"
+            elif histogram_dataset == "Fitted States: Intensity":
+                histogram_key = "states_intensity"
+            elif histogram_dataset == "Fitted States: Centres":
+                histogram_key = "states_centres"
+            elif histogram_dataset == "Fitted States: Noise":
+                histogram_key = "states_noise"
+            elif histogram_dataset == "Fitted States: Dwell Times":
+                histogram_key = "states_dwell_times"
 
             if histogram_mode.lower() == "frequency":
-                xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
                 ylabel = "Frequency"
                 density = False
             else:
-                xlabel = plot_mode.capitalize() + " " + histogram_dataset.capitalize().replace("_", " ")
                 ylabel = "Probability"
                 density = True
 
@@ -170,12 +183,14 @@ class _analysis_plotting_methods:
 
                 all_data = []
 
-                for state in histogram_data[histogram_dataset].keys():
+                for state in histogram_data[histogram_key].keys():
 
-                    plot_label = f"State {int(state)}"
+                    if histogram_dataset != "Raw Data: Intensity":
+                        plot_label = f"{plot_mode}: State {int(state)}"
+                    else:
+                        plot_label = plot_mode
 
-                    histogram_values = histogram_data[histogram_dataset][state]
-
+                    histogram_values = histogram_data[histogram_key][state]
                     all_data.extend(histogram_values)
 
                     self.analysis_graph_canvas.axes.hist(histogram_values,
@@ -186,7 +201,7 @@ class _analysis_plotting_methods:
 
                 self.analysis_graph_canvas.axes.legend()
 
-                self.analysis_graph_canvas.axes.set_xlabel(xlabel)
+                self.analysis_graph_canvas.axes.set_xlabel(histogram_dataset)
                 self.analysis_graph_canvas.axes.set_ylabel(ylabel)
 
                 lower_limit, upper_limit = np.percentile(all_data, [0.1, 99.9])
@@ -196,6 +211,8 @@ class _analysis_plotting_methods:
                 self.analysis_graph_canvas.axes.set_xlim(lower_limit, upper_limit)
 
                 self.analysis_graph_canvas.canvas.draw()
+
+                self.print_notification("Histogram Updated")
 
             except:
                 print(traceback.format_exc())

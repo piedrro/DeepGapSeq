@@ -72,11 +72,10 @@ class _import_methods:
                                     "crop_range": [],
                                     "filter": False,
                                     "import_path": path,
-                                    "DD" : DD,
-                                    "DA" : DA,
-                                    "AA" : AA,
-                                    "AD" : AD,
-                                    "ALEX Efficiency": data["E"].values,
+                                    "DD": DD,
+                                    "DA": DA,
+                                    "AA": AA,
+                                    "AD": AD,
                                     }
 
                         self.data_dict[dataset_name].append(loc_data)
