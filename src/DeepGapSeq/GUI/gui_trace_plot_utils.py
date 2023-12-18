@@ -331,9 +331,6 @@ class _trace_plotting_methods:
                                     if label not in self.plot_show_dict:
                                         self.plot_show_dict[label] = True
 
-                            self.export_settings.export_data_selection.clear()
-                            self.export_settings.export_data_selection.addItems(self.plot_show_dict.keys())
-
                             self.create_plot_checkboxes()
                             self.plot_traces(update_plot=True)
 

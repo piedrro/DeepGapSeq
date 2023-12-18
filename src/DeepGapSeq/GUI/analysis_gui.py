@@ -226,7 +226,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
     def dev_function(self):
 
-        self.compute_efficiencies()
+        self.populate_combos()
 
     def gui_progrssbar(self,progress, name):
 
@@ -342,8 +342,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     def toggle_export_settings(self):
 
         if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
-
-            self.populate_export_selection()
 
             self.export_settings.show()
             self.export_settings.raise_()

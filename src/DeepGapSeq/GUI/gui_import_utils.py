@@ -16,6 +16,8 @@ class _import_methods:
         self.update_plot_data_combo()
         self.update_plot_mode_combo()
 
+        self.populate_export_combos()
+
         self.populate_analysis_graph_combos()
         self.populate_deeplasi_options()
 
@@ -520,8 +522,6 @@ class _import_methods:
                     channel_names = dataset_data[0].keys()
                     channel_names = [channel for channel in channel_names if channel in ["Donor", "Acceptor", "DD", "AA", "DA", "AD"]]
                     channel_names = [channel for channel in channel_names if len(dataset_data[0][channel]) > 0]
-
-                    print(dataset_name, channel_names)
 
                     if set(["Donor", "Acceptor"]).issubset(channel_names):
                         self.compute_fret_efficiency(dataset_name)

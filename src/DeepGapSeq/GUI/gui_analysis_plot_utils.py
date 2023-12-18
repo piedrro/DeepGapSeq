@@ -95,8 +95,13 @@ class _analysis_plotting_methods:
 
         try:
 
-            dataset_name = self.analysis_graph_data.currentText()
+            analysis_dataset = self.analysis_graph_data.currentText()
             mode = self.analysis_graph_mode.currentText()
+
+            if analysis_dataset == "All Datasets":
+                dataset_list = list(self.data_dict.keys())
+            else:
+                dataset_list = [analysis_dataset]
 
             if "Efficiency" in mode:
                 mode = "Efficiency"
@@ -104,21 +109,22 @@ class _analysis_plotting_methods:
             trace_data_list = []
             state_data_list = []
 
-            for localisation_index, localisation_data in enumerate(self.data_dict[dataset_name]):
+            for dataset in dataset_list:
+                for localisation_index, localisation_data in enumerate(self.data_dict[dataset]):
 
-                user_label = localisation_data["user_label"]
-                nucleotide_label = localisation_data["nucleotide_label"]
+                    user_label = localisation_data["user_label"]
+                    nucleotide_label = localisation_data["nucleotide_label"]
 
-                if self.get_filter_status("analysis", user_label, nucleotide_label) == False:
+                    if self.get_filter_status("analysis", user_label, nucleotide_label) == False:
 
-                    trace_data = localisation_data[mode]
-                    state_data = localisation_data["states"]
+                        trace_data = localisation_data[mode]
+                        state_data = localisation_data["states"]
 
-                    if len(trace_data) == len(state_data):
+                        if len(trace_data) == len(state_data) and len(trace_data) > 0:
 
-                        if len(trace_data) == len(state_data):
-                            trace_data_list.append(trace_data)
-                            state_data_list.append(state_data)
+                            if len(trace_data) == len(state_data):
+                                trace_data_list.append(trace_data)
+                                state_data_list.append(state_data)
 
         except:
             print(traceback.format_exc())
