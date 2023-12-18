@@ -584,9 +584,9 @@
    </widget>
    <widget class="QMenu" name="menuAnalysis_2">
     <property name="title">
-     <string>Detect</string>
+     <string>Analyse</string>
     </property>
-    <addaction name="actionDetect_Binding_Events"/>
+    <addaction name="actionDetect_Binding_Events_D"/>
     <addaction name="actionFit_Hidden_States_F"/>
    </widget>
    <addaction name="menu_File"/>
@@ -668,12 +668,12 @@
   </action>
   <action name="actionFit_Hidden_States_F">
    <property name="text">
-    <string>Detect Hidden States [H]</string>
+    <string>Fit Hidden States [F]</string>
    </property>
   </action>
-  <action name="actionDetect_Binding_Events">
+  <action name="actionDetect_Binding_Events_D">
    <property name="text">
-    <string>Detect Binding Events [B]</string>
+    <string>Detect Binding Events [D]</string>
    </property>
   </action>
  </widget>
