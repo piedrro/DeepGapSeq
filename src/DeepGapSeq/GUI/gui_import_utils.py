@@ -23,6 +23,85 @@ class _import_methods:
 
         self.updating_combos = False
 
+    def import_deepfret_data(self):
+
+        try:
+
+            dataset_name = "DeepFRET Simulated"
+
+            self.data_dict = {}
+            n_traces = 0
+
+            desktop = os.path.expanduser("~/Desktop")
+            paths, _ = QFileDialog.getOpenFileNames(self, "Open Files", desktop, "DeepGapSeq Simulated Traces (*.txt)")
+
+            deepfret_format_error = False
+            expected_deepfret_cols = ['D-Dexc-bg', 'A-Dexc-bg', 'A-Aexc-bg',
+                                      'D-Dexc-rw', 'A-Dexc-rw','A-Aexc-rw', 'S', 'E']
+
+            if len(paths) > 0:
+
+                if dataset_name not in self.data_dict.keys():
+                    self.data_dict[dataset_name] = []
+
+                for path in paths:
+
+                    data = pd.read_table(path, sep="\t", skiprows=6)
+
+                    if data.columns.tolist() != expected_deepfret_cols:
+
+                        file_name = os.path.basename(path)
+                        self.print_notification(f"DeepFRET format error in file: {file_name}")
+
+                    else:
+
+                        DD = data["D-Dexc-rw"].values
+                        DA = data["A-Dexc-rw"].values
+                        AA = data["A-Aexc-rw"].values
+                        AD = np.zeros_like(DD)
+
+                        loc_data = {"FRET Efficiency": [],
+                                    "ALEX Efficiency": [],
+                                    "states": [],
+                                    "state_means": {},
+                                    "user_label": 0,
+                                    "nucleotide_label": 0,
+                                    "break_points": [],
+                                    "gamma_ranges": [],
+                                    "crop_range": [],
+                                    "filter": False,
+                                    "import_path": path,
+                                    "DD" : DD,
+                                    "DA" : DA,
+                                    "AA" : AA,
+                                    "AD" : AD,
+                                    "ALEX Efficiency": data["E"].values,
+                                    }
+
+                        self.data_dict[dataset_name].append(loc_data)
+                        n_traces += 1
+
+            if n_traces > 1:
+
+                self.print_notification(f"Imported {int(n_traces)} traces")
+
+                self.compute_efficiencies()
+                self.compute_state_means()
+
+                self.populate_combos()
+
+                self.plot_localisation_number.setValue(0)
+
+                self.initialise_plot()
+                self.initialise_analysis_plot()
+
+        except:
+            print(traceback.format_exc())
+            pass
+
+
+
+
     def import_simulated_data(self):
 
         try:
@@ -94,7 +173,6 @@ class _import_methods:
 
         except:
             print(traceback.format_exc())
-
 
     def import_data_files(self):
 

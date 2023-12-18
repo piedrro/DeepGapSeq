@@ -166,7 +166,7 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Analysis Graphs</string>
+        <string>State Histograms</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
@@ -584,8 +584,9 @@
    </widget>
    <widget class="QMenu" name="menuAnalysis_2">
     <property name="title">
-     <string>Fit</string>
+     <string>Detect</string>
     </property>
+    <addaction name="actionDetect_Binding_Events"/>
     <addaction name="actionFit_Hidden_States_F"/>
    </widget>
    <addaction name="menu_File"/>
@@ -667,7 +668,12 @@
   </action>
   <action name="actionFit_Hidden_States_F">
    <property name="text">
-    <string>Fit Hidden States [F]</string>
+    <string>Detect Hidden States [H]</string>
+   </property>
+  </action>
+  <action name="actionDetect_Binding_Events">
+   <property name="text">
+    <string>Detect Binding Events [B]</string>
    </property>
   </action>
  </widget>

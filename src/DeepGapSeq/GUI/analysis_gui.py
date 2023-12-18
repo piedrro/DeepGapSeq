@@ -27,7 +27,7 @@ class FittingWindow(QDialog, fittingwindow_gui):
         super(FittingWindow, self).__init__()
 
         self.setupUi(self)  # Set up the user interface from Designer.
-        self.setWindowTitle("Analysis Settings")  # Set the window title
+        self.setWindowTitle("Detect Hidden States")  # Set the window title
 
         self.AnalysisGUI = parent
 
@@ -35,7 +35,10 @@ class FittingWindow(QDialog, fittingwindow_gui):
         try:
             if event.key() == Qt.Key_F:
                 self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -53,7 +56,10 @@ class ImportSettingsWindow(QDialog, importwindow_gui):
         try:
             if event.key() == Qt.Key_I:
                 self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -71,7 +77,10 @@ class ExportSettingsWindow(QDialog, exportwindow_gui):
         try:
             if event.key() == Qt.Key_E:
                 self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -88,23 +97,12 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
     def keyPressEvent(self, event):
         try:
-            if event.key() in [Qt.Key_A,Qt.Key_T,Qt.Key_C,Qt.Key_G]:
-                self.AnalysisGUI.classify_traces(mode = "nucleotide", key = chr(event.key()))
-            elif event.key() in [Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9]:
-                self.AnalysisGUI.classify_traces(mode = "user", key = chr(event.key()))
-            elif event.key() in [Qt.Key_Left,Qt.Key_Right]:
-                self.AnalysisGUI.update_localisation_number(event.key())
-            elif event.key() == Qt.Key_X:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_showx)
-            elif event.key() == Qt.Key_Y:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_showy)
-            elif event.key() == Qt.Key_N:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_normalise)
-            elif event.key() == Qt.Key_S:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_split_lines)
-            elif event.key() == Qt.Key_Space:
+            if event.key() == Qt.Key_Space:
+                self.close()
+            elif event.key() == Qt.Key_Escape:
                 self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -211,6 +209,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
         self.import_settings.import_data.clicked.connect(self.import_data_files)
         self.import_settings.import_json.clicked.connect(self.import_gapseq_json)
+        self.import_settings.import_deepFRET.clicked.connect(self.import_deepfret_data)
 
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")
@@ -270,7 +269,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
                 self.toggle_import_settings()
             elif event.key() == Qt.Key_E:
                 self.toggle_export_settings()
-            elif event.key() == Qt.Key_F:
+            elif event.key() == Qt.Key_H:
                 self.toggle_fitting_window()
             elif event.key() == Qt.Key_X:
                 self.toggle_checkbox(self.plot_settings.plot_showx)
@@ -296,6 +295,11 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
         if self.fitting_window.isHidden() or self.fitting_window.isActiveWindow() == False:
 
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
             self.populate_ebFRET_options()
 
             self.fitting_window.show()
@@ -306,6 +310,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
             # self.fitting_window.exec_()
 
             self.current_dialog = self.fitting_window
+
         else:
             self.fitting_window.hide()
             self.activateWindow()
@@ -313,13 +318,19 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     def toggle_plot_settings(self):
 
         if self.plot_settings.isHidden() or self.plot_settings.isActiveWindow() == False:
+
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
             self.plot_settings.show()
             self.plot_settings.raise_()
             self.plot_settings.activateWindow()
             self.plot_settings.setFocus()
             # self.plot_settings.exec_()
 
-            self.current_dialog = self.fitting_window
+            self.current_dialog = self.plot_settings
 
         else:
             self.plot_settings.hide()
@@ -328,13 +339,20 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     def toggle_import_settings(self):
 
         if self.import_settings.isHidden() or self.import_settings.isActiveWindow() == False:
+
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
             self.import_settings.show()
             self.import_settings.raise_()
             self.import_settings.activateWindow()
             self.import_settings.setFocus()
             # self.import_settings.exec_()
 
-            self.current_dialog = self.fitting_window
+            self.current_dialog = self.import_settings
+
         else:
             self.import_settings.hide()
             self.activateWindow()
@@ -343,11 +361,19 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
         if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
 
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
             self.export_settings.show()
             self.export_settings.raise_()
             self.export_settings.activateWindow()
             self.export_settings.setFocus()
             # self.export_settings.exec_()
+
+            self.current_dialog = self.export_settings
+
         else:
             self.export_settings.hide()
             self.activateWindow()
