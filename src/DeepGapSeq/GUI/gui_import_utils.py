@@ -17,6 +17,7 @@ class _import_methods:
         self.update_plot_mode_combo()
 
         self.populate_export_combos()
+        self.populate_detect_combos()
 
         self.populate_analysis_graph_combos()
         self.populate_deeplasi_options()

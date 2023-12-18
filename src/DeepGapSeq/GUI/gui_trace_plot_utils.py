@@ -621,12 +621,16 @@ class _trace_plotting_methods:
                     plot_gamma_ranges = grid["sub_plot_gamma_ranges"]
                     plot_lines = grid["plot_lines"]
                     plot_lines_labels = grid["plot_lines_labels"]
-                    # title_plot = grid["title_plot"]
 
                     user_label = self.data_dict[plot_dataset][localisation_number]["user_label"]
                     nucleotide_label = self.data_dict[plot_dataset][localisation_number]["nucleotide_label"]
                     crop_range = copy.deepcopy(self.data_dict[plot_dataset][localisation_number]["crop_range"])
                     gamma_correction_ranges = self.data_dict[plot_dataset][localisation_number]["gamma_ranges"]
+
+                    if "pred_plot_label" in self.data_dict[plot_dataset][localisation_number].keys():
+                        pred = self.data_dict[plot_dataset][localisation_number]["pred_plot_label"]
+                    else:
+                        pred = None
 
                     if len(crop_range) == 2:
                         crop_range = sorted(crop_range)
@@ -634,9 +638,11 @@ class _trace_plotting_methods:
 
                     if crop_plots == True and len(crop_range) == 2:
                         plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label} Cropped:{True}]"
-
                     else:
                         plot_details = f"{plot_dataset} [#:{localisation_number} C:{user_label}  N:{nucleotide_label} Cropped:{False}]"
+
+                    if pred != None:
+                        plot_details += f" \nPred:{pred}"
 
                     plot_ranges = {"xRange": [0, 100], "yRange": [0, 100]}
 

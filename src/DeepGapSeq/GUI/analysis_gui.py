@@ -46,13 +46,6 @@ class DetectWindow(QDialog, detectwindow_gui):
         except:
             pass
 
-
-
-
-
-
-
-
 class FittingWindow(QDialog, fittingwindow_gui):
 
     def __init__(self, parent):
@@ -246,6 +239,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.import_settings.import_deepFRET.clicked.connect(self.import_deepfret_data)
 
         self.detect_window.detect_inceptiontime.clicked.connect(self.detect_inceptiontime_states)
+        self.detect_window.label_singletrace.clicked.connect(self.update_singletrace_labels)
+        self.detect_window.label_multitrace.clicked.connect(self.update_multitrace_labels)
 
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")
@@ -261,12 +256,14 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
     def dev_function(self):
 
-        self.populate_combos()
+        self.detect_inceptiontime_states()
 
     def gui_progrssbar(self,progress, name):
 
         if name.lower() == "deeplasi":
             self.fitting_window.deeplasi_progressbar.setValue(progress)
+        if name.lower() == "inceptiontime":
+            self.detect_window.inceptiontime_progressbar.setValue(progress)
 
 
     def format_export_settings(self):
@@ -289,6 +286,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.import_settings.close()
         self.export_settings.close()
         self.fitting_window.close()
+        self.detect_window.close()
 
     def keyPressEvent(self, event):
         try:
@@ -319,7 +317,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
                 self.toggle_checkbox(self.plot_settings.plot_split_lines)
             elif event.key() == Qt.Key_Escape:
                 self.close()  # Close the application on pressing the Escape key
-            elif event.key() == Qt.Key_D:
+            elif event.key() == Qt.Key_F1:
                 self.dev_function()
             # Add more key handling as needed
             else:

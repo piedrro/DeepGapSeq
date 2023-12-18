@@ -594,6 +594,9 @@ class _export_methods:
         elif export_mode.lower() == "analysis":
             user_filter = self.analysis_user_filter.currentText()
             nucleotide_filter = self.analysis_nucleotide_filter.currentText()
+        elif export_mode.lower() == "inceptiontime":
+            user_filter = self.detect_window.detect_user_filter.currentText()
+            nucleotide_filter = self.detect_window.detect_nucleotide_filter.currentText()
 
         filter = False
 
