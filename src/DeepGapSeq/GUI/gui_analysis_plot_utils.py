@@ -62,7 +62,7 @@ class _analysis_plotting_methods:
 
                 histogram_data["data_intensity"][0] = np.concatenate(trace_data).tolist()
 
-                if len(state_data) == len(trace_data):
+                if len(state_data) == len(trace_data) and len(np.unique(state_data)) > 1:
 
                     trace_data = np.concatenate(trace_data)
                     state_data = np.concatenate(state_data)
@@ -193,22 +193,26 @@ class _analysis_plotting_methods:
                     histogram_values = histogram_data[histogram_key][state]
                     all_data.extend(histogram_values)
 
-                    self.analysis_graph_canvas.axes.hist(histogram_values,
-                        bins=bin_size,
-                        alpha=0.5,
-                        label=plot_label,
-                        density=density)
+                    if len(histogram_values) > 0:
 
-                self.analysis_graph_canvas.axes.legend()
+                        self.analysis_graph_canvas.axes.hist(histogram_values,
+                            bins=bin_size,
+                            alpha=0.5,
+                            label=plot_label,
+                            density=density)
 
-                self.analysis_graph_canvas.axes.set_xlabel(histogram_dataset)
-                self.analysis_graph_canvas.axes.set_ylabel(ylabel)
+                if len(all_data) > 0:
 
-                lower_limit, upper_limit = np.percentile(all_data, [0.1, 99.9])
-                lower_limit = lower_limit - (upper_limit - lower_limit) * 0.1
-                upper_limit = upper_limit + (upper_limit - lower_limit) * 0.1
+                    self.analysis_graph_canvas.axes.legend()
 
-                self.analysis_graph_canvas.axes.set_xlim(lower_limit, upper_limit)
+                    self.analysis_graph_canvas.axes.set_xlabel(histogram_dataset)
+                    self.analysis_graph_canvas.axes.set_ylabel(ylabel)
+
+                    lower_limit, upper_limit = np.percentile(all_data, [0.1, 99.9])
+                    lower_limit = lower_limit - (upper_limit - lower_limit) * 0.1
+                    upper_limit = upper_limit + (upper_limit - lower_limit) * 0.1
+
+                    self.analysis_graph_canvas.axes.set_xlim(lower_limit, upper_limit)
 
                 self.analysis_graph_canvas.canvas.draw()
 
