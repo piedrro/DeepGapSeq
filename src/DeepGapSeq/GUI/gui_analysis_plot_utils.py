@@ -113,8 +113,6 @@ class _analysis_plotting_methods:
             trace_data_list = []
             state_data_list = []
 
-            self.print_notification("Compiling Histogram Data...")
-
             for dataset in dataset_list:
                 for localisation_index, localisation_data in enumerate(self.data_dict[dataset]):
 
@@ -145,8 +143,6 @@ class _analysis_plotting_methods:
     def update_analysis_plot(self, histogram_data):
 
         if histogram_data != {}:
-
-            self.print_notification("Drawing Histogram Data...")
 
             histogram_dataset = self.analysis_histogram_dataset.currentText()
             histogram_mode = self.analysis_histogram_mode.currentText().lower()
@@ -208,7 +204,7 @@ class _analysis_plotting_methods:
                     self.analysis_graph_canvas.axes.set_xlabel(histogram_dataset)
                     self.analysis_graph_canvas.axes.set_ylabel(ylabel)
 
-                    lower_limit, upper_limit = np.percentile(all_data, [0.1, 99.9])
+                    lower_limit, upper_limit = np.percentile(all_data, [1, 99])
                     lower_limit = lower_limit - (upper_limit - lower_limit) * 0.1
                     upper_limit = upper_limit + (upper_limit - lower_limit) * 0.1
 
