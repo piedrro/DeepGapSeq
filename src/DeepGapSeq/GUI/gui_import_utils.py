@@ -93,7 +93,6 @@ class _import_methods:
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
-                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())
@@ -169,7 +168,6 @@ class _import_methods:
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
-                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())
@@ -290,7 +288,6 @@ class _import_methods:
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
-                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())
@@ -512,11 +509,7 @@ class _import_methods:
             self.analysis_graph_mode.addItem("ALEX Efficiency")
 
         self.analysis_graph_data.clear()
-        if len(self.data_dict.keys()) == 1:
-            self.analysis_graph_data.addItems(list(self.data_dict.keys()))
-        else:
-            self.analysis_graph_data.addItem("All Datasets")
-            self.analysis_graph_data.addItems(list(self.data_dict.keys()))
+        self.analysis_graph_data.addItems(list(self.data_dict.keys()))
 
 
     def import_gapseq_json(self):
@@ -583,7 +576,6 @@ class _import_methods:
                 self.plot_localisation_number.setValue(0)
 
                 self.initialise_plot()
-                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())

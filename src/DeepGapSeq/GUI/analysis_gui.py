@@ -22,7 +22,8 @@ from DeepGapSeq.GUI.gui_ebfret_utils import _ebFRET_methods
 from DeepGapSeq.GUI.gui_deeplasi_utils import _DeepLasi_methods
 from DeepGapSeq.GUI.gui_inceptiontime_utils import _inceptiontime_methods
 
-
+import queue
+import traceback
 
 
 class DetectWindow(QDialog, detectwindow_gui):
@@ -204,15 +205,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.plot_mode.currentIndexChanged.connect(self.initialise_plot)
         self.plot_data.currentIndexChanged.connect(self.initialise_plot)
 
-        self.analysis_graph_data.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_graph_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_nucleotide_filter.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_user_filter.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_crop_traces.stateChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_dataset.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_bin_size.currentTextChanged.connect(self.initialise_analysis_plot)
-
         self.plot_settings.plot_split_lines.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showx.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showy.stateChanged.connect(partial(self.plot_traces, update_plot=True))
@@ -240,6 +232,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.detect_window.label_singletrace.clicked.connect(self.update_singletrace_labels)
         self.detect_window.label_multitrace.clicked.connect(self.update_multitrace_labels)
 
+        self.draw_analysis_plot.clicked.connect(self.initialise_analysis_plot)
+
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")
 
@@ -251,6 +245,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
         self.current_dialog = None
         self.updating_combos = False
+
+        self.plot_queue = queue.Queue()
 
     def dev_function(self):
 
@@ -318,6 +314,9 @@ class AnalysisGUI(QtWidgets.QMainWindow,
                 self.close()  # Close the application on pressing the Escape key
             elif event.key() == Qt.Key_F1:
                 self.dev_function()
+            elif event.key() == Qt.Key_P:
+                self.initialise_analysis_plot()
+
             # Add more key handling as needed
             else:
                 super().keyPressEvent(event)  # Important to allow unhandled key events to propagate

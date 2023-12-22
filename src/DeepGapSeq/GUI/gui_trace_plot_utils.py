@@ -102,7 +102,6 @@ class _trace_plotting_methods:
                     self.data_dict[dataset_name][localisation_number]["gamma_ranges"] = gamma_ranges
 
             self.plot_traces(update_plot=False)
-            self.initialise_analysis_plot()
 
     def update_crop_range(self, event, mode ="click"):
 

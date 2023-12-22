@@ -546,6 +546,26 @@
            </layout>
           </item>
           <item>
+           <widget class="QPushButton" name="draw_analysis_plot">
+            <property name="text">
+             <string>Draw Analysis Plot [P]</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="analysis_plot_progressbar">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>10</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>

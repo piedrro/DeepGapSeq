@@ -23,7 +23,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -465,12 +465,12 @@
              <item row="1" column="0">
               <widget class="QLabel" name="label_8">
                <property name="text">
-                <string>Min Number of States</string>
+                <string>Min Number of Traces</string>
                </property>
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QComboBox" name="multitrace_min_states">
+              <widget class="QComboBox" name="multitrace_min_traces">
                <item>
                 <property name="text">
                  <string>1</string>
