@@ -189,7 +189,6 @@ class _export_methods:
             export_path = self.get_export_paths(extension="json")[0]
 
             if export_location == "Select Directory":
-
                 export_path, _ = QFileDialog.getSaveFileName(self, "Select Directory", export_path)
 
             export_dir = os.path.dirname(export_path)
@@ -247,7 +246,10 @@ class _export_methods:
 
             export_filename = os.path.basename(import_path)
             export_dir = os.path.dirname(import_path)
-            export_filename = export_filename.split(".")[0] + f"_gapseq.{extension}"
+            if "_gapseq" not in export_filename:
+                export_filename = export_filename.split(".")[0] + f"_gapseq.{extension}"
+            else:
+                export_filename = export_filename.split(".")[0] + f".{extension}"
 
             export_path = os.path.join(export_dir, export_filename)
             export_path = os.path.abspath(export_path)
@@ -612,6 +614,66 @@ class _export_methods:
 
         return filter
 
+    def json_dict_report(self, json_dataset):
+
+        try:
+
+            if json_dataset != {}:
+
+                json_dataset = json_dataset.copy()
+
+                json_report = {}
+                dataset_traces = {}
+
+                if "data" in json_dataset.keys():
+                    data_dict = json_dataset["data"]
+                else:
+                    data_dict = json_dataset
+
+                for dataset in data_dict.keys():
+
+                    data = data_dict[dataset]
+
+                    if dataset not in json_report.keys():
+                        json_report[dataset] = {}
+
+                    dataset_traces[dataset] = len(data)
+
+                    for json_dict in data:
+
+                        json_dict_keys = json_dict.keys()
+
+                        for key in json_dict_keys:
+
+                            if key not in json_report[dataset].keys():
+                                json_report[dataset][key] = 0
+
+                            json_report[dataset][key] += 1
+
+                n_datasets = len(json_report.keys())
+                unique_channels = list(set([key for dataset in json_report.keys() for key in json_report[dataset].keys()]))
+                unique_n_traces = np.unique([value for dataset in json_report.keys() for value in json_report[dataset].values()])
+                total_traces = sum([value for dataset in json_report.keys() for value in json_report[dataset].values()])
+
+                try:
+                    # size of json_dataset
+                    json_dataset_size = len(json.dumps(json_dataset, indent=4, cls=npEncoder))
+                    json_dataset_size_mb = json_dataset_size / 1000000
+                except:
+                    json_dataset_size_mb = 0
+
+                print(f"JSON Dataset report:")
+                print(f" N datasets: {n_datasets}")
+                print(f" Dataset traces: {list(dataset_traces.values())}")
+                print(f" Unique channels: {unique_channels}")
+                print(f" N traces: {unique_n_traces}")
+                print(f" Total traces: {total_traces}")
+                print(f" Size: {json_dataset_size_mb} MB")
+
+        except:
+            print(traceback.format_exc())
+
+
     def build_json_dict(self, dataset_names = []):
 
         try:
@@ -619,7 +681,8 @@ class _export_methods:
             json_dataset_dict = {"metadata":{}, "data":{}}
 
             json_list_keys = ["Donor", "Acceptor", "FRET Efficiency", "ALEX Efficiency",
-                              "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
+                              "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges",
+                              'gap_label', 'sequence_label', 'picasso_loc']
 
             json_var_keys = ["user_label", "nucleotide_label", "import_path"]
 
@@ -640,18 +703,13 @@ class _export_methods:
                     for key, value in localisation_data.items():
 
                         if key in json_list_keys:
-                            json_localisation_dict[str(key)] = list(value)
+                            if key in ["gap_label", "sequence_label"]:
+                                json_localisation_dict[key] = str(value)
+                            else:
+                                json_localisation_dict[key] = list(value)
 
-                        elif key in json_var_keys:
+                        if key in json_var_keys:
                             json_localisation_dict[key] = value
-
-                        else:
-
-                            for key in json_list_keys:
-                                json_localisation_dict[key] = []
-
-                            for key in json_var_keys:
-                                json_localisation_dict[key] = None
 
                     json_dataset_dict["data"][dataset_name].append(json_localisation_dict)
 

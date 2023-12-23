@@ -110,11 +110,13 @@ class _trace_plotting_methods:
 
         if mode == "click":
 
+            for dataset_name in self.plot_info.keys():
+                plot_channel = self.plot_info[dataset_name][0]
+                break
+
             for dataset_name in self.data_dict.keys():
 
-                plot_channel = self.plot_info[dataset_name][0]
-
-                crop_range = self.data_dict[dataset_name][localisation_number]["crop_range"]
+                crop_range = self.data_dict[dataset_name][localisation_number]["crop_range"].copy()
                 data_length = self.data_dict[dataset_name][localisation_number][plot_channel].shape[0]
 
                 if event < 0:

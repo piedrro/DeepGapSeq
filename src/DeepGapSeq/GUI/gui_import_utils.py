@@ -131,7 +131,6 @@ class _import_methods:
                     data = trace_data[i]
 
                     if len(data.shape) == 1:
-                        print(data.shape)
                         donor_data = []
                         acceptor_data = []
                         # efficiency_data = data
@@ -517,6 +516,8 @@ class _import_methods:
         try:
             expected_data = {"Donor": np.array([]), "Acceptor": np.array([]),
                              "FRET Efficiency": np.array([]), "ALEX Efficiency": np.array([]),
+                             "gap_label": np.array([]), "sequence_label": np.array([]),
+                             "picasso_loc": np.array([]),
                              "DD": np.array([]), "DA": np.array([]),
                              "AA": np.array([]), "AD": np.array([]),
                              "filter": False, "state_means": {}, "states": np.array([]),
@@ -547,24 +548,26 @@ class _import_methods:
 
                         localisation_dict = {}
 
-                        for key, value in localisation_data.items():
+                        if len(localisation_data.keys()) > 0:
 
-                            if key in expected_data.keys():
-                                expected_type = type(expected_data[key])
+                            for key, value in localisation_data.items():
 
-                                if expected_type == type(np.array([])):
-                                    value = np.array(value)
+                                if key in expected_data.keys():
+                                    expected_type = type(expected_data[key])
 
-                                localisation_dict[key] = value
+                                    if expected_type == type(np.array([])):
+                                        value = np.array(value)
 
-                        for key, value in expected_data.items():
-                            if key not in localisation_dict.keys():
-                                localisation_dict[key] = value
+                                    localisation_dict[key] = value
 
-                        localisation_dict["import_path"] = path
+                            for key, value in expected_data.items():
+                                if key not in localisation_dict.keys():
+                                    localisation_dict[key] = value
 
-                        self.data_dict[dataset_name].append(localisation_dict)
-                        n_traces += 1
+                            localisation_dict["import_path"] = path
+
+                            self.data_dict[dataset_name].append(localisation_dict)
+                            n_traces += 1
 
             if n_traces > 0:
 
