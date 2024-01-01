@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>415</width>
-    <height>316</height>
+    <height>351</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -53,14 +53,14 @@
            </item>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="label">
            <property name="text">
             <string>Export Mode</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="3" column="1">
           <widget class="QComboBox" name="export_mode">
            <item>
             <property name="text">
@@ -79,65 +79,53 @@
            </item>
           </widget>
          </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="export_data_selection_label">
-           <property name="text">
-            <string>Export Data</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QComboBox" name="export_data_selection">
-           <item>
-            <property name="text">
-             <string>Donor</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Acceptor</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Data</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Data + FRET Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Data</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Data + ALEX Efficiency</string>
-            </property>
-           </item>
-          </widget>
-         </item>
          <item row="4" column="0">
-          <widget class="QLabel" name="export_user_filter_label">
+          <widget class="QLabel" name="label_9">
            <property name="text">
-            <string>Localisation Filter</string>
+            <string>Export Separator</string>
            </property>
           </widget>
          </item>
          <item row="4" column="1">
+          <widget class="QComboBox" name="export_separator">
+           <item>
+            <property name="text">
+             <string>Tab</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Comma</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Space</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Export Dataset(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="export_dataset_selection"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="export_data_selection_label">
+           <property name="text">
+            <string>Export Channel(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="export_channel_selection"/>
+         </item>
+         <item row="5" column="1">
           <widget class="QComboBox" name="export_user_filter">
            <item>
             <property name="text">
@@ -197,13 +185,13 @@
           </widget>
          </item>
          <item row="5" column="0">
-          <widget class="QLabel" name="export_nucleotide_filter_label">
+          <widget class="QLabel" name="export_user_filter_label">
            <property name="text">
-            <string>Nucleotide Filter</string>
+            <string>Localisation Filter</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QComboBox" name="export_nucleotide_filter">
            <item>
             <property name="text">
@@ -232,30 +220,11 @@
            </item>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_9">
+         <item row="6" column="0">
+          <widget class="QLabel" name="export_nucleotide_filter_label">
            <property name="text">
-            <string>Export Separator</string>
+            <string>Nucleotide Filter</string>
            </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="export_separator">
-           <item>
-            <property name="text">
-             <string>Tab</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Comma</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Space</string>
-            </property>
-           </item>
           </widget>
          </item>
         </layout>
@@ -318,65 +287,24 @@
            </item>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="export_data_selection_label_3">
            <property name="text">
-            <string>Export Data</string>
+            <string>Export Channel(s)</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="excel_export_data_selection">
-           <item>
-            <property name="text">
-             <string>Donor</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Acceptor</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Data</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Data + FRET Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Data</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Data + ALEX Efficiency</string>
-            </property>
-           </item>
-          </widget>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="excel_export_channel_selection"/>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="export_user_filter_label_3">
            <property name="text">
             <string>Localisation Filter</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QComboBox" name="excel_export_user_filter">
            <item>
             <property name="text">
@@ -435,14 +363,14 @@
            </item>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="export_nucleotide_filter_label_3">
            <property name="text">
             <string>Nucleotide Filter</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QComboBox" name="excel_export_nucleotide_filter">
            <item>
             <property name="text">
@@ -470,6 +398,16 @@
             </property>
            </item>
           </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Export Dataset(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="excel_export_dataset_selection"/>
          </item>
         </layout>
        </item>
@@ -531,65 +469,24 @@
            </item>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="export_data_selection_label_6">
            <property name="text">
-            <string>Export Data</string>
+            <string>Export Channel(s)</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="origin_export_data_selection">
-           <item>
-            <property name="text">
-             <string>Donor</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Acceptor</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Data</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>FRET Data + FRET Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Data</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Efficiency</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ALEX Data + ALEX Efficiency</string>
-            </property>
-           </item>
-          </widget>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="origin_export_channel_selection"/>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="export_user_filter_label_6">
            <property name="text">
             <string>Localisation Filter</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QComboBox" name="origin_export_user_filter">
            <item>
             <property name="text">
@@ -648,14 +545,14 @@
            </item>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="export_nucleotide_filter_label_6">
            <property name="text">
             <string>Nucleotide Filter</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QComboBox" name="origin_export_nucleotide_filter">
            <item>
             <property name="text">
@@ -683,6 +580,16 @@
             </property>
            </item>
           </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Export Dataset(s)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="origin_export_dataset_selection"/>
          </item>
         </layout>
        </item>

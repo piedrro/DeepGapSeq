@@ -41,6 +41,8 @@ dependencies = [
     "retrying",
     "glob2",
     "pyqt5-tools",
+    "pytorch",
+    "tsai",
 ]
 
 [project.urls]

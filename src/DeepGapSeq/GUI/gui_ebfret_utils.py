@@ -85,7 +85,6 @@ class _ebFRET_methods:
                 self.compute_state_means(dataset_name=dataset_name)
 
                 self.plot_traces(update_plot = True)
-                self.initialise_analysis_plot()
 
         except:
             print(traceback.format_exc())
@@ -178,11 +177,13 @@ class _ebFRET_methods:
                     if self.get_filter_status("ebfret", user_label, nucleotide_label) == False:
 
                         if data_name == "Donor":
-                            data = localisation_data["donor"]
+                            data = localisation_data["Donor"]
                         elif data_name == "Acceptor":
-                            data = localisation_data["acceptor"]
-                        elif "efficiency" in data_name.lower():
-                            data = localisation_data["efficiency"]
+                            data = localisation_data["Acceptor"]
+                        elif "FRET Efficiency" in data_name:
+                            data = localisation_data["FRET Efficiency"]
+                        elif "ALEX Efficiency" in data_name:
+                            data = localisation_data["ALEX Efficiency"]
 
                         if crop_plots == True and len(crop_range) == 2:
                             crop_range = sorted(crop_range)

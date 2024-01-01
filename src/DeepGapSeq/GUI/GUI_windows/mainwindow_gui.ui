@@ -83,7 +83,7 @@
           <item row="0" column="2">
            <widget class="QLabel" name="label_61">
             <property name="text">
-             <string>Plot Mode</string>
+             <string>Plot Channel</string>
             </property>
            </widget>
           </item>
@@ -159,11 +159,14 @@
           </item>
          </layout>
         </item>
+        <item>
+         <layout class="QGridLayout" name="plot_checkbox_qgrid"/>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Analysis Graphs</string>
+        <string>Histograms</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
@@ -183,6 +186,52 @@
           </item>
           <item>
            <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>Plot Data</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="analysis_graph_data">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>10</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_63">
+              <property name="text">
+               <string>Plot Channels</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="analysis_graph_mode">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>10</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_17">
               <property name="text">
@@ -309,52 +358,6 @@
               </item>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Plot Data</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QComboBox" name="analysis_graph_data">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>10</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_63">
-              <property name="text">
-               <string>Plot Mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="analysis_graph_mode">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>10</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item>
@@ -418,22 +421,27 @@
               </property>
               <item>
                <property name="text">
-                <string>Intensity</string>
+                <string>Raw Data: Intensity</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Centres</string>
+                <string>Fitted States: Intensity</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Noise</string>
+                <string>Fitted States: Centres</string>
                </property>
               </item>
               <item>
                <property name="text">
-                <string>Dwell Times</string>
+                <string>Fitted States: Noise</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Fitted States: Dwell Times</string>
                </property>
               </item>
              </widget>
@@ -463,8 +471,13 @@
                <bool>true</bool>
               </property>
               <property name="currentIndex">
-               <number>5</number>
+               <number>0</number>
               </property>
+              <item>
+               <property name="text">
+                <string>Auto</string>
+               </property>
+              </item>
               <item>
                <property name="text">
                 <string>10</string>
@@ -533,6 +546,26 @@
            </layout>
           </item>
           <item>
+           <widget class="QPushButton" name="draw_analysis_plot">
+            <property name="text">
+             <string>Draw Analysis Plot [P]</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="analysis_plot_progressbar">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>10</height>
+             </size>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -569,7 +602,7 @@
      <x>0</x>
      <y>0</y>
      <width>868</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -581,8 +614,9 @@
    </widget>
    <widget class="QMenu" name="menuAnalysis_2">
     <property name="title">
-     <string>Fit</string>
+     <string>Analyse</string>
     </property>
+    <addaction name="actionDetect_Binding_Events_D"/>
     <addaction name="actionFit_Hidden_States_F"/>
    </widget>
    <addaction name="menu_File"/>
@@ -665,6 +699,11 @@
   <action name="actionFit_Hidden_States_F">
    <property name="text">
     <string>Fit Hidden States [F]</string>
+   </property>
+  </action>
+  <action name="actionDetect_Binding_Events_D">
+   <property name="text">
+    <string>Detect Binding Events [D]</string>
    </property>
   </action>
  </widget>

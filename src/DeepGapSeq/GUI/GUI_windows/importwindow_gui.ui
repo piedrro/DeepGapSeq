@@ -23,7 +23,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -431,7 +431,7 @@
           </font>
          </property>
          <property name="text">
-          <string>DeepGapSeq Simulated</string>
+          <string>DeepGapSeq Simulated (.pkl)</string>
          </property>
         </widget>
        </item>
@@ -454,6 +454,26 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_12">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>DeepFRET Simulated</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="import_deepFRET">
+         <property name="text">
+          <string>Import DeepFRET</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

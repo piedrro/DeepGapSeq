@@ -55,12 +55,14 @@ src/DeepGapSeq/GUI/gui_import_utils.py
 src/DeepGapSeq/GUI/gui_layout.py
 src/DeepGapSeq/GUI/gui_trace_plot_utils.py
 src/DeepGapSeq/GUI/gui_worker.py
+src/DeepGapSeq/GUI/mainwindow_gui.py
 src/DeepGapSeq/GUI/GUI_windows/__init__.py
 src/DeepGapSeq/GUI/GUI_windows/exportsettings_gui.py
 src/DeepGapSeq/GUI/GUI_windows/fittingwindow_gui.py
 src/DeepGapSeq/GUI/GUI_windows/importwindow_gui.py
 src/DeepGapSeq/GUI/GUI_windows/mainwindow_gui.py
 src/DeepGapSeq/GUI/GUI_windows/plotsettings_gui.py
+src/DeepGapSeq/GUI/GUI_windows/settingswindow_gui.py
 src/DeepGapSeq/InceptionFRET/__init__.py
 src/DeepGapSeq/InceptionFRET/dataloader.py
 src/DeepGapSeq/InceptionFRET/generate_training_set.py

@@ -8,6 +8,7 @@ from DeepGapSeq.GUI.GUI_windows.plotsettings_gui import Ui_Form as plotsettings_
 from DeepGapSeq.GUI.GUI_windows.importwindow_gui import Ui_Form as importwindow_gui
 from DeepGapSeq.GUI.GUI_windows.exportsettings_gui import Ui_Form as exportwindow_gui
 from DeepGapSeq.GUI.GUI_windows.fittingwindow_gui import Ui_Form as fittingwindow_gui
+from DeepGapSeq.GUI.GUI_windows.detectwindow_gui import Ui_Form as detectwindow_gui
 
 from qtpy.QtWidgets import (QWidget, QDialog, QVBoxLayout, QSizePolicy,QSlider, QLabel)
 import traceback
@@ -19,7 +20,32 @@ from DeepGapSeq.GUI.gui_import_utils import _import_methods
 from DeepGapSeq.GUI.gui_export_utils import _export_methods
 from DeepGapSeq.GUI.gui_ebfret_utils import _ebFRET_methods
 from DeepGapSeq.GUI.gui_deeplasi_utils import _DeepLasi_methods
+from DeepGapSeq.GUI.gui_inceptiontime_utils import _inceptiontime_methods
 
+import queue
+import traceback
+
+
+class DetectWindow(QDialog, detectwindow_gui):
+
+    def __init__(self, parent):
+        super(DetectWindow, self).__init__()
+        self.setupUi(self)  # Set up the user interface from Designer.
+        self.setWindowTitle("Detect Dynamic/Static States")  # Set the window title
+
+        self.AnalysisGUI = parent
+
+    def keyPressEvent(self, event):
+        try:
+            if event.key() == Qt.Key_D:
+                self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
+            else:
+                self.AnalysisGUI.keyPressEvent(event)
+                super().keyPressEvent(event)
+        except:
+            pass
 
 class FittingWindow(QDialog, fittingwindow_gui):
 
@@ -27,7 +53,7 @@ class FittingWindow(QDialog, fittingwindow_gui):
         super(FittingWindow, self).__init__()
 
         self.setupUi(self)  # Set up the user interface from Designer.
-        self.setWindowTitle("Analysis Settings")  # Set the window title
+        self.setWindowTitle("Fit Hidden States")  # Set the window title
 
         self.AnalysisGUI = parent
 
@@ -35,7 +61,10 @@ class FittingWindow(QDialog, fittingwindow_gui):
         try:
             if event.key() == Qt.Key_F:
                 self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -53,7 +82,10 @@ class ImportSettingsWindow(QDialog, importwindow_gui):
         try:
             if event.key() == Qt.Key_I:
                 self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -71,7 +103,10 @@ class ExportSettingsWindow(QDialog, exportwindow_gui):
         try:
             if event.key() == Qt.Key_E:
                 self.close()
+            elif event.key() == Qt.Key_Escape:
+                self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -88,23 +123,12 @@ class PlotSettingsWindow(QDialog, plotsettings_gui):
 
     def keyPressEvent(self, event):
         try:
-            if event.key() in [Qt.Key_A,Qt.Key_T,Qt.Key_C,Qt.Key_G]:
-                self.AnalysisGUI.classify_traces(mode = "nucleotide", key = chr(event.key()))
-            elif event.key() in [Qt.Key_1,Qt.Key_2,Qt.Key_3,Qt.Key_4,Qt.Key_5,Qt.Key_6,Qt.Key_7,Qt.Key_8,Qt.Key_9]:
-                self.AnalysisGUI.classify_traces(mode = "user", key = chr(event.key()))
-            elif event.key() in [Qt.Key_Left,Qt.Key_Right]:
-                self.AnalysisGUI.update_localisation_number(event.key())
-            elif event.key() == Qt.Key_X:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_showx)
-            elif event.key() == Qt.Key_Y:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_showy)
-            elif event.key() == Qt.Key_N:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_normalise)
-            elif event.key() == Qt.Key_S:
-                self.AnalysisGUI.toggle_checkbox(self.AnalysisGUI.plot_settings.plot_split_lines)
-            elif event.key() == Qt.Key_Space:
+            if event.key() == Qt.Key_Space:
+                self.close()
+            elif event.key() == Qt.Key_Escape:
                 self.close()
             else:
+                self.AnalysisGUI.keyPressEvent(event)
                 super().keyPressEvent(event)
         except:
             pass
@@ -115,7 +139,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     Ui_MainWindow, _trace_plotting_methods,
     _import_methods, _export_methods,
     _ebFRET_methods, _DeepLasi_methods,
-    _analysis_plotting_methods):
+    _analysis_plotting_methods, _inceptiontime_methods,):
 
     def __init__(self):
         super(AnalysisGUI, self).__init__()
@@ -127,6 +151,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.import_settings = ImportSettingsWindow(self)
         self.export_settings = ExportSettingsWindow(self)
         self.fitting_window = FittingWindow(self)
+        self.detect_window = DetectWindow(self)
 
 
         self.setWindowTitle("DeepGapSeq-Analysis")  # Set the window title
@@ -149,7 +174,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.analysis_graph_container.layout().addWidget(self.analysis_graph_canvas)
         self.analysis_graph_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-
         self.plotsettings_button = self.findChild(QtWidgets.QPushButton, "plotsettings_button")
         self.plotsettings_button.clicked.connect(self.toggle_plot_settings)
 
@@ -157,6 +181,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.actionImport_I.triggered.connect(self.toggle_import_settings)
         self.actionExport_E.triggered.connect(self.toggle_export_settings)
         self.actionFit_Hidden_States_F.triggered.connect(self.toggle_fitting_window)
+        self.actionDetect_Binding_Events_D.triggered.connect(self.toggle_detect_window)
 
         self.export_settings.export_gapseq.clicked.connect(self.initialise_file_export)
         self.export_settings.export_json.clicked.connect(self.initialise_json_export)
@@ -180,26 +205,12 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.plot_mode.currentIndexChanged.connect(self.initialise_plot)
         self.plot_data.currentIndexChanged.connect(self.initialise_plot)
 
-        self.analysis_graph_data.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_graph_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_nucleotide_filter.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_user_filter.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_crop_traces.stateChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_dataset.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_mode.currentIndexChanged.connect(self.initialise_analysis_plot)
-        self.analysis_histogram_bin_size.currentIndexChanged.connect(self.initialise_analysis_plot)
-
-
         self.plot_settings.plot_split_lines.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showx.stateChanged.connect(partial(self.plot_traces, update_plot=True))
         self.plot_settings.plot_showy.stateChanged.connect(partial(self.plot_traces, update_plot=True))
 
         self.plot_settings.plot_user_filter.currentIndexChanged.connect(self.initialise_plot)
         self.plot_settings.plot_nucleotide_filter.currentIndexChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_DD.stateChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_DA.stateChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_AA.stateChanged.connect(self.initialise_plot)
-        self.plot_settings.alex_show_AD.stateChanged.connect(self.initialise_plot)
 
         self.plot_settings.show_crop_range.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.crop_plots.stateChanged.connect(partial(self.plot_traces, update_plot=False))
@@ -211,8 +222,17 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.plot_settings.show_breakpoints.stateChanged.connect(partial(self.plot_traces, update_plot=False))
         self.plot_settings.plot_downsample.currentIndexChanged.connect(partial(self.plot_traces, update_plot=False))
 
+        self.plot_data.currentIndexChanged.connect(self.update_plot_mode_combo)
+
         self.import_settings.import_data.clicked.connect(self.import_data_files)
         self.import_settings.import_json.clicked.connect(self.import_gapseq_json)
+        self.import_settings.import_deepFRET.clicked.connect(self.import_deepfret_data)
+
+        self.detect_window.detect_inceptiontime.clicked.connect(self.detect_inceptiontime_states)
+        self.detect_window.label_singletrace.clicked.connect(self.update_singletrace_labels)
+        self.detect_window.label_multitrace.clicked.connect(self.update_multitrace_labels)
+
+        self.draw_analysis_plot.clicked.connect(self.initialise_analysis_plot)
 
         # Set the color of the status bar text
         self.statusBar().setStyleSheet("QStatusBar{color: red;}")
@@ -226,10 +246,19 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.current_dialog = None
         self.updating_combos = False
 
+        self.plot_queue = queue.Queue()
+
+    def dev_function(self):
+
+        print("Dev function")
+        self.initialise_analysis_plot()
+
     def gui_progrssbar(self,progress, name):
 
         if name.lower() == "deeplasi":
             self.fitting_window.deeplasi_progressbar.setValue(progress)
+        if name.lower() == "inceptiontime":
+            self.detect_window.inceptiontime_progressbar.setValue(progress)
 
 
     def format_export_settings(self):
@@ -252,6 +281,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.import_settings.close()
         self.export_settings.close()
         self.fitting_window.close()
+        self.detect_window.close()
 
     def keyPressEvent(self, event):
         try:
@@ -270,6 +300,8 @@ class AnalysisGUI(QtWidgets.QMainWindow,
                 self.toggle_export_settings()
             elif event.key() == Qt.Key_F:
                 self.toggle_fitting_window()
+            elif event.key() == Qt.Key_D:
+                self.toggle_detect_window()
             elif event.key() == Qt.Key_X:
                 self.toggle_checkbox(self.plot_settings.plot_showx)
             elif event.key() == Qt.Key_Y:
@@ -280,6 +312,11 @@ class AnalysisGUI(QtWidgets.QMainWindow,
                 self.toggle_checkbox(self.plot_settings.plot_split_lines)
             elif event.key() == Qt.Key_Escape:
                 self.close()  # Close the application on pressing the Escape key
+            elif event.key() == Qt.Key_F1:
+                self.dev_function()
+            elif event.key() == Qt.Key_P:
+                self.initialise_analysis_plot()
+
             # Add more key handling as needed
             else:
                 super().keyPressEvent(event)  # Important to allow unhandled key events to propagate
@@ -287,10 +324,37 @@ class AnalysisGUI(QtWidgets.QMainWindow,
             print(traceback.format_exc())
             pass
 
+    def toggle_detect_window(self):
+
+        if self.detect_window.isHidden() or self.detect_window.isActiveWindow() == False:
+
+            if self.current_dialog != self.detect_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
+            self.detect_window.show()
+            self.detect_window.raise_()
+            self.detect_window.activateWindow()
+            self.detect_window.setFocus()
+
+            self.current_dialog = self.detect_window
+
+        else:
+            self.detect_window.hide()
+            self.activateWindow()
+
+
+
 
     def toggle_fitting_window(self):
 
         if self.fitting_window.isHidden() or self.fitting_window.isActiveWindow() == False:
+
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
 
             self.populate_ebFRET_options()
 
@@ -302,6 +366,7 @@ class AnalysisGUI(QtWidgets.QMainWindow,
             # self.fitting_window.exec_()
 
             self.current_dialog = self.fitting_window
+
         else:
             self.fitting_window.hide()
             self.activateWindow()
@@ -309,13 +374,19 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     def toggle_plot_settings(self):
 
         if self.plot_settings.isHidden() or self.plot_settings.isActiveWindow() == False:
+
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
             self.plot_settings.show()
             self.plot_settings.raise_()
             self.plot_settings.activateWindow()
             self.plot_settings.setFocus()
             # self.plot_settings.exec_()
 
-            self.current_dialog = self.fitting_window
+            self.current_dialog = self.plot_settings
 
         else:
             self.plot_settings.hide()
@@ -324,13 +395,20 @@ class AnalysisGUI(QtWidgets.QMainWindow,
     def toggle_import_settings(self):
 
         if self.import_settings.isHidden() or self.import_settings.isActiveWindow() == False:
+
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
+
             self.import_settings.show()
             self.import_settings.raise_()
             self.import_settings.activateWindow()
             self.import_settings.setFocus()
             # self.import_settings.exec_()
 
-            self.current_dialog = self.fitting_window
+            self.current_dialog = self.import_settings
+
         else:
             self.import_settings.hide()
             self.activateWindow()
@@ -339,13 +417,19 @@ class AnalysisGUI(QtWidgets.QMainWindow,
 
         if self.export_settings.isHidden() or self.export_settings.isActiveWindow() == False:
 
-            self.populate_export_selection()
+            if self.current_dialog != self.fitting_window:
+                if self.current_dialog != None:
+                    self.current_dialog.hide()
+                    self.current_dialog.close()
 
             self.export_settings.show()
             self.export_settings.raise_()
             self.export_settings.activateWindow()
             self.export_settings.setFocus()
             # self.export_settings.exec_()
+
+            self.current_dialog = self.export_settings
+
         else:
             self.export_settings.hide()
             self.activateWindow()
@@ -401,10 +485,6 @@ class AnalysisGUI(QtWidgets.QMainWindow,
         self.label = self.findChild(QLabel, label_name)
 
         slider_value = self.slider.value()
-
-        if slider_name == "localisation_aspect_ratio":
-            slider_value = self.slider.value() / 10
-
         self.label.setText(str(slider_value))
 
 

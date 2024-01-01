@@ -6,50 +6,129 @@ from PyQt5.QtWidgets import QFileDialog
 import numpy as np
 import pandas as pd
 import originpro as op
+from functools import partial
+
 
 class _export_methods:
 
+    def populate_export_combos(self):
 
-    def populate_export_selection(self):
+            try:
 
-        self.export_settings.export_data_selection.clear()
+                self.update_export_dataset_selection("export_dataset_selection")
+                self.update_export_dataset_selection("excel_export_dataset_selection")
+                self.update_export_dataset_selection("origin_export_dataset_selection")
 
-        all_export_names = []
-        self.export_selection_dict = {}
+                self.update_export_channel_selection("export_dataset_selection", "export_channel_selection")
+                self.update_export_channel_selection("excel_export_dataset_selection", "excel_export_channel_selection")
+                self.update_export_channel_selection("origin_export_dataset_selection", "origin_export_channel_selection")
 
-        for dataset_name in self.data_dict.keys():
-            for plot_name in self.data_dict[dataset_name][0].keys():
-                if plot_name not in all_export_names:
-                    all_export_names.append(plot_name)
+                for dataset_combo_name in ["export_dataset_selection", "excel_export_dataset_selection", "origin_export_dataset_selection"]:
+                    try:
+                        dataset_combo = getattr(self.export_settings, dataset_combo_name)
+                        dataset_name = dataset_combo_name
+                        channel_name = dataset_combo_name.replace("dataset", "channel")
+                        dataset_combo_func = partial(self.update_export_channel_selection, dataset_combo_name, channel_name)
+                        dataset_combo.currentIndexChanged.connect(dataset_combo_func)
+                    except:
+                        print(traceback.format_exc())
 
-        if self.import_settings.import_data_alex.isChecked() == False:
-            if "donor" in all_export_names:
-                self.export_settings.export_data_selection.addItem("Donor")
-                self.export_selection_dict["Donor"] = ["donor"]
-            if "acceptor" in all_export_names:
-                self.export_settings.export_data_selection.addItem("Acceptor")
-                self.export_selection_dict["Acceptor"] = ["acceptor"]
-            if set(["donor", "acceptor"]).issubset(all_export_names):
-                self.export_settings.export_data_selection.addItem("FRET Data")
-                self.export_selection_dict["FRET Data"] = ["donor", "acceptor"]
-            if "efficiency" in all_export_names:
-                self.export_settings.export_data_selection.addItem("FRET Efficiency")
-                self.export_selection_dict["FRET Efficiency"] = ["efficiency"]
-            if set(["donor", "acceptor", "efficiency"]).issubset(all_export_names):
-                self.export_settings.export_data_selection.addItem("FRET Data + FRET Efficiency")
-                self.export_selection_dict["FRET Data + FRET Efficiency"] = ["donor", "acceptor", "efficiency"]
-        else:
-            if set(["DD", "AA", "DA", "AD"]).issubset(all_export_names):
-                self.export_settings.export_data_selection.addItem("ALEX Data")
-                self.export_selection_dict["ALEX Data"] = ["DD", "AA", "DA", "AD"]
-            if "efficiency" in all_export_names:
-                self.plot_mode.addItem("ALEX Efficiency")
-            if set(["DD", "AA", "DA", "AD", "efficiency"]).issubset(all_export_names):
-                self.export_settings.export_data_selection.addItem("ALEX Data + ALEX Efficiency")
-                self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD", "AA", "DA", "AD", "efficiency"]
+            except:
+                print(traceback.format_exc())
 
+    def update_export_dataset_selection(self, dataset_combo ="export_dataset_selection"):
 
+        try:
 
+            if len(self.data_dict.keys()) > 0:
+
+                dataset_combo = getattr(self.export_settings, dataset_combo)
+                dataset_names = list(self.data_dict.keys())
+
+                if len(dataset_names) > 1:
+                    dataset_names.insert(0, "All Datasets")
+
+                dataset_combo.blockSignals(True)
+                dataset_combo.clear()
+                dataset_combo.addItems(dataset_names)
+                dataset_combo.blockSignals(False)
+
+        except:
+            print(traceback.format_exc())
+
+    def update_export_channel_selection(self, dataset_combo_name ="export_dataset_selection",
+                  channel_combo_name = "export_channel_selection"):
+
+        try:
+
+            if len(self.data_dict.keys()) > 0:
+
+                channel_combo = getattr(self.export_settings, channel_combo_name)
+                dataset_combo = getattr(self.export_settings, dataset_combo_name)
+
+                export_dataset = dataset_combo.currentText()
+
+                if export_dataset == "All Datasets":
+                    dataset_list = list(self.data_dict.keys())
+                else:
+                    dataset_list = [export_dataset]
+
+                all_export_names = []
+                combo_options = []
+                self.export_selection_dict = {}
+
+                for dataset_name in dataset_list:
+                    for channel_name in self.data_dict[dataset_name][0].keys():
+                        if channel_name in ["Donor", "Acceptor", "FRET Efficiency","ALEX Efficiency","DD", "AA", "DA", "AD"]:
+                            data_length = len(self.data_dict[dataset_name][0][channel_name])
+                            if data_length > 1:
+                                if channel_name not in all_export_names:
+                                    all_export_names.append(channel_name)
+
+                if set(["Donor", "Acceptor"]).issubset(all_export_names):
+                    combo_options.append("FRET Data")
+                    self.export_selection_dict["FRET Data"] = ["Donor", "Acceptor"]
+                if "FRET Efficiency" in all_export_names:
+                    combo_options.append("FRET Efficiency")
+                    self.export_selection_dict["FRET Efficiency"] = ["FRET Efficiency"]
+                if set(["Donor", "Acceptor", "FRET Efficiency"]).issubset(all_export_names):
+                    combo_options.append("FRET Data + FRET Efficiency")
+                    self.export_selection_dict["FRET Data + FRET Efficiency"] = ["Donor", "Acceptor", "FRET Efficiency"]
+                if "ALEX Efficiency" in all_export_names:
+                    combo_options.append("ALEX Efficiency")
+                    self.export_selection_dict["ALEX Efficiency"] = ["ALEX Efficiency"]
+                if set(["DD","DA","AD","AA"]).issubset(all_export_names):
+                    combo_options.append("ALEX Data")
+                    self.export_selection_dict["ALEX Data"] = ["DD","DA","AD","AA"]
+                if set(["DD","DA","AD","AA","ALEX Efficiency"]).issubset(all_export_names):
+                    combo_options.append("ALEX Data + ALEX Efficiency")
+                    self.export_selection_dict["ALEX Data + ALEX Efficiency"] = ["DD","DA","AD","AA","ALEX Efficiency"]
+                if "Donor" in all_export_names:
+                    combo_options.append("Donor")
+                    self.export_selection_dict["Donor"] = ["Donor"]
+                if "Acceptor" in all_export_names:
+                    combo_options.append("Acceptor")
+                    self.export_selection_dict["Acceptor"] = ["Acceptor"]
+                if "DD" in all_export_names:
+                    combo_options.append("DD")
+                    self.export_selection_dict["DD"] = ["DD"]
+                if "AA" in all_export_names:
+                    combo_options.append("AA")
+                    self.export_selection_dict["AA"] = ["AA"]
+                if "DA" in all_export_names:
+                    combo_options.append("DA")
+                    self.export_selection_dict["DA"] = ["DA"]
+                if "AD" in all_export_names:
+                    combo_options.append("AD")
+                    self.export_selection_dict["AD"] = ["AD"]
+
+                channel_combo.blockSignals(True)
+                channel_combo.clear()
+                channel_combo.addItems(combo_options)
+                channel_combo.blockSignals(False)
+
+        except:
+            print(traceback.format_exc())
 
     def initialise_excel_export(self):
 
@@ -57,7 +136,8 @@ class _export_methods:
 
             export_location = self.export_settings.excel_export_location.currentText()
             split_datasets = self.export_settings.excel_export_split_datasets.isChecked()
-            export_selection = self.export_settings.excel_export_data_selection.currentText()
+            export_dataset_name = self.export_settings.excel_export_dataset_selection.currentText()
+            export_channel_name = self.export_settings.excel_export_channel_selection.currentText()
             crop_mode = self.export_settings.excel_export_crop_data.isChecked()
             export_states = self.export_settings.excel_export_fitted_states.isChecked()
 
@@ -72,7 +152,8 @@ class _export_methods:
                     export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
                     export_paths = [os.path.abspath(export_path) for export_path in export_paths]
 
-            self.export_excel_data(export_selection, crop_mode,export_states, export_paths, split_datasets)
+            self.export_excel_data(export_dataset_name, export_channel_name,
+                crop_mode,export_states, export_paths, split_datasets)
 
     def initialise_origin_export(self):
 
@@ -80,7 +161,8 @@ class _export_methods:
 
             export_location = self.export_settings.origin_export_location.currentText()
             split_datasets = self.export_settings.origin_export_split_datasets.isChecked()
-            export_selection = self.export_settings.origin_export_data_selection.currentText()
+            export_dataset_name = self.export_settings.origin_export_dataset_selection.currentText()
+            export_channel_name = self.export_settings.origin_export_channel_selection.currentText()
             crop_mode = self.export_settings.origin_export_crop_data.isChecked()
             export_states = self.export_settings.origin_export_fitted_states.isChecked()
 
@@ -95,11 +177,8 @@ class _export_methods:
                     export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
                     export_paths = [os.path.abspath(export_path) for export_path in export_paths]
 
-            self.export_origin_data(export_selection, crop_mode, export_states, export_paths, split_datasets)
-
-
-
-
+            self.export_origin_data(export_dataset_name, export_channel_name,
+                crop_mode, export_states, export_paths, split_datasets)
 
     def initialise_json_export(self):
 
@@ -110,7 +189,6 @@ class _export_methods:
             export_path = self.get_export_paths(extension="json")[0]
 
             if export_location == "Select Directory":
-
                 export_path, _ = QFileDialog.getSaveFileName(self, "Select Directory", export_path)
 
             export_dir = os.path.dirname(export_path)
@@ -126,7 +204,8 @@ class _export_methods:
             export_mode = self.export_settings.export_mode.currentText()
             export_location = self.export_settings.export_location.currentText()
             split_datasets = self.export_settings.export_split_datasets.isChecked()
-            export_selection = self.export_settings.export_data_selection.currentText()
+            export_dataset_name = self.export_settings.export_dataset_selection.currentText()
+            export_channel_name = self.export_settings.export_channel_selection.currentText()
             crop_mode = self.export_settings.export_crop_data.isChecked()
             data_separator = self.export_settings.export_separator.currentText()
             export_states = self.export_settings.excel_export_fitted_states.isChecked()
@@ -137,7 +216,6 @@ class _export_methods:
                 export_paths = self.get_export_paths(extension="txt")
             if export_mode == "CSV (.csv)":
                 export_paths = self.get_export_paths(extension="csv")
-
 
             if data_separator.lower() == "space":
                 data_separator = " "
@@ -155,8 +233,8 @@ class _export_methods:
                     export_paths = [os.path.join(export_dir, os.path.basename(export_path)) for export_path in export_paths]
                     export_paths = [os.path.abspath(export_path) for export_path in export_paths]
 
-            self.export_dat(export_selection, crop_mode, export_states, data_separator, export_paths, split_datasets)
-
+            self.export_dat(export_dataset_name, export_channel_name,
+                crop_mode, export_states, data_separator, export_paths, split_datasets)
 
     def get_export_paths(self, extension="json"):
 
@@ -168,7 +246,10 @@ class _export_methods:
 
             export_filename = os.path.basename(import_path)
             export_dir = os.path.dirname(import_path)
-            export_filename = export_filename.split(".")[0] + f"_gapseq.{extension}"
+            if "_gapseq" not in export_filename:
+                export_filename = export_filename.split(".")[0] + f"_gapseq.{extension}"
+            else:
+                export_filename = export_filename.split(".")[0] + f".{extension}"
 
             export_path = os.path.join(export_dir, export_filename)
             export_path = os.path.abspath(export_path)
@@ -177,8 +258,8 @@ class _export_methods:
 
         return export_paths
 
-
-    def export_excel_data(self,export_selection, crop_mode, export_states=False, export_paths = [], split_datasets = False):
+    def export_excel_data(self,export_dataset_name, export_channel_name,
+            crop_mode, export_states=False, export_paths = [], split_datasets = False):
 
         try:
             if self.data_dict != {}:
@@ -187,7 +268,8 @@ class _export_methods:
 
                     export_path = export_paths[0]
 
-                    export_data_dict = self.get_export_data("excel",export_selection, crop_mode, export_states)
+                    export_data_dict = self.get_export_data("excel",
+                        export_dataset_name, export_channel_name, crop_mode, export_states)
 
                     export_data = export_data_dict["data"]
 
@@ -195,49 +277,50 @@ class _export_methods:
 
                     export_data = [np.pad(data, (0, max_length - len(data)), mode="constant", constant_values=np.nan) for data in export_data]
 
-                    export_dataset = np.stack(export_data, axis=0).T
+                    export_data = np.stack(export_data, axis=0).T
 
-                    export_dataset = pd.DataFrame(export_dataset)
+                    export_data = pd.DataFrame(export_data)
 
-                    export_dataset.columns = [export_data_dict["index"],
-                                              export_data_dict["dataset"],
-                                              export_data_dict["data_name"],
-                                              export_data_dict["user_label"],
-                                              export_data_dict["nucleotide_label"]]
+                    export_data.columns = [export_data_dict["index"],
+                                           export_data_dict["dataset"],
+                                           export_data_dict["data_name"],
+                                           export_data_dict["user_label"],
+                                           export_data_dict["nucleotide_label"]]
 
-                    export_dataset.columns.names = ['Index', 'Dataset', 'Data', 'Class', 'Nucleotide']
+                    export_data.columns.names = ['Index', 'Dataset', 'Data', 'Class', 'Nucleotide']
 
                     with pd.ExcelWriter(export_path) as writer:
-                        export_dataset.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
+                        export_data.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
 
                     self.print_notification(f"Exported data to {export_path}")
 
                 else:
 
-                    for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+                    for export_dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
 
-                        export_data_dict = self.get_export_data("excel",export_selection, crop_mode, export_states, [dataset_name])
+                        export_data_dict = self.get_export_data("excel",
+                            export_dataset_name, export_channel_name, crop_mode, export_states, )
 
-                        export_dataset = np.stack(export_data_dict["data"], axis=0).T
+                        export_data = np.stack(export_data_dict["data"], axis=0).T
 
-                        export_dataset = pd.DataFrame(export_dataset)
+                        export_data = pd.DataFrame(export_data)
 
-                        export_dataset.columns = [export_data_dict["index"],
-                                                  export_data_dict["dataset"],
-                                                  export_data_dict["data_name"],
-                                                  export_data_dict["user_label"],
-                                                  export_data_dict["nucleotide_label"]]
+                        export_data.columns = [export_data_dict["index"],
+                                               export_data_dict["dataset"],
+                                               export_data_dict["data_name"],
+                                               export_data_dict["user_label"],
+                                               export_data_dict["nucleotide_label"]]
 
-                        export_dataset.columns.names = ['Index', 'Dataset', 'Data', 'Class', 'Nucleotide']
+                        export_data.columns.names = ['Index', 'Dataset', 'Data', 'Class', 'Nucleotide']
 
                         with pd.ExcelWriter(export_path) as writer:
-                            export_dataset.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
+                            export_data.to_excel(writer, sheet_name='Trace Data', index=True, startrow=1, startcol=1)
 
         except:
             print(traceback.format_exc())
 
-
-    def export_origin_data(self,export_selection, crop_mode, export_states=False, export_paths = [], split_datasets = False):
+    def export_origin_data(self, export_dataset_name, export_channel_name,
+            crop_mode, export_states=False, export_paths = [], split_datasets = False):
 
          try:
 
@@ -245,7 +328,8 @@ class _export_methods:
                  if split_datasets == False:
                      export_path = export_paths[0]
 
-                     export_data_dict = self.get_export_data("origin", export_selection, crop_mode, export_states)
+                     export_data_dict = self.get_export_data("origin",
+                         export_dataset_name, export_channel_name, crop_mode, export_states, )
 
                      export_data = export_data_dict["data"]
 
@@ -253,11 +337,11 @@ class _export_methods:
 
                      export_data = [np.pad(data, (0, max_length - len(data)), mode="constant", constant_values=np.nan) for data in export_data]
 
-                     export_dataset = np.stack(export_data, axis=0).T
+                     export_data = np.stack(export_data, axis=0).T
 
-                     export_dataset = pd.DataFrame(export_dataset)
+                     export_data = pd.DataFrame(export_data)
 
-                     export_dataset.columns = export_data_dict["data_name"]
+                     export_data.columns = export_data_dict["data_name"]
 
                      if os.path.exists(export_path):
                          os.remove(export_path)
@@ -269,7 +353,7 @@ class _export_methods:
 
                      wks = op.new_sheet()
                      wks.cols_axis('YY')
-                     wks.from_df(export_dataset, addindex=True)
+                     wks.from_df(export_data, addindex=True)
 
                      for i in range(len(export_data_dict["data_name"])):
 
@@ -292,8 +376,10 @@ class _export_methods:
 
                  else:
 
-                     for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
-                         export_data_dict = self.get_export_data("origin", export_selection, crop_mode, export_states, [dataset_name])
+                     for export_dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+
+                         export_data_dict = self.get_export_data("origin",
+                             export_dataset_name, export_channel_name, crop_mode, export_states, )
 
                          export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
@@ -338,8 +424,8 @@ class _export_methods:
          except:
              print(traceback.format_exc())
 
-
-    def export_dat(self,export_selection, crop_mode, export_states = False, data_separator=",", export_paths = [], split_datasets = False):
+    def export_dat(self, export_dataset_name, export_channel_name, crop_mode,
+            export_states = False, data_separator=",", export_paths = [], split_datasets = False):
 
             try:
 
@@ -348,7 +434,8 @@ class _export_methods:
 
                         export_path = export_paths[0]
 
-                        export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states)
+                        export_data_dict = self.get_export_data("data",
+                            export_dataset_name, export_channel_name, crop_mode, export_states, )
 
                         export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
@@ -366,9 +453,10 @@ class _export_methods:
 
                     else:
 
-                        for dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
+                        for export_dataset_name, export_path in zip(self.data_dict.keys(), export_paths):
 
-                            export_data_dict = self.get_export_data("data", export_selection, crop_mode, export_states, [dataset_name])
+                            export_data_dict = self.get_export_data("data",
+                                export_dataset_name, export_channel_name, crop_mode, export_states, )
 
                             export_dataset = np.stack(export_data_dict["data"], axis=0).T
 
@@ -387,9 +475,8 @@ class _export_methods:
             except:
                 print(traceback.format_exc())
 
-
-
-    def get_export_data(self, export_mode, export_selection, crop_data, export_states, dataset_names = [], pad_data = True, pad_value = np.nan):
+    def get_export_data(self, export_mode, export_dataset_name, export_channel_name,
+            crop_data, export_states, pad_data = True, pad_value = np.nan):
 
         loc_index = []
         loc_dataset = []
@@ -398,10 +485,12 @@ class _export_methods:
         loc_data = []
         loc_data_name = []
 
-        if dataset_names == []:
-            dataset_names = self.data_dict.keys()
+        if export_dataset_name == "All Datasets":
+            dataset_list = list(self.data_dict.keys())
+        else:
+            dataset_list = [export_dataset_name]
 
-        for dataset_name in dataset_names:
+        for dataset_name in dataset_list:
 
             dataset_data = self.data_dict[dataset_name]
 
@@ -413,7 +502,7 @@ class _export_methods:
 
                 if self.get_filter_status(export_mode, user_label, nucleotide_label) == False:
 
-                    for data_name in self.export_selection_dict[export_selection]:
+                    for data_name in self.export_selection_dict[export_channel_name]:
 
                         data = localisation_data[data_name]
                         state_means_x, state_means_y = localisation_data["state_means"][data_name]
@@ -467,8 +556,6 @@ class _export_methods:
 
         return export_data_dict
 
-
-
     def export_gapseq_json(self, export_path):
 
         try:
@@ -509,6 +596,9 @@ class _export_methods:
         elif export_mode.lower() == "analysis":
             user_filter = self.analysis_user_filter.currentText()
             nucleotide_filter = self.analysis_nucleotide_filter.currentText()
+        elif export_mode.lower() == "inceptiontime":
+            user_filter = self.detect_window.detect_user_filter.currentText()
+            nucleotide_filter = self.detect_window.detect_nucleotide_filter.currentText()
 
         filter = False
 
@@ -524,13 +614,75 @@ class _export_methods:
 
         return filter
 
+    def json_dict_report(self, json_dataset):
+
+        try:
+
+            if json_dataset != {}:
+
+                json_dataset = json_dataset.copy()
+
+                json_report = {}
+                dataset_traces = {}
+
+                if "data" in json_dataset.keys():
+                    data_dict = json_dataset["data"]
+                else:
+                    data_dict = json_dataset
+
+                for dataset in data_dict.keys():
+
+                    data = data_dict[dataset]
+
+                    if dataset not in json_report.keys():
+                        json_report[dataset] = {}
+
+                    dataset_traces[dataset] = len(data)
+
+                    for json_dict in data:
+
+                        json_dict_keys = json_dict.keys()
+
+                        for key in json_dict_keys:
+
+                            if key not in json_report[dataset].keys():
+                                json_report[dataset][key] = 0
+
+                            json_report[dataset][key] += 1
+
+                n_datasets = len(json_report.keys())
+                unique_channels = list(set([key for dataset in json_report.keys() for key in json_report[dataset].keys()]))
+                unique_n_traces = np.unique([value for dataset in json_report.keys() for value in json_report[dataset].values()])
+                total_traces = sum([value for dataset in json_report.keys() for value in json_report[dataset].values()])
+
+                try:
+                    # size of json_dataset
+                    json_dataset_size = len(json.dumps(json_dataset, indent=4, cls=npEncoder))
+                    json_dataset_size_mb = json_dataset_size / 1000000
+                except:
+                    json_dataset_size_mb = 0
+
+                print(f"JSON Dataset report:")
+                print(f" N datasets: {n_datasets}")
+                print(f" Dataset traces: {list(dataset_traces.values())}")
+                print(f" Unique channels: {unique_channels}")
+                print(f" N traces: {unique_n_traces}")
+                print(f" Total traces: {total_traces}")
+                print(f" Size: {json_dataset_size_mb} MB")
+
+        except:
+            print(traceback.format_exc())
+
+
     def build_json_dict(self, dataset_names = []):
 
         try:
 
             json_dataset_dict = {"metadata":{}, "data":{}}
 
-            json_list_keys = ["donor", "acceptor", "efficiency", "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges"]
+            json_list_keys = ["Donor", "Acceptor", "FRET Efficiency", "ALEX Efficiency",
+                              "DD", "AA", "DA", "AD", "states", "break_points", "crop_range", "gamma_ranges",
+                              'gap_label', 'sequence_label', 'picasso_loc']
 
             json_var_keys = ["user_label", "nucleotide_label", "import_path"]
 
@@ -551,18 +703,13 @@ class _export_methods:
                     for key, value in localisation_data.items():
 
                         if key in json_list_keys:
-                            json_localisation_dict[str(key)] = list(value)
+                            if key in ["gap_label", "sequence_label"]:
+                                json_localisation_dict[key] = str(value)
+                            else:
+                                json_localisation_dict[key] = list(value)
 
-                        elif key in json_var_keys:
+                        if key in json_var_keys:
                             json_localisation_dict[key] = value
-
-                        else:
-
-                            for key in json_list_keys:
-                                json_localisation_dict[key] = []
-
-                            for key in json_var_keys:
-                                json_localisation_dict[key] = None
 
                     json_dataset_dict["data"][dataset_name].append(json_localisation_dict)
 
