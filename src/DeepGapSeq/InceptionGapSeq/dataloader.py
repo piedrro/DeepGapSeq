@@ -1,88 +1,120 @@
-import tensorflow as tf
+import tensorflow as tf 
 import numpy as np
-from functools import partial
-from tsaug import  Crop, Quantize, Drift, Reverse, AddNoise, Convolve, Drift, Dropout, Pool, Resize
 import json
-from sklearn.preprocessing import StandardScaler
+import traceback
+import sklearn
+from functools import partial
+from tsaug import TimeWarp, Quantize, Drift, Reverse
+import os
 
-def read_gapseq_data(file_paths, label, trace_limit = 1200):
+def apply_tsaug(x):
     
-    data_x = []
-    file_names = []
+    augmenter = (TimeWarp(n_speed_change=5, max_speed_ratio=3) @ 0.5 + Quantize(n_levels=[20, 30, 50, 100]) @ 0.5 + Drift(max_drift=(0.01, 0.1), n_drift_points=5) @ 0.5 + Reverse() @ 0.5)
 
-    for file_path in file_paths:
-        with open(file_path) as f:
-            
-            d = json.load(f)
-            data = np.array(d["data"])
-            data = [dat for dat in data]
-            
-            for sequence in data:
-                if len(sequence) > 200:
-                    
-                    sequence = sequence[:trace_limit]
-                    sequence = preprocess_data(sequence)
-                    
-                    data_x.append(list(sequence))
-                    file_names.append(os.path.basename(file_path))
-
-    return data_x, [label] * len(data_x), file_names
-
-def preprocess_data(x):
-
-    scaler = StandardScaler()
-    x = scaler.fit_transform(np.array(x).reshape(-1,1))
-    x = np.squeeze(x)
-
-    # for i in range(len(x)):
-    #     if -np.std(x) < x[i] < np.std(x):
-    #         x[i] = 0
+    x = augmenter.augment(np.array(x))
+    
     return x
 
-def augment_traces(X):
-        
-        augmenter = (
-                    # TimeWarp(n_speed_change=5, max_speed_ratio=3)@ 0.5 +
-                    Quantize(n_levels=[20, 30, 50, 100]) @ 0.5 + 
-                    Drift(max_drift=(0.01, 0.1), n_drift_points=5) @ 0.5 + 
-                    Reverse() @ 0.5 + 
-                    AddNoise(scale=0.1) @ 0.15 +
-                    # Convolve(window="flattop", size=11)  @ 0.1 + 
-                    Drift(max_drift=0.2, n_drift_points=5) @ 0.15 +
-                    Dropout(p=0.1, size=(1,2), fill=float(0), per_channel=True) @ 0.15
-                    )
-        # Rasched - add more augmentations
-        # Rasched - I noticed TimeWarp made the accuracy lower - this makes sense if it changes the duration of spikes which is critical in 
-        # distinguising the two classes
-        # X_aug = AddNoise(scale=0.1).augment(np.array(X[a])) can make it 0.05 for smaller effect
-        # X_aug = Convolve(window="flattop", size=11).augment(np.array(X[a])) 
-        # X_aug = Crop(size=300).augment(np.array(X[a]))  use this but make it custom so it crops a random part out and sets it to 0 ??
-        # X_aug = Drift(max_drift=0.2, n_drift_points=5).augment(np.array(X[a]))
-        # X_aug = Dropout(p=0.1, size=(1,2), fill=float(0), per_channel=True).augment(np.array(X[a]))
-        # X_aug = Pool(size=2).augment(np.array(X[a])) not sure about this one
-
-        X = augmenter.augment(np.array(X))
-        
-        return X
-
-def postprocess(self, X, y, num_classes=2):
-            
-    # Typecasting
-    X = np.array(X)
+def tsaug_wrapper(x, y):
     
-    X = torch.from_numpy(X.copy()).float()
-    X = torch.unsqueeze(X,0)
-    y = F.one_hot(torch.tensor(y), num_classes).float()
+    # Apply TSAUG augmentations within tf.py_function
+    # The input tensors x and y are converted to NumPy arrays and passed to apply_tsaug
+    x_augmented = tf.py_function(func=apply_tsaug, inp=[x], Tout=tf.float32)
 
-    return X, y
+    # Reshape the output to ensure its shape is correctly set after augmentation
+    x_augmented.set_shape(x.get_shape())
 
-def get_data_labels(file_path, label, num_classes=2, trace_limit=1200, augment=True):
+    return x_augmented, y
+
+def normalize_tensor(tensor):   
+    # tensor shape is assumed to be [Batch, Channels, N]
+
+    # Compute the min and max for each channel
+    channel_min = tf.reduce_min(tensor, axis=0, keepdims=True)
+    channel_max = tf.reduce_max(tensor, axis=0, keepdims=True)
+
+    # Normalize the tensor
+    normalized_tensor = (tensor - channel_min) / (channel_max - channel_min)
+
+    # Handling the case where max = min (to avoid division by zero)
+    normalized_tensor = tf.where(tf.math.is_nan(normalized_tensor), tf.zeros_like(normalized_tensor), normalized_tensor)
+
+    return normalized_tensor
+
+def preprocess_data(x, y, num_classes=2):
+        
+    x = normalize_tensor(x)
+        
+    y = tf.cast(y, tf.uint8)
+    y = tf.one_hot(y, depth=num_classes)
     
-    X, y, _ = read_gapseq_data(file_paths, label, trace_limit)
-    X = preprocess_data(X)
+    return x, y
+
+def create_dataset(data, labels, num_classes=2, augment=True, batch_size=32, shuffle_buffer_size=100):
+    """
+    Creates a TensorFlow dataset from provided data and labels.
+    
+    Args:
+    data: Input data (features).
+    labels: Corresponding labels.
+    num_classes: Number of classes for one-hot encoding of labels.
+    augment: Boolean, whether to apply TSAUG augmentation.
+    batch_size: Size of the batches of data.
+    shuffle_buffer_size: Buffer size for data shuffling.
+
+    Returns:
+    A tf.data.Dataset object.
+    """
+    
+    dataset = tf.data.Dataset.from_tensor_slices((data, labels))
+    
     if augment:
-        X = augment_traces(X)
-    X, y = postprocess(X, y, num_classes)
+        dataset = dataset.map(lambda x, y: tsaug_wrapper(x,y), num_parallel_calls=tf.data.experimental.AUTOTUNE)
+     
+    preprocess_func = partial(preprocess_data, num_classes=num_classes)
+    
+    dataset = dataset.map(lambda x, y: 
+                          preprocess_func(x,y),
+                          num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    
+    if shuffle_buffer_size > 0:
+        dataset = dataset.shuffle(buffer_size=shuffle_buffer_size)
+    
+    dataset = dataset.batch(batch_size)
+    dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+    
+    return dataset
 
-    return X, y
-
+def read_gapseq_data(file_paths, X=[], y=[], file_names=[], label=0, trace_limit=1200):
+    
+    for file_path in file_paths:
+        
+        try:
+            
+            with open(file_path) as f:
+                
+                d = json.load(f)
+            
+                data = np.array(d["data"])
+                
+                data = [dat for dat in data]
+                
+                # data = split_list(data, chunk_size = 200)
+                
+                for dat in data:
+                    
+                    if len(dat) > 200:
+                        
+                        dat = dat[:trace_limit]
+                    
+                        file_name = os.path.basename(file_path)
+                        
+                        X.append(list(dat))
+                        y.append(label)
+                        file_names.append(file_name)
+            
+        except:
+            print(traceback.format_exc())
+            pass
+        
+    return X, y, file_names
